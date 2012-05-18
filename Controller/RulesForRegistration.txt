@@ -1,0 +1,16 @@
+HOW THE CONTROLLER SHOULD BEHAVE IN RESPONSE TO:
+
+OPC_LOCO_ADR received
+Controller needs to be able to respond to this when it is sent by a throttle attached to the
+controller. This message should be discarded when sent by a throttle attached to the locobuffer/simulator.
+
+OPC_SL_RD_DATA and OPC_LONG_ACK sent by controller
+in response to OPC_LOC_ADR from a throttle attached to the controller
+
+OPC_SL_RD_DATA received from railroad/simulator
+Controller must make sure that this is being received in response to OPC_LOCO_ADR  sent by the controller
+and not in response to OPC_LOCO_ADR sent by a throttle. This can be done by matching the address field in 
+this instruction to the address field in OPC_LOCO_ADR.
+
+OPC_MOVE_SLOTS 
+Ignore this one.

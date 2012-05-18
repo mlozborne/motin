@@ -1,0 +1,31 @@
+<h1>Using a DLL</h1>
+<p>Also see the instruction in the folder for making a DLL.</p>
+<p>Put <b>Testdll.lib</b> in the same folder as the project and source code 
+(need during compilation and linking)</p>
+<p>Put <b>Testdll.dll</b> in the same folder as the exe file (usually the debug folder, 
+needed during execution)</p>
+<p>Code for the DLL</p>
+<font COLOR="#0000ff">
+<blockquote>
+  <pre>#define</font><font SIZE="3"> DLLEXPORT </font><font SIZE="3" COLOR="#0000ff">extern</font><font SIZE="3"> </font><font SIZE="3" COLOR="#a31515">&quot;C&quot;</font><font SIZE="3"> </font><font SIZE="3" COLOR="#0000ff">__declspec</font><font SIZE="3">(</font><font SIZE="3" COLOR="#0000ff">dllexport</font><font SIZE="3">)
+
+DLLEXPORT </font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> addem (</font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> a, </font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> b){
+</font><font SIZE="3" COLOR="#0000ff">    return</font><font SIZE="3"> a + b; 
+}</pre>
+</blockquote>
+</font>
+<p>Code for the test program (this is a standard console application)</p>
+<font COLOR="#0000ff">
+<blockquote>
+  <pre>#include</font><font SIZE="3"> </font><font SIZE="3" COLOR="#a31515">&lt;iostream&gt;</font><font SIZE="3" COLOR="#0000ff">
+using</font><font SIZE="3"> </font><font SIZE="3" COLOR="#0000ff">namespace</font><font SIZE="3"> std;</pre>
+  </font><font COLOR="#0000ff">
+  <pre>#define</font><font SIZE="3"> DLLEXPORT </font><font SIZE="3" COLOR="#0000ff">extern</font><font SIZE="3"> </font><font SIZE="3" COLOR="#a31515">&quot;C&quot;</font><font SIZE="3"> </font><font SIZE="3" COLOR="#0000ff">__declspec</font><font SIZE="3">(</font><font SIZE="3" COLOR="#0000ff">dllexport</font><font SIZE="3">)
+DLLEXPORT </font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> addem(</font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3">, </font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3">);</pre>
+  </font><font COLOR="#0000ff">
+  <pre>void</font><font SIZE="3"> main(){
+    cout &lt;&lt; addem(1, 2) &lt;&lt; endl;
+}</pre>
+</blockquote>
+</font>
+<p>&nbsp;</p>

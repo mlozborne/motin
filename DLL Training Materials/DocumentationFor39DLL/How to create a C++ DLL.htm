@@ -1,0 +1,458 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>How to create a DLL</title>
+</head>
+
+<body>
+
+<h1>How to create a DLL</h1>
+<p>Create this DLL as follows:</p>
+<ul>
+  <li>Use Visual Studio</li>
+  <li>Win32 and Win32 Console Application</li>
+  <li>Call it TestDll</li>
+  <li>Application settings: DLL with empty project</li>
+</ul>
+<p>This will create</p>
+<ul>
+  <li>TestDll.lib</li>
+  <li>TestDll.dll</li>
+</ul>
+<p>Further reading:
+<a href="http://www.flipcode.com/archives/Creating_And_Using_DLLs.shtml">
+http://www.flipcode.com/archives/Creating_And_Using_DLLs.shtml</a>&nbsp; </p>
+<center>
+<script type="text/javascript"><!--
+google_ad_client = "pub-3512250068614659";
+//728x90, created 1/8/08
+google_ad_slot = "8394943283";
+google_ad_width = 728;
+google_ad_height = 90;
+//--></script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+<script src="http://pagead2.googlesyndication.com/pagead/expansion_embed.js">
+</script>
+<script src="http://googleads.g.doubleclick.net/pagead/test_domain.js"></script>
+<script>google_protectAndRun("ads_core.google_render_ad", google_handleError, google_render_ad);
+</script>
+<center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%">
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2"><b>
+    Introduction</b></font><p>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">So you're 
+    interested in making an oh-so-fashionable DLL? Well look no further. 
+    Creating a DLL is a lot easier than you probably think. DLLs (Dynamic Link 
+    Libraries) are very useful when you're writing windows programs. A good 
+    example use would be if you create a number of programs that all use common 
+    functions. In such a case, you can create a library that they all call 
+    functions from. Another interesting use would be to create <i>plug-ins</i> 
+    for your application. For example, a particular program I was working on in 
+    the past had plug-in renderers that were compiled as DLLs and loaded when 
+    the actual program ran. This document will attempt to show you how to create 
+    a basic DLL and how to use it (with import library linking and without). 
+    This document will not get into things such as sharing data, thread 
+    precautions, or resource libraries. We're just sticking to basic dll uses -- 
+    the rest you can experiment with on your own. Again, MSVC6 and the ide. 
+    Hopefully you shouldn't have too many problems w/conversions. Let's roll.</font></td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%">&nbsp;</td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%">
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2"><b>Creating 
+    the DLL</b> </font>
+    <p><font face="Verdana, Helvetica, Arial, Times New Roman" size="2">Creating 
+    a dll is nothing too far out. Basically, you write your functions then 
+    compile them almost like you would any other library. If you're using MSVC, 
+    create a new project and set the target as a <i>Win32 Dynamic-Link Library</i>. 
+    That way when you compile your code, it should produce a dll, an import 
+    library (.lib), and an export library (.exp). Here's some sample code that 
+    shows how the sample DLL included with this tutorial is put together:<br>
+    <br>
+    <i><b>Header File (dlltest.h):</b></i></font><font color="#ffe291" face="Verdana, Helvetica, Arial, Times New Roman" size="2"><br>
+&nbsp;</p>
+    <center>
+    <div style="width: 100%; overflow: auto; border: 1px solid rgb(192, 192, 192); background-color: rgb(255, 255, 255)">
+      <table bgcolor="#ffffff" border="0" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#ffffff" width="100%">
+          <pre><font color="#000000" face="Courier, Courier New">
+ <font color="#0000ff">#ifndef</font> _DLLTEST_H_
+ <font color="#0000ff">#define</font> _DLLTEST_H_
+
+ <font color="#0000ff">#include</font> &lt;iostream.h&gt;
+ <font color="#0000ff">#include</font> &lt;stdio.h&gt;
+ <font color="#0000ff">#include</font> &lt;windows.h&gt;
+
+ <font color="#0000ff">extern</font> &quot;C&quot; <font color="#0000ff">__declspec</font>(<font color="#0000ff">dllexport</font>) <font color="#0000ff">void</font> NumberList();
+ <font color="#0000ff">extern</font> &quot;C&quot; <font color="#0000ff">__declspec</font>(<font color="#0000ff">dllexport</font>) <font color="#0000ff">void</font> LetterList();
+
+
+ <font color="#0000ff">#endif</font></font></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </center></font>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">
+    <p><i><b>Source File (dlltest.cpp):</b></i></p>
+    </font>
+    <font color="#ffe291" face="Verdana, Helvetica, Arial, Times New Roman" size="2">
+    <center>
+    <div style="width: 100%; overflow: auto; border: 1px solid rgb(192, 192, 192); background-color: rgb(255, 255, 255)">
+      <table bgcolor="#ffffff" border="0" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#ffffff" width="100%">
+          <pre><font color="#000000" face="Courier, Courier New">
+ <font color="#0000ff">#include</font> &quot;dlltest.h&quot;
+
+ <font color="#0000ff">#define</font> MAXMODULE 50
+
+ <font color="#0000ff">char</font> module[MAXMODULE];
+
+
+ <font color="#0000ff">extern</font> &quot;C&quot; <font color="#0000ff">__declspec</font>(<font color="#0000ff">dllexport</font>)
+
+ <font color="#0000ff">void</font> NumberList() {
+
+       GetModuleFileName(NULL, (LPTSTR)module, MAXMODULE);
+
+       cout &lt;&lt; &quot;\n\nThis function was called from &quot;
+            &lt;&lt; module 
+            &lt;&lt; endl &lt;&lt; endl;
+
+       cout &lt;&lt; &quot;NumberList(): &quot;;
+
+
+       <font color="#0000ff">for</font>(<font color="#0000ff">int</font> i=0;  i&lt;10; i++) {
+
+            cout &lt;&lt; i &lt;&lt; &quot; &quot;;
+       }
+
+       cout &lt;&lt; endl &lt;&lt; endl;
+ }
+
+
+
+ <font color="#0000ff">extern</font> &quot;C&quot; <font color="#0000ff">__declspec</font>(<font color="#0000ff">dllexport</font>)
+
+ <font color="#0000ff">void</font> LetterList() {
+
+       GetModuleFileName(NULL, (LPTSTR)module, MAXMODULE);
+
+       cout &lt;&lt; &quot;\n\nThis function was called from &quot;
+            &lt;&lt; module 
+            &lt;&lt; endl &lt;&lt; endl;
+
+       cout &lt;&lt; &quot;LetterList(): &quot;;
+
+
+       <font color="#0000ff">for</font>(<font color="#0000ff">int</font> i=0;  i&lt;26; i++) {
+
+            cout &lt;&lt; <font color="#0000ff">char</font>(97 + i) &lt;&lt; &quot; &quot;;
+       }
+
+       cout &lt;&lt; endl &lt;&lt; endl;
+ }
+ </font></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </center></font>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">
+    <p>Basically, there's nothing too special about the code above. The sample 
+    application is a console app, so I just wrote up two simple functions that 
+    display some text and tell you where they're being called from. The <i>
+    extern &quot;C&quot; __declspec(dllexport)</i> means that we want to allow these 
+    functions to be used by our actual program. When you compile this thing, it 
+    should create the libraries. Now lets see how we actually use them.</font></td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%">&nbsp;</td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%"><b>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">Using the 
+    DLL with an Import Library</font></b><p>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">First lets 
+    look at how to use our DLL using the import library (dlltest.lib) that was 
+    one of the resulting files from compiling the DLL above. This method is the 
+    easiest because all you really have to do is include the header file, then 
+    include the import library when you're linking your objects. That's it. 
+    Here's an example:<br>
+    <br>
+    <i><b>DLL Test Source File (dllrun01.cpp) - Win32 Console Application:</b></i></font></p>
+    <center>
+    <div style="width: 100%; overflow: auto; border: 1px solid rgb(192, 192, 192); background-color: rgb(255, 255, 
+255)">
+      <table bgcolor="#ffffff" border="0" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#ffffff" width="100%">
+          <pre><font color="#000000" face="Courier, Courier New">
+ <font color="#0000ff">#include</font> &lt;conio.h&gt;
+ <font color="#0000ff">#include</font> &lt;dlltest.h&gt;
+ 
+ <font color="#0000ff">void</font> main() {
+
+       NumberList();
+       LetterList();
+ 
+       getch();
+ }
+ </font></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </center>
+    <p><font face="Verdana, Helvetica, Arial, Times New Roman" size="2">The code 
+    above will work fine <i>if</i> you have your <i>dlltest.h</i> header file in 
+    your compiler's header path, and the <i>dlltest.lib</i> import library in 
+    the lib path. You also need to link your import library with your other 
+    modules when linking. Be warned though, when you run the resulting 
+    executable, the DLL must be in the path or in the same directory as the 
+    executable otherwise it will have an error. That's the whole point. But if 
+    you had 10 programs that use the same DLL, you can put one copy of the DLL 
+    in a common directory.<br>
+    <br>
+    <i><b>dllrun01.exe Output:</b></i></font></p>
+    <center>
+    <div style="width: 100%; overflow: auto; border: 1px solid rgb(192, 192, 192); background-color: rgb(255, 255, 
+255)">
+      <table bgcolor="#ffffff" border="0" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#ffffff" width="100%">
+          <pre><font color="#000000" face="Courier, Courier New">
+ This function was called from C:\DLLTEST\DLLRUN01.EXE
+
+ NumberList(): 0 1 2 3 4 5 6 7 8 9
+
+
+
+ This function was called from C:\DLLTEST\DLLRUN01.EXE
+ 
+ LetterList(): a b c d e f g h i j k l m n o p q r s t u v w x y z
+ </font></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </center></td>
+  </tr>
+</table>
+</center>
+<p>&nbsp;</p>
+<center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%"><b>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">Using the 
+    DLL without an Import Library</font></b><p>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">Now we'll 
+    look at how to load the DLL on the fly. This is useful for things such as if 
+    you don't know what the dll is called before-hand (for example the plug-in 
+    system I mentioned earlier).<br>
+    <br>
+    Here's the example code:<br>
+    <br>
+    <i><b>DLL Test Source File (dllrun02.cpp) - Win32 Console Application:</b></i></font></p>
+    <center>
+    <div style="width: 100%; overflow: auto; border: 1px solid rgb(192, 192, 192); background-color: rgb(255, 255, 
+255)">
+      <table bgcolor="#ffffff" border="0" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#ffffff" width="100%">
+          <pre><font color="#000000" face="Courier, Courier New">
+ <font color="#0000ff">#include</font> &lt;windows.h&gt;
+ <font color="#0000ff">#include</font> &lt;iostream.h&gt;
+ <font color="#0000ff">#include</font> &lt;stdio.h&gt;
+ <font color="#0000ff">#include</font> &lt;conio.h&gt;
+
+ <font color="#0000ff">#define</font> MAXMODULE 50
+
+ <font color="#0000ff">typedef</font> <font color="#0000ff">void</font> (WINAPI*cfunc)();
+
+ cfunc NumberList;
+ cfunc LetterList;
+
+ <font color="#0000ff">void</font> main() {
+   
+       HINSTANCE hLib=LoadLibrary(&quot;DLLTEST.DLL&quot;);
+
+
+       <font color="#0000ff">if</font>(hLib==NULL) {
+
+            cout &lt;&lt; &quot;Unable to load library!&quot; &lt;&lt; endl;
+            getch();
+            <font color="#0000ff">return</font>;
+       }
+
+       <font color="#0000ff">char</font> mod[MAXMODULE];
+
+       GetModuleFileName((HMODULE)hLib, (LPTSTR)mod, MAXMODULE);
+       cout &lt;&lt; &quot;Library loaded: &quot; &lt;&lt; mod &lt;&lt; endl;
+
+
+       NumberList=(cfunc)GetProcAddress((HMODULE)hLib, &quot;NumberList&quot;);
+       LetterList=(cfunc)GetProcAddress((HMODULE)hLib, &quot;LetterList&quot;);
+
+       <font color="#0000ff">if</font>((NumberList==NULL) || (LetterList==NULL)) {
+
+            cout &lt;&lt; &quot;Unable to load function(s).&quot; &lt;&lt; endl;
+            FreeLibrary((HMODULE)hLib);
+            <font color="#0000ff">return</font>;
+       }
+
+       NumberList();
+       LetterList();
+
+       FreeLibrary((HMODULE)hLib);
+
+       getch();
+ }
+ </font></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </center>
+    <p><font face="Verdana, Helvetica, Arial, Times New Roman" size="2">The code 
+    should load our library (assuming its in the path), then get the addresses 
+    of the two functions that we want to call. I'd recommend that you be careful 
+    when calling functions from dlls without import libraries. There's a lot 
+    more code to write (loading each function/library), and a lot more room for 
+    errors if your dll isn't correct. So if you don't need to do it this way, I 
+    wouldn't. That's up to you.<br>
+    <br>
+    <i><b>dllrun02.exe Output:</b></i></font></p>
+    <center>
+    <div style="width: 100%; overflow: auto; border: 1px solid rgb(192, 192, 192); background-color: rgb(255, 255, 255)">
+      <table bgcolor="#ffffff" border="0" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#ffffff" width="100%">
+          <pre><font color="#000000" face="Courier, Courier New">
+ Library loaded: C:\DLLTEST\DLLTEST.DLL
+
+
+ This function was called from C:\DLLTEST\DLLRUN02.EXE
+
+ NumberList(): 0 1 2 3 4 5 6 7 8 9
+
+
+
+ This function was called from C:\DLLTEST\DLLRUN02.EXE
+
+ LetterList(): a b c d e f g h i j k l m n o p q r s t u v w x y z
+ </font></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </center></td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%">
+    <font color="#ffffff" face="Verdana, Helvetica, Arial, Times New Roman" size="3">
+    <b><font size="1">
+    <img src="http://www.flipcode.com/archives/line_grey.png" width="512" height="1"><br>
+    <br>
+&nbsp;</font></b></font></td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%"><b>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">Closing</font></b><p>
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="2">Hopefully 
+    you learned how to get started on working with dynamic-link libraries. 
+    Please let me know what you think of this document. There are many other 
+    uses and many more advanced topics in DLL management that you can explore on 
+    your own. Also, although the sample program is a Win32 console application, 
+    it works just the same for 'normal' Windows programs. </font></td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%"><b>
+    <font color="#ffffff" face="Verdana, Helvetica, Arial, Times New Roman" size="3">
+    Downloads <font size="1"><br>
+    </font></font><font size="1">
+    <font face="Verdana, Helvetica, Arial, Times New Roman" size="3">D</font><font face="Verdana, Helvetica, Arial, Times New Roman">ownloads<br>
+&nbsp;</font></font></b></td>
+  </tr>
+</table>
+</center><center>
+<table style="table-layout: fixed" border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td width="100%">
+    <font color="#ffe291" face="Verdana, Helvetica, Arial, Times New Roman" size="2">
+    <li><a href="http://www.flipcode.com/archives/article_exe_creatingdlls.zip">
+    Download the Sample Application</a> (48k)<br>
+&nbsp;</li>
+    <li><a href="http://www.flipcode.com/archives/article_src_creatingdlls.zip">
+    Download the Sample Application + Source Code</a> (50k)</li>
+    </font></td>
+  </tr>
+</table>
+</center><center>
+<table border="0" cellpadding="0" cellspacing="0" width="80%">
+  <tr>
+    <td><font color="#ffffff" face="Verdana" size="2"><br>
+&nbsp;</font></td>
+  </tr>
+</table>
+</center><center>
+<table border="0" cellpadding="2" cellspacing="0" width="80%">
+  <tr>
+    <td background="comments_bar2.jpg" bgcolor="#333333" valign="center" width="100">
+    <font size="1">&nbsp;</font></td>
+  </tr>
+</table>
+</center>
+<p><br>
+&nbsp;</p>
+<center>
+<p><font face="Arial, Helvetica" size="1">
+<font face="Helvetica,Tahoma,Verdana" size="1">Copyright 1999-2008 (C) 
+FLIPCODE.COM and/or the original content author(s). All rights reserved.</font>
+</p>
+<center>
+<p><font face="Helvetica,Tahoma,Verdana" size="1">Please read our
+<a href="http://www.flipcode.com/archives/terms.shtml">Terms</a>,
+<a href="http://www.flipcode.com/archives/terms.shtml">Conditions</a>, and
+<a href="http://www.flipcode.com/archives/terms.shtml">Privacy information</a>.</font></p>
+</center></font></center>
+<p><br>
+&nbsp;</p>
+</center>
+
+</body>
+
+</html>

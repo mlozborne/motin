@@ -1,0 +1,259 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>My Documentation for 39DLL</title>
+</head>
+
+<body>
+
+<h1>My Documentation for 39DLL</h1>
+
+<h2>Summary using C </h2>
+<span class="Apple-style-span" style="border-collapse: separate; color: rgb(0, 0, 0); font-family: 'Times New Roman'; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-border-horizontal-spacing: 0px; -webkit-border-vertical-spacing: 0px; -webkit-text-decorations-in-effect: none; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; font-size: medium; ">
+<span class="Apple-style-span" style="font-family: arial; font-size: small; ">
+<div>
+  <font class="Apple-style-span" face="'courier new', monospace">
+  <b style="background-color: rgb(255, 255, 51); ">S</b></font></span></span><font class="Apple-style-span" face="'courier new', monospace"><b style="background-color: rgb(255, 255, 51); "><span class="Apple-style-span" style="border-collapse: separate; color: rgb(0, 0, 0); font-family: Times New Roman; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-border-horizontal-spacing: 0px; -webkit-border-vertical-spacing: 0px; -webkit-text-decorations-in-effect: none; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px"><span class="Apple-style-span" style="font-family: arial"><font size="2">erver<span class="Apple-converted-space">&nbsp;</span>-- 
+  sets up listener by&nbsp;<br>
+&nbsp;</font></span></span></b></font><span class="Apple-style-span" style="border-collapse: separate; color: rgb(0, 0, 0); font-family: Times New Roman; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-border-horizontal-spacing: 0px; -webkit-border-vertical-spacing: 0px; -webkit-text-decorations-in-effect: none; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px"><span class="Apple-style-span" style="font-family: arial"><font size="2"></div>
+<div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; returnCode 
+    = dllinit(0);</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; listener = 
+    tcplisten(&lt;port&gt;, &lt;max number of connected but not accepted clients&gt;, 
+    &lt;mode&gt;); &nbsp;</font></div>
+  <div>
+&nbsp;</div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">where mode = 
+    0 for blocking and 1 for nonblocking &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</font></div>
+</div>
+<div>
+&nbsp;</div>
+<div>
+  <font class="Apple-style-span" face="'courier new', monospace">
+  <b style="background-color: rgb(255, 255, 51); ">Client -- connects to server 
+  by</b></font></div>
+<div>
+&nbsp;</div>
+<div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; returnCode 
+    = dllinit(0);</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; s</font><span class="Apple-style-span" style="font-family: 'courier new', monospace; ">ocketToServer 
+    = tcpconnect(&lt;ip address&gt;, &lt;port&gt;, &lt;mode&gt;);</span></div>
+</div>
+<div>
+&nbsp;</div>
+<div>
+  <font class="Apple-style-span" face="'courier new', monospace">
+  <b style="background-color: rgb(255, 255, 51); ">Server -- accepts the 
+  client's connection by</b></font></div>
+<div>
+&nbsp;</div>
+<div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; 
+    socketToClient = tcpaccept(listener, &lt;mode&gt;);</font></div>
+</div>
+<div>
+&nbsp;</div>
+<div>
+  <font class="Apple-style-span" face="'courier new', monospace">
+  <b style="background-color: rgb(255, 255, 51); ">Server and client can now 
+  communicate back and forth by</b></font></div>
+<div>
+&nbsp;</div>
+<div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; returnCode 
+    = clearbuffer(0); &nbsp; &nbsp;</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; for (i = 
+    0; i &lt; messageLngth; i++) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; &nbsp; &nbsp;returnCode 
+    = writebyte(message[i], 0);</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; end loop; 
+    &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp;&nbsp;returnCode:= 
+    sendmessage(&lt;socket&gt;, &quot;&quot;, 0, 0); &nbsp;&nbsp;<br>
+&nbsp;</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; OR</font></div>
+  <div>
+&nbsp;</div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; size:= 
+    receivemessage(&lt;socket&gt;, 0, 0); &nbsp; &nbsp;// Always blocking</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; for (i = 
+    0; i &lt; size; i++)</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; &nbsp; &nbsp;message[i] 
+    := readByte(0)</font></div>
+  <div>
+    <font class="Apple-style-span" face="'courier new', monospace">&nbsp;&nbsp; &nbsp;</font></div>
+</div>
+<div>
+  <font class="Apple-style-span" face="'courier new', monospace">
+  <b style="background-color: rgb(255, 255, 51); ">Close a socket</b></font></div>
+<div>
+  </font><font class="Apple-style-span" face="'courier new', monospace">
+  <font size="2">&nbsp;&nbsp; returnCode = closesock(&lt;socket&gt;);</font></font></div>
+</span></span>
+<h2>Ada signatures for the above functions</h2>
+<span LANG="EN"><font COLOR="#0000ff">
+<blockquote>
+  <pre><font size="3">FUNCTION </font></font><font SIZE="3">dllInit </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">TcpListen(Port : C.Double; Max : C.Double; Mode : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">TcpConnect(Ip : C.Strings.Chars_Ptr; Port : C.Double; Mode : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">TcpAccept(Sockid : C.Double; Mode : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">ClearBuffer(Buffid : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">ReceiveMessage(Sockid : C.Double; Len : C.Double; Buffid : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">ReadByte(Buffid : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;</font><font SIZE="3" COLOR="#0000ff">
+
+FUNCTION </font><font SIZE="3">WriteByte(Val : C.Double; Buffid : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;
+</font><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">SendMessage(Sockid : C.Double; Ip : C.Strings.Chars_Ptr; Port : C.Double; Buffid : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;</font></pre>
+  </span>
+</blockquote>
+<h2>TCP</h2>
+<p><font COLOR="#0000ff">double</font> tcplisten(<font COLOR="#0000ff">double</font> 
+port, <font COLOR="#0000ff">double</font> max, <font COLOR="#0000ff">double</font> 
+mode)<br>
+Creates a listening socket to monitor a certain port for incoming connections.<br>
+Argument0 = Port to listen on<br>
+Argument1 = Max amount of people allowed to be in the connected but not accepted 
+list<br>
+Argument2 = Blocking(0)/Non-Blocking(1) mode. 
+<span style="background-color: #FFFF00">Affects the </span>
+<span style="background-color: #FFFF00">tcpaccept</span><span style="background-color: #FFFF00"> script.</span><br>
+Returns the id of the socket or a negative error code.<span style="font-family: Courier New"><br>
+&nbsp;&nbsp;&nbsp; listen = tcplisten(14804, 2, true);</span></p>
+<p><font COLOR="#0000ff">double</font> tcpconnect(<font COLOR="#0000ff">char</font>*ip,
+<font COLOR="#0000ff">double</font> port, <font COLOR="#0000ff">double</font> 
+mode)<br>
+Creates a socket and connects to the ip and port<br>
+Argument0 = Ip to connect to.<br>
+Argument1 = Port to connect to.<br>
+Argument2 = Blocking(0)/Non-blocking(1)/Non-blocking++(2) mode.<br>
+Set argument2 to 2 if you want it to be non-blocking and also not freeze the 
+game while it is connecting. Use tcpconnected() to find out when it has 
+connected<span style="font-family: Courier New"><br>
+&nbsp;&nbsp;&nbsp; server = tcpConnect(&quot;127.0.0.1&quot;, 14804, true);</span></p>
+<p><font COLOR="#0000ff">double</font> tcpaccept(<font COLOR="#0000ff">double</font> 
+sockid, <font COLOR="#0000ff">double</font> mode)<br>
+Accepts any incoming connections on a listening socket.<br>
+Argument0 = Listening socket.<br>
+Argument1 = Blocking/Non-Blocking mode.&nbsp;
+<span style="background-color: #FFFF00">Affects the ReceiveMessage script.</span><br>
+Returns the id of a newly created socket or a negative number.<span style="font-family: Courier New"><br>
+&nbsp;&nbsp;&nbsp; client = tcpaccept(listen, true);</span></p>
+<h2>Misc</h2>
+<p><font color="#0000FF">double</font> dllInit()<br>
+Initializes the DLL. <br>
+Returns 1</p>
+<font COLOR="#0000ff">
+<p>double</font> clearbuffer(<font COLOR="#0000ff">double</font> buffid)<br>
+[Argument0]: The buffer id to use. Leave out this argument or set it to 0 to use 
+the default buffer.<br>
+Returns 1<br>
+<font color="#FF0000">Warning: </font>Delay this call until just before you 
+write to a buffer and sendmessage. Definitely don't have any Ada &quot;Get_Immediate&quot; 
+calls between clearBuffer and a write. Ignoring this advice in an Ada program 
+that also uses receivemessage caused inexplicable errors.</p>
+<h2>Messages</h2>
+<font COLOR="#0000ff">
+<p>double</font> sendmessage(<font COLOR="#0000ff">double</font> sockid,
+<font COLOR="#0000ff">char</font>*ip, <font COLOR="#0000ff">double</font> port,
+<font COLOR="#0000ff">double</font> buffid)<br>
+&nbsp;Sends the data in a buffer through the selected tcp or udp socket.<br>
+Argument0 = Socket to send to.<br>
+[Argument1] = Ip to send to (for udp sockets)<br>
+[Argument2] = Port to send to (for udp socket)<br>
+[Argument3]: The buffer id to send. Leave out this argument or set it to 0 to 
+use the default buffer.<br>
+Returns the number of bytes sent + the bytes used to format the message<br>
+NOTE:<br>
+If you're sending over a tcp socket and don't want to use the default buffer 
+than send a message like this:<br>
+<font face="Courier New">&nbsp;&nbsp;&nbsp; sendmessage(sockid, &quot;&quot;, 0, bufferid);</font></p>
+<font COLOR="#0000ff">
+<p>double</font> receivemessage(<font COLOR="#0000ff">double</font> sockid,
+<font COLOR="#0000ff">double</font> len, <font COLOR="#0000ff">double</font> 
+buffid)<br>
+Receives data from the selected tcp or udp socket and copies to the internal 
+buffer.<br>
+Argument0 = Socket to receive from.<br>
+[Argument1] = Amount of bytes to receive. Optional. Overrides the format<br>
+mode if used.<br>
+[Argument2]: The buffer id to receive to. Leave out this argument or set it to 0 
+to use the default buffer.<br>
+Returns the number of bytes received<br>
+NOTE:<br>
+If you don't want to save the data to the default buffer, then do it like this:
+<br>
+<font face="Courier New">&nbsp;&nbsp;&nbsp; receivemessage(sockid, 0, bufferid);</font></p>
+<h2>Writing</h2>
+<font COLOR="#0000ff">
+<p>double</font> writebyte(<font COLOR="#0000ff">double</font> val,
+<font COLOR="#0000ff">double</font> buffid)<br>
+Write 1 byte. The value can be between 0 and 255<br>
+Argument0 : value;<br>
+[Argument1]: The buffer id to write too. Leave out this argument or set it to 0 
+to use the default buffer.<br>
+Returns 1</p>
+<font COLOR="#0000ff">
+<p>double</font> writeshort(<font COLOR="#0000ff">double</font> val,
+<font COLOR="#0000ff">double</font> buffid)<br>
+Writes a 2 byte integer to the buffer. the value can be between -32768 and 
++32767<br>
+Argument0 : value<br>
+[Argument1]: The buffer id to write too. Leave out this argument or set it to 0 
+to use the default buffer.<br>
+Returns 2</p>
+<font COLOR="#0000ff">
+<p>double</font> writestring(<font COLOR="#0000ff">char</font>*str,
+<font COLOR="#0000ff">double</font> buffid)<br>
+Write a null terminated string to the buffer<br>
+Argument0 = String to write.<br>
+[Argument1]: The buffer id to write too. Leave out this argument or set it to 0 
+to use the default buffer.<br>
+Returns the length of the string + 1 for '\0'</p>
+<h2>Reading</h2>
+<font COLOR="#0000ff">
+<p>double</font> readbyte(<font COLOR="#0000ff">double</font> buffid)<br>
+Returns a byte from the buffer.<br>
+[Argument0]: The buffer id to read from. Leave out this argument or set it to 0 
+to use the default buffer.</p>
+<font COLOR="#0000ff">
+<p>double</font> readshort(<font COLOR="#0000ff">double</font> buffid)<br>
+Returns a short int from the buffer.<br>
+[Argument0]: The buffer id to read from. Leave out this argument or set it to 0 
+to use the default buffer.</p>
+<font COLOR="#0000ff">
+<p>char</font>* readstring(<font COLOR="#0000ff">double</font> buffid)<br>
+Returns a null terminated string from the buffer.<br>
+[Argument0]: The buffer id to read from. Leave out this argument or set it to 0 
+to use the default buffer.</p>
+<h2>Ada API for the above functions</h2>
+<p>File name: 39DllApi.ads</p>
+<pre>&nbsp;</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

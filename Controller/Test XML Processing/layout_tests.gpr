@@ -1,0 +1,23 @@
+with "aunit";
+
+project layout_tests is
+	for Languages use ("Ada");
+	for Main use ("layout_tests.adb");
+	for Source_Dirs use (".", "..", "XMLAda/unicode", "XMLAda/input_sources", "XMLAda/sax");
+	for Exec_Dir use ".";
+	for Object_Dir use "obj";
+ 
+    package Linker is
+       for Default_Switches ("ada") use ("-g");
+    end Linker;
+ 
+    package Compiler is
+      for Default_Switches ("ada") use
+        ("-g", "-gnatQ", "-O1", "-gnatf", "-gnato",
+         "-gnatwa.Xe", "-gnat05", "-gnatws");
+   end Compiler;
+ 
+    package Binder is
+       for Default_Switches ("ada") use ("-E", "-static");
+    end Binder;
+end layout_tests;

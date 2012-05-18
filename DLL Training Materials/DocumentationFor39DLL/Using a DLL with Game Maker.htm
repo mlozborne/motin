@@ -1,0 +1,24 @@
+<h1>How To</h1>
+<h3>C++ Code for the DLL</h3>
+<blockquote>
+  <pre><font color="#0000ff">#define</font><font size="3"> DLLEXPORT </font><font color="#0000ff" size="3">extern</font><font size="3"> </font><font color="#a31515" size="3">&quot;C&quot;</font><font size="3"> </font><font color="#0000ff" size="3">__declspec</font><font size="3">(</font><font color="#0000ff" size="3">dllexport</font><font size="3">)
+
+DLLEXPORT </font><font color="#0000ff" size="3">double</font><font size="3"> addem (</font><font color="#0000ff" size="3">double</font><font size="3"> a, </font><font color="#0000ff" size="3">double</font><font size="3"> b){
+</font><font color="#0000ff" size="3">    return</font><font size="3"> a + b; 
+}</font></pre>
+</blockquote>
+<h3>Code that must be executed in the game</h3>
+<blockquote>
+  <pre><font size="3">theId = external_define(&quot;TestDll.dll&quot;, &quot;addem&quot;, dll_cdecl , ty_real, 2, ty_real,ty_real);
+theSum = external_call(theId, 1, 2);
+
+room_caption = string (theSum);
+
+external_free(&quot;TestDll.dll&quot;);</font></pre>
+</blockquote>
+<h3>Further instructions</h3>
+<ul>
+  <li>Build an exe file</li>
+  <li>Put TestDll.dll in the same folder as the exe</li>
+  <li>Run the exe in an unrestricted mode (supervisory mode)</li>
+</ul>

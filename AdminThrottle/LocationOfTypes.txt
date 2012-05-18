@@ -1,0 +1,26 @@
+                    Railroad  Keyboard  Screen   Message     Tcp/   Admin     Railroad
+                    Manager    Task     Manager Translation   Ip   Throttle     Task
+                    -------------------------------------------------------------------
+objScreenManager  |    rm        kt        SM                          at        rt
+                  |
+CommandType       |    RM        kt
+                  |
+globals.          |    rm        kt        sm       mt
+naturalListType   |
+                  |
+MessageType       |    rm                           MT        ti                 rt
+                  |
+DirectionType     |    rm                           MT
+OnOffType         |    rm                           MT
+trainStateType    |    rm                           MT
+switchStateType   |    rm                           MT
+opcodes           |    rm                           MT
+make/split msg    |    rm                           MT
+toEnglish(msg)    |    rm                           MT
+                  |
+sensorStateType   |                                 MT
+sectionStateType  |                                 MT
+
+
+
+

@@ -1,0 +1,458 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Using Visual Studio DLL with Ada</title>
+</head>
+
+<body>
+
+<h1>Using a Visual Studio DLL with Ada</h1>
+
+<h2>My example</h2>
+
+<ul>
+  <li>Put <b>Testdll.def, Testdll.lib,</b> and <b>Testdll.dll</b> in the same directory as the Ada 
+  program <b>main.adb</b></li>
+  <li>If you don't have the <b>def </b>and<b> lib</b> files, then create them from the <b>dll</b> 
+  as follows:</li>
+</ul>
+<blockquote>
+  <pre><u><b><font size="3" face="Arial">File makelib.bat</font></b></u><font size="3">
+@echo off
+dll2def %1.dll &gt; %1.def
+dlltool --dllname %1.dll --def %1.def --output-lib lib%1.a
+if exist dh.o del dh.o
+if exist dt.o del dt.o
+if exist ds0.o del ds0.o</font></pre>
+</blockquote>
+
+<ul>
+  <li>To create <b>main.exe</b> from <b>main.adb </b>and<b> Testdll </b>(From:
+  <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC369">
+  http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC369</a>)</li>
+</ul>
+<blockquote>
+  <blockquote>
+    <p><font face="Courier New">&gt;gnatmake main -largs -lTestDll</font></p>
+  </blockquote>
+</blockquote>
+  <pre>&nbsp;</pre>
+
+<h3>C++ Code for the DLL</h3>
+<font COLOR="#0000ff">
+<blockquote>
+  <pre>#define</font><font SIZE="3"> DLLEXPORT </font><font SIZE="3" COLOR="#0000ff">extern</font><font SIZE="3"> </font><font SIZE="3" COLOR="#a31515">&quot;C&quot;</font><font SIZE="3"> </font><font SIZE="3" COLOR="#0000ff">__declspec</font><font SIZE="3">(</font><font SIZE="3" COLOR="#0000ff">dllexport</font><font SIZE="3">)
+
+DLLEXPORT </font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> addem (</font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> a, </font><font SIZE="3" COLOR="#0000ff">double</font><font SIZE="3"> b){
+</font><font SIZE="3" COLOR="#0000ff">    return</font><font SIZE="3"> a + b; 
+}</pre>
+</blockquote>
+</font>
+
+<h3>Ada Code for api.ads</h3>
+<span LANG="EN"><font COLOR="#0000ff">
+<blockquote>
+  <pre>WITH </font><font SIZE="3">Interfaces.C;</font></pre>
+  <pre><font SIZE="3" COLOR="#0000ff">PACKAGE </font><font SIZE="3">API </font><font SIZE="3" COLOR="#0000ff">IS USE </font><font SIZE="3">Interfaces;</font></pre>
+  <blockquote>
+    <pre><font SIZE="3" COLOR="#0000ff">FUNCTION </font><font SIZE="3">AddEm(A : C.Double; B : C.Double) </font><font SIZE="3" COLOR="#0000ff">RETURN </font><font SIZE="3">C.Double;</pre>
+  </blockquote>
+  </font><font COLOR="#0000ff">
+  <pre>PRIVATE</pre>
+  <blockquote>
+    <pre>PRAGMA </font><font SIZE="3">Import(C, AddEm);</pre>
+  </blockquote>
+  </font><font COLOR="#0000ff">
+  <pre>END </font><font SIZE="3">API;</pre>
+</blockquote>
+</font><font SIZE="2">
+<h3>Ada Code for main.adb</h3>
+</font></span><span LANG="EN"><font COLOR="#0000ff">
+<blockquote>
+  <pre>WITH </font><font SIZE="3">API; </font><font SIZE="3" COLOR="#0000ff">USE </font><font SIZE="3">API;</font><font SIZE="3" COLOR="#0000ff">
+with </font><font SIZE="3">ada.Float_Text_IO; </font><font SIZE="3" COLOR="#0000ff">use </font><font SIZE="3">ada.Float_Text_IO;</pre>
+  </font><font COLOR="#0000ff">
+  <pre>PROCEDURE </font><font SIZE="3">Main </font><font SIZE="3" COLOR="#0000ff">IS
+BEGIN
+    </font><font SIZE="3">Put(Float(Addem(</font><font SIZE="3" COLOR="#800080">1.0</font><font SIZE="3">,</font><font SIZE="3" COLOR="#800080">2.0</font><font SIZE="3">)));</font><font SIZE="3" COLOR="#0000ff">
+END</font><font SIZE="3">;</pre>
+</blockquote>
+</font></span><hr>
+
+<blockquote>
+  <h2>G.7 Introduction to Dynamic Link Libraries (DLLs) </h2>
+  <!--docid::SEC369::-->
+  <p>A Dynamically Linked Library (DLL) is a library that can be shared by 
+  several applications running under Windows. A DLL can contain any number of 
+  routines and variables. </p>
+  <p>One advantage of DLLs is that you can change and enhance them without 
+  forcing all the applications that depend on them to be relinked or recompiled. 
+  However, you should be aware than all calls to DLL routines are slower since, 
+  as you will understand below, such calls are indirect. </p>
+  <p>To illustrate the remainder of this section, suppose that an application 
+  wants to use the services of a DLL <tt>`API.dll'</tt>. To use the services 
+  provided by <tt>`API.dll'</tt> you must statically link against the DLL or an 
+  import library which contains a jump table with an entry for each routine and 
+  variable exported by the DLL. In the Microsoft world this import library is 
+  called <tt>`API.lib'</tt>. When using GNAT this import library is called 
+  either <tt>`libAPI.dll.a'</tt>, <tt>`libapi.dll.a'</tt>, <tt>`libAPI.a'</tt> 
+  or <tt>`libapi.a'</tt> (names are case insensitive). </p>
+  <p>After you have linked your application with the DLL or the import library 
+  and you run your application, here is what happens: </p>
+  <ol>
+    <li>Your application is loaded into memory. </li>
+    <li>The DLL <tt>`API.dll'</tt> is mapped into the address space of your 
+    application. This means that:
+    <ul>
+      <li>The DLL will use the stack of the calling thread. </li>
+      <li>The DLL will use the virtual address space of the calling process.
+      </li>
+      <li>The DLL will allocate memory from the virtual address space of the 
+      calling process. </li>
+      <li>Handles (pointers) can be safely exchanged between routines in the DLL 
+      routines and routines in the application using the DLL. </li>
+    </ul>
+    </li>
+    <li>The entries in the jump table (from the import library <tt>`libAPI.dll.a'</tt> 
+    or <tt>`API.lib'</tt> or automatically created when linking against a DLL) 
+    which is part of your application are initialized with the addresses of the 
+    routines and variables in <tt>`API.dll'</tt>. </li>
+    <li>If present in <tt>`API.dll'</tt>, routines <code>DllMain</code> or <code>
+    DllMainCRTStartup</code> are invoked. These routines typically contain the 
+    initialization code needed for the well-being of the routines and variables 
+    exported by the DLL. </li>
+  </ol>
+  <p>There is an additional point which is worth mentioning. In the Windows 
+  world there are two kind of DLLs: relocatable and non-relocatable DLLs. Non-relocatable 
+  DLLs can only be loaded at a very specific address in the target application 
+  address space. If the addresses of two non-relocatable DLLs overlap and these 
+  happen to be used by the same application, a conflict will occur and the 
+  application will run incorrectly. Hence, when possible, it is always 
+  preferable to use and build relocatable DLLs. Both relocatable and non-relocatable 
+  DLLs are supported by GNAT. Note that the <samp>`-s'</samp> linker option (see 
+  GNU Linker User's Guide) removes the debugging symbols from the DLL but the 
+  DLL can still be relocated. </p>
+  <p>As a side note, an interesting difference between Microsoft DLLs and Unix 
+  shared libraries, is the fact that on most Unix systems all public routines 
+  are exported by default in a Unix shared library, while under Windows it is 
+  possible (but not required) to list exported routines in a definition file 
+  (see section
+  <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC373">
+  G.8.2.1 The Definition File</a>). </p>
+  <h2>G.8 Using DLLs with GNAT </h2>
+  <!--docid::SEC370::-->
+  <blockquote>
+    <table border="0" cellspacing="0">
+      <tr>
+        <td align="left" valign="TOP">
+        <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC371">
+        G.8.1 Creating an Ada Spec for the DLL Services</a></td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="left" valign="TOP">&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="left" valign="TOP">
+        <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC372">
+        G.8.2 Creating an Import Library</a></td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="left" valign="TOP">&nbsp;</td>
+      </tr>
+    </table>
+  </blockquote>
+  <p>To use the services of a DLL, say <tt>`API.dll'</tt>, in your Ada 
+  application you must have: </p>
+  <ol>
+    <li>The Ada spec for the routines and/or variables you want to access in <tt>
+    `API.dll'</tt>. If not available this Ada spec must be built from the C/C++ 
+    header files provided with the DLL. </li>
+    <li>The import library (<tt>`libAPI.dll.a'</tt> or <tt>`API.lib'</tt>). As 
+    previously mentioned an import library is a statically linked library 
+    containing the import table which will be filled at load time to point to 
+    the actual <tt>`API.dll'</tt> routines. Sometimes you don't have an import 
+    library for the DLL you want to use. The following sections will explain how 
+    to build one. Note that this is optional. </li>
+    <li>The actual DLL, <tt>`API.dll'</tt>. </li>
+  </ol>
+  <p>Once you have all the above, to compile an Ada application that uses the 
+  services of <tt>`API.dll'</tt> and whose main subprogram is <code>My_Ada_App</code>, 
+  you simply issue the command </p>
+  <table>
+    <tr>
+      <td>&nbsp;</td>
+      <td class="smallexample">
+      <pre><font size="+0">$ gnatmake my_ada_app -largs -lAPI</font></pre>
+      </td>
+    </tr>
+  </table>
+  <p>The argument <samp>`-largs -lAPI'</samp> at the end of the <code>gnatmake</code> 
+  command tells the GNAT linker to look for an import library. The linker will 
+  look for a library name in this specific order: </p>
+  <ol>
+    <li><tt>`libAPI.dll.a'</tt> </li>
+    <li><tt>`API.dll.a'</tt> </li>
+    <li><tt>`libAPI.a'</tt> </li>
+    <li><tt>`API.lib'</tt> </li>
+    <li><tt>`libAPI.dll'</tt> </li>
+    <li><tt>`API.dll'</tt> </li>
+  </ol>
+  <p>The first three are the GNU style import libraries. The third is the 
+  Microsoft style import libraries. The last two are the DLL themself. </p>
+  <p>Note that if the Ada package spec for <tt>`API.dll'</tt> contains the 
+  following pragma </p>
+  <table>
+    <tr>
+      <td>&nbsp;</td>
+      <td class="smallexample">
+      <pre><font size="+0"><b>pragma</b> Linker_Options (&quot;-lAPI&quot;);</font></pre>
+      </td>
+    </tr>
+  </table>
+  <p>you do not have to add <samp>`-largs -lAPI'</samp> at the end of the <code>
+  gnatmake</code> command. </p>
+  <p>If any one of the items above is missing you will have to create it 
+  yourself. The following sections explain how to do so using as an example a 
+  fictitious DLL called <tt>`API.dll'</tt>. </p>
+  <h3>G.8.1 Creating an Ada Spec for the DLL Services </h3>
+  <!--docid::SEC371::-->
+  <p>A DLL typically comes with a C/C++ header file which provides the 
+  definitions of the routines and variables exported by the DLL. The Ada 
+  equivalent of this header file is a package spec that contains definitions for 
+  the imported entities. If the DLL you intend to use does not come with an Ada 
+  spec you have to generate one such spec yourself. For example if the header 
+  file of <tt>`API.dll'</tt> is a file <tt>`api.h'</tt> containing the following 
+  two definitions: </p>
+  <table>
+    <tr>
+      <td>&nbsp;</td>
+      <td class="smallexample">
+      <pre><font size="+0">int some_var;
+int get (char *);</font></pre>
+      </td>
+    </tr>
+  </table>
+  <p>then the equivalent Ada spec could be: </p>
+  <table>
+    <tr>
+      <td>&nbsp;</td>
+      <td class="smallexample">
+      <pre><font size="+0"><b>with</b> Interfaces.C.Strings;
+<b>package</b> API <b>is</b>
+   <b>use</b> Interfaces;
+
+   Some_Var : C.int;
+   <b>function</b> Get (Str : C.Strings.Chars_Ptr) <b>return</b> C.int;
+
+<b>private</b>
+   <b>pragma</b> Import (C, Get);
+   <b>pragma</b> Import (DLL, Some_Var);
+<b>end</b> API;</font></pre>
+      </td>
+    </tr>
+  </table>
+  <p>Note that a variable is <strong>always imported with a DLL convention</strong>. 
+  A function can have <code>C</code> or <code>Stdcall</code> convention. (see 
+  section
+  <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC364">
+  G.6 Windows Calling Conventions</a>). </p>
+  <h3>G.8.2 Creating an Import Library </h3>
+  <!--docid::SEC372::-->
+  <blockquote>
+    <table border="0" cellspacing="0">
+      <tr>
+        <td align="left" valign="TOP">
+        <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC373">
+        G.8.2.1 The Definition File</a></td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="left" valign="TOP">&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="left" valign="TOP">
+        <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC374">
+        G.8.2.2 GNAT-Style Import Library</a></td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="left" valign="TOP">&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="left" valign="TOP">
+        <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC375">
+        G.8.2.3 Microsoft-Style Import Library</a></td>
+        <td>&nbsp;&nbsp;</td>
+        <td align="left" valign="TOP">&nbsp;</td>
+      </tr>
+    </table>
+  </blockquote>
+  <p>If a Microsoft-style import library <tt>`API.lib'</tt> or a GNAT-style 
+  import library <tt>`libAPI.dll.a'</tt> or <tt>`libAPI.a'</tt> is available 
+  with <tt>`API.dll'</tt> you can skip this section. You can also skip this 
+  section if <tt>`API.dll'</tt> or <tt>`libAPI.dll'</tt> is built with GNU tools 
+  as in this case it is possible to link directly against the DLL. Otherwise 
+  read on. </p>
+  <h4>G.8.2.1 The Definition File </h4>
+  <!--docid::SEC373::-->
+  <p>As previously mentioned, and unlike Unix systems, the list of symbols that 
+  are exported from a DLL must be provided explicitly in Windows. The main goal 
+  of a definition file is precisely that: list the symbols exported by a DLL. A 
+  definition file (usually a file with a <code>.def</code> suffix) has the 
+  following structure: </p>
+  <table>
+    <tr>
+      <td>&nbsp;</td>
+      <td class="smallexample">
+      <pre><font size="+0">[LIBRARY <var>name</var>]
+[DESCRIPTION <var>string</var>]
+EXPORTS
+   <var>symbol1</var>
+   <var>symbol2</var>
+   <small>...</small></font></pre>
+      </td>
+    </tr>
+  </table>
+  <dl compact="compact">
+    <dt><code>LIBRARY <var>name</var></code> </dt>
+    <dd>This section, which is optional, gives the name of the DLL. </dd>
+    <dt><code>DESCRIPTION <var>string</var></code> </dt>
+    <dd>This section, which is optional, gives a description string that will be 
+    embedded in the import library. </dd>
+    <dt><code>EXPORTS</code> </dt>
+    <dd>This section gives the list of exported symbols (procedures, functions 
+    or variables). For instance in the case of <tt>`API.dll'</tt> the <code>
+    EXPORTS</code> section of <tt>`API.def'</tt> looks like:
+    <table>
+      <tr>
+        <td>&nbsp;</td>
+        <td class="smallexample">
+        <pre><font size="+0">EXPORTS
+   some_var
+   get
+</font></pre>
+        </td>
+      </tr>
+    </table>
+    </dd>
+  </dl>
+  <p>Note that you must specify the correct suffix (<code>@<var>nn</var></code>) 
+  (see section
+  <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC364">
+  G.6 Windows Calling Conventions</a>) for a Stdcall calling convention function 
+  in the exported symbols list. </p>
+  <p>There can actually be other sections in a definition file, but these 
+  sections are not relevant to the discussion at hand. </p>
+  <h4>G.8.2.2 GNAT-Style Import Library </h4>
+  <!--docid::SEC374::-->
+  <p>To create a static import library from <tt>`API.dll'</tt> with the GNAT 
+  tools you should proceed as follows: </p>
+  <ol>
+    <li>Create the definition file <tt>`API.def'</tt> (see section
+    <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC373">
+    G.8.2.1 The Definition File</a>). For that use the <code>dll2def</code> tool 
+    as follows: <br>
+&nbsp;<table>
+      <tr>
+        <td>&nbsp;</td>
+        <td class="smallexample">
+        <pre><font size="+0">$ dll2def API.dll &gt; API.def</font></pre>
+        </td>
+      </tr>
+    </table>
+    <p><code>dll2def</code> is a very simple tool: it takes as input a DLL and 
+    prints to standard output the list of entry points in the DLL. Note that if 
+    some routines in the DLL have the <code>Stdcall</code> convention (see 
+    section
+    <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC364">
+    G.6 Windows Calling Conventions</a>) with stripped <code>@</code><var>nn</var> 
+    suffix then you'll have to edit <tt>`api.def'</tt> to add it, and specify
+    <samp>`-k'</samp> to <code>gnatdll</code> when creating the import library.
+    </p>
+    <p>Here are some hints to find the right <code>@</code><var>nn</var> suffix.
+    <ol>
+      <li>If you have the Microsoft import library (.lib), it is possible to get 
+      the right symbols by using Microsoft <code>dumpbin</code> tool (see the 
+      corresponding Microsoft documentation for further details).
+      <table>
+        <tr>
+          <td>&nbsp;</td>
+          <td class="smallexample">
+          <pre><font size="+0">$ dumpbin /exports api.lib</font></pre>
+          </td>
+        </tr>
+      </table>
+      </li>
+      <li>If you have a message about a missing symbol at link time the compiler 
+      tells you what symbol is expected. You just have to go back to the 
+      definition file and add the right suffix. </li>
+    </ol>
+    </li>
+    <li>Build the import library <code>libAPI.dll.a</code>, using <code>gnatdll</code> 
+    (see section
+    <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC385">
+    G.11.7 Using <code>gnatdll</code></a>) as follows:
+    <table>
+      <tr>
+        <td>&nbsp;</td>
+        <td class="smallexample">
+        <pre><font size="+0">$ gnatdll -e API.def -d API.dll</font></pre>
+        </td>
+      </tr>
+    </table>
+    <p><code>gnatdll</code> takes as input a definition file <tt>`API.def'</tt> 
+    and the name of the DLL containing the services listed in the definition 
+    file <tt>`API.dll'</tt>. The name of the static import library generated is 
+    computed from the name of the definition file as follows: if the definition 
+    file name is <var>xyz</var><code>.def</code>, the import library name will 
+    be <code>lib</code><var>xyz</var><code>.a</code>. Note that in the previous 
+    example option <samp>`-e'</samp> could have been removed because the name of 
+    the definition file (before the &quot;<code>.def</code>&quot; suffix) is the same as 
+    the name of the DLL (see section
+    <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC385">
+    G.11.7 Using <code>gnatdll</code></a> for more information about <code>
+    gnatdll</code>). </li>
+  </ol>
+  <h4>G.8.2.3 Microsoft-Style Import Library </h4>
+  <!--docid::SEC375::-->
+  <p>With GNAT you can either use a GNAT-style or Microsoft-style import 
+  library. A Microsoft import library is needed only if you plan to make an Ada 
+  DLL available to applications developed with Microsoft tools (see section
+  <a href="http://www.adacore.com/wp-content/files/auto_update/gnat-unw-docs/html/gnat_ugn_37.html#SEC363">
+  G.5 Mixed-Language Programming on Windows</a>). </p>
+  <p>To create a Microsoft-style import library for <tt>`API.dll'</tt> you 
+  should proceed as follows: </p>
+  <ol>
+    <li>Create the definition file <tt>`API.def'</tt> from the DLL. For this use 
+    either the <code>dll2def</code> tool as described above or the Microsoft
+    <code>dumpbin</code> tool (see the corresponding Microsoft documentation for 
+    further details). </li>
+    <li>Build the actual import library using Microsoft's <code>lib</code> 
+    utility:
+    <table>
+      <tr>
+        <td>&nbsp;</td>
+        <td class="smallexample">
+        <pre><font size="+0">$ lib -machine:IX86 -def:API.def -out:API.lib</font></pre>
+        </td>
+      </tr>
+    </table>
+    <p>If you use the above command the definition file <tt>`API.def'</tt> must 
+    contain a line giving the name of the DLL: </p>
+    <table>
+      <tr>
+        <td>&nbsp;</td>
+        <td class="smallexample">
+        <pre><font size="+0">LIBRARY      &quot;API&quot;</font></pre>
+        </td>
+      </tr>
+    </table>
+    <p>See the Microsoft documentation for further details about the usage of
+    <code>lib</code>. </li>
+  </ol>
+  <hr>
+  <p><br>
+&nbsp;</p>
+</blockquote>
+
+</body>
+
+</html>

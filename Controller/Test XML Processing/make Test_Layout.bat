@@ -1,0 +1,2 @@
+@echo off
+if "%1" == "clean" (echo y | rm -f *.adb.* *.ads.*) else (gnatmake test_layout.adb -gnat05 -aIC:\GNAT\2010\include\aunit\framework -aIC:\GNAT\2010\include\aunit\framework\nativememory -aIC:\GNAT\2010\include\aunit\framework\calendar -aIC:\GNAT\2010\include\aunit\containers -aIC:\GNAT\2010\include\aunit\reporters -aIXMLAda/sax -aIXMLAda/input_sources -aIXMLAda/unicode -aI.. -D ..\obj)

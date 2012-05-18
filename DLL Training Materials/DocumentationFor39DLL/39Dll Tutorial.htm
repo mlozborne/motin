@@ -1,0 +1,519 @@
+<html>
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Winsock Tutorial using the dll made by 39ster</title>
+<style>
+<!--
+ p.MsoNormal
+	{mso-style-parent:"";
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";
+	margin-left:0in; margin-right:0in; margin-top:0in}
+ li.MsoNormal
+	{mso-style-parent:"";
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";
+	margin-left:0in; margin-right:0in; margin-top:0in}
+-->
+</style>
+</head>
+
+<body>
+
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-size: 14.0pt; font-family: Arial,sans-serif">Winsock Tutorial 
+using the dll made by 39ster</span></b></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-size: 14.0pt; font-family: Arial,sans-serif">&nbsp;</span></b></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-family: Arial,sans-serif">2 player pong</span></b></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-family: Arial,sans-serif">&nbsp;</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">In this tutorial I will teach you 
+how to use my <span style="color: #4F81BD">winsock</span> dll to create an 
+online game. I will use Pong as my example game.</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-family: Arial,sans-serif">Initializing the dll.</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">For the dll to function you need to 
+link the functions inside the dll to your game. To do this simply put in the 
+creation code of the first room: </span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .25in">
+<span style="font-size: 11.0pt; font-family: Courier New">dllinit(0, true, 
+false);</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">If the first argument is a number 
+  then the dll will load the dll file &quot;<span style="color: #4F81BD">39dll.dll</span>&quot;.
+  </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">If this is a string then the 
+  string will be the name of the dll., e.g ,if the first argument is &quot;<span style="color: #4F81BD">sock.dll</span>&quot; 
+  then the dll file must be named &quot;<span style="color: #4F81BD">sock.dll</span>&quot; 
+  and it will load it using that filename. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The second argument is
+  <span style="color: #4F81BD">true</span> if you want to use winsock. In this 
+  case we do. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The third argument should only be
+  <span style="color: #4F81BD">true</span> if we want to use the file functions. 
+  In this example this is not needed so we won’t load those functions from the 
+  dll.</span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-size: 20.0pt; font-family: Arial,sans-serif">Setting up the 
+server.</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">To create a multiplayer game, one 
+person needs to host the server and the other person needs to connect. </span>
+</p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">To set up a server using my dll you 
+first need to create an object which controls the setting up of the server and 
+accepting any new connection. What you will need to do is create a menu that has 
+2 buttons. The first button says &quot;<span style="color: #4F81BD">Host</span>&quot; and 
+the second button should say &quot;<span style="color: #4F81BD">Connect</span>&quot;. When 
+the user selects host, make it execute this code </span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">global.master = true;</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">and make the room change to a room 
+called &quot;<span style="color: #4F81BD">rmWaiting</span>&quot;. Create a new object and 
+call it &quot;<span style="color: #4F81BD">objWait</span>&quot;. In the create event of 
+this object add this code:</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">listen = 
+tcplisten(14804, 2, true);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">if(listen &lt;= 0)</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">{</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; show_message(&quot;Failed 
+to listen on port 14804&quot;);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; game_end();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">}</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">What that piece of code does is 
+create a listening socket that will listen for any incoming connections on port 
+14804. </span></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The port number can be whatever 
+  you want but I have used 14804. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The second argument is the maximum 
+  allowed connections in the waiting list. This is not the maximum allowed 
+  people in the game. When someone tries to connect they are put on the waiting 
+  list until the server accepts them. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The last argument is set to
+  <span style="color: #4F81BD">true</span> because we want the listening socket 
+  to not freeze the game when you are using the <span style="color: #4F81BD">
+  tcpaccept</span> script and no one has tried to connect. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The script will return a socket 
+  identifier number that is bigger than 0 if we succeeded. A number &lt;= 0 is 
+  returned if an error occurred. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The next line checks if we are 
+  successfully listening on port 14804. If the socket identifier is smaller than 
+  or equal to 0 then an error occur so we end the game.</span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-family: Arial,sans-serif">Accepting new connections. </span>
+</b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">To accept new connections you need 
+to create a step event for the &quot;<span style="color: #4F81BD">objWait</span>&quot; 
+object we created. In the step event add this code:</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">client = 
+tcpaccept(listen, true);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">if(client &lt;= 0) exit;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">global.otherplayer = 
+client;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">room_goto(rmGame);</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The first line checks the waiting 
+  list to see if someone tried to connect to the listen socket. </span>
+  <ul style="margin-top: 0in; margin-bottom: 0in" type="circle">
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">If no one connected then it 
+    returns a number smaller than 1. </span></li>
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">If someone did connect then it 
+    creates a new socket and returns its id. This socket will now be used to 
+    send and receive data from the person who just connected. </span></li>
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">The second argument in
+    <span style="color: #4F81BD">tcpaccept</span> means the new socket will be 
+    non-blocking. In this case when you are trying to receive a message it will 
+    not freeze the game if there is no message to be received.</span></li>
+  </ul>
+  </li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The second line checks if
+  <span style="color: #4F81BD">tcpaccept</span> returned an error. If it did 
+  then it exits the script.</span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The third line and fourth line 
+  will only be executed if there was no error. </span>
+  <ul style="margin-top: 0in; margin-bottom: 0in" type="circle">
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">The third line sets the global 
+    variable &quot;<span style="color: #4F81BD">global.otherplayer</span>&quot; to the 
+    socket id that <span style="color: #4F81BD">tcpaccept</span>() returned.</span></li>
+  </ul>
+  </li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The fourth line goes to the 
+  playing room. (you needed to create that room btw).</span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-size: 20.0pt; font-family: Arial,sans-serif">Connecting to the 
+server.</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">To join a multiplayer game we need 
+to connect to a server. In the room where you have the button &quot;<span style="color: #4F81BD">Host</span>&quot; 
+and the button &quot;<span style="color: #4F81BD">Connect</span>&quot;, make it so when 
+the player clicks connect it executes this code:</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">global.master = false;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">server = tcpConnect(&quot;127.0.0.1&quot;, 
+14804, true);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">if(server &lt;= 0)</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">{</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; show_message(&quot;Unable 
+to connect to server&quot;);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; game_end();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">}</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">global.otherplayer = 
+server;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">room_goto(rmGame);</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The first line sets the global 
+  variable &quot;<span style="color: #4F81BD">master</span>&quot; to false. This is 
+  because we are not the server. We are the client connecting to the server.
+  </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The second line makes the actual 
+  connection to the server. </span>
+  <ul style="margin-top: 0in; margin-bottom: 0in" type="circle">
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">The first argument in
+    <span style="color: #4F81BD">tcpConnect</span> is the ip address you want to 
+    connect to. If you are just testing locally use the address &quot;<span style="color: #4F81BD">127.0.0.1</span>&quot;.
+    </span></li>
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">The second argument is the port 
+    number to connect to. </span></li>
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">The third argument is whether to 
+    use blocking or non blocking mode. We set it <span style="color: #4F81BD">
+    true</span> which means non-blocking. This makes it so whenever we try and 
+    send or receive a message, the game doesn’t freeze until the operation 
+    finished. </span></li>
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">If <span style="color: #4F81BD">
+    tcpConnect</span> successfully connected and was accepted by the server, the 
+    variable &quot;<span style="color: #4F81BD">server</span>&quot; should now contain the 
+    socket id. If an error occurred, a number &lt; 1 will be returned.</span></li>
+  </ul>
+  </li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The next line checks if an error 
+  occurred. An error could be because the server doesn’t exist or the server 
+  didn’t accept us. If an error did occur then the game will end.</span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">If no error occurs then the global 
+  variable &quot;<span style="color: #4F81BD">otherplayer</span>&quot; now becomes the 
+  socket id that the variable &quot;<span style="color: #4F81BD">server</span>&quot; has. 
+  Then the game will start when we use &nbsp;<span style="color: #4F81BD">room_goto().</span></span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b><i>
+<span style="font-size: 20.0pt; font-family: Arial,sans-serif">Sending and 
+receiving messages</span></i></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">For our game to work we need to know 
+the y position of the paddle that the other player controls and the client needs 
+to know the x, y position of the ball which will be controlled by the server.</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-family: Arial,sans-serif">Sending</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">In the paddle which is controlled by 
+you, you must send your Y co-ordinate to the other player so they can draw your 
+paddle in the right position. To do this, put this code in both the keyboard UP 
+event and the keyboard DOWN event:</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">clearbuffer();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">writebyte(0);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">writeshort(y);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">
+sendmessage(global.otherplayer);</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The first line clears the internal 
+  buffer of any data. This is used in case there is data already in the buffer.
+  </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The second line writes the byte 
+  that represents the Message Id. In this game the message id 0 will indicate 
+  the message containing the Y position. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The next line writes the actual Y 
+  position to the buffer. We have used the data type &quot;<span style="color: #4F81BD">short</span>&quot; 
+  because a short can be any number between -32000 to +32000. A short utilizes 2 
+  bytes. If we had used one byte to represent the Y position and the Y position 
+  is bigger than 255, it will end up being not what you wanted. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The last line sends all the data 
+  in the internal buffer to the other player. In this case the data is the 
+  Message Id byte and the 2 bytes used for the Y position.</span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">Now we need to send the x, y 
+position to the other player if we are the server. To do this put in the step 
+event of the ball object:</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">if(!global.master)exit;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">clearbuffer();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">writebyte(1);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">writeshort(x);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">writeshort(y);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">
+sendmessage(global.otherplayer);</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The first line checks to see if we 
+  are the server. If we are NOT the server then exit the screen and do not 
+  execute the code below. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">If however we are the server, then 
+  first clear the internal buffer. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">Now write the Message Id &quot;1&quot; which 
+  will indicate the message is the balls position. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">Now write a short which represents 
+  the x co-ordinate and write another short which represents the y co-ordinate.
+  </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">Now just send the message to the 
+  other player.</span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-family: Arial,sans-serif">Receiving a message.</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">In the paddle that you do not 
+control, the one which is controlled by the other player, put this code in the 
+step event:</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">var size;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">while(true)</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">{</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; size = 
+receivemessage(global.otherplayer);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; if(size &lt; 0) break;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; if(size == 0)</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; {</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; show_message(&quot;The 
+other player left the game&quot;);</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; game_end();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; }</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; messageid = readbyte();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; switch(messageid)</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; {</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; case 0:</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; y = readshort();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;break;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; </span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; case 1:</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; objBall.x = 
+readshort();</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; objBall.y = 
+readshort();:</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;break;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">&nbsp; }</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">}</span></p>
+<p class="MsoNormal" style="text-autospace: none"><i>
+<span style="font-size: 10.0pt; font-family: Arial,sans-serif">&nbsp;</span></i></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">First this creates an infinite 
+  loop using while(true). The first line of the loop receives any messages from 
+  the other player and sets the variable &quot;size&quot; to how many bytes we received.
+  </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The second line checks to see if 
+  no message was received. If no message was received then exit the infinite 
+  loop. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The third line checks to see if 
+  the other player disconnected from the game. If the </span></li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">message size == 0
+</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-family: Arial,sans-serif">that means the player left the game.
+</span></p>
+<ul style="margin-top: 0in; margin-bottom: 0in" type="disc">
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">If the player did leave, then end 
+  the game. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">If we did receive a message then 
+  all data from the message is placed inside the internal buffer. We can now use 
+  the buffer scripts to return the data from the message. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">The first part returns the message 
+  ID. </span></li>
+  <li class="MsoNormal" style="text-autospace: none">
+  <span style="font-family: Arial,sans-serif">After that it uses the switch() 
+  statement to check what the ID equals. </span>
+  <ul style="margin-top: 0in; margin-bottom: 0in" type="circle">
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">If the ID is 0 then this means 
+    the message is for the other player’s&nbsp; y co-ordinate. We simply use
+    <span style="color: #4F81BD">readshort()</span> to return the y position. 
+    Remember because we wrote the Y position as a short, we now must read the Y 
+    position using a short.</span></li>
+    <li class="MsoNormal" style="text-autospace: none">
+    <span style="font-family: Arial,sans-serif">If the Message ID equals 1, 
+    which represents the balls x, y position, then use
+    <span style="color: #4F81BD">readshort()</span> to set the balls x position 
+    to the right place and readshort() again to set the balls y position in the 
+    right place.</span></li>
+  </ul>
+  </li>
+</ul>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none"><b>
+<span style="font-size: 20.0pt; font-family: Arial,sans-serif">Freeing the dll</span></b></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">If you don’t want any nasty error 
+messages when your game ends, then you must free the dll from memory. To do this 
+first create an object that will be in every room. Now in the game end event of 
+that object just put </span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-size: 11.0pt; font-family: Courier New">dllfree(); </span></p>
+<p class="MsoNormal" style="text-autospace: none; margin-left: .5in">
+<span style="font-family: Arial,sans-serif">&nbsp;</span></p>
+<p class="MsoNormal" style="text-autospace: none">
+<span style="font-family: Arial,sans-serif">This will free
+<span style="color: #4F81BD">winsock</span> and free all memory used by the 
+internal buffer.</span></p>
+
+</body>
+
+</html>

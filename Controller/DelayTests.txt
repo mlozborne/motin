@@ -1,0 +1,19 @@
+Delay Tests
+-----------
+Test 1 = CommandQueueManager.LayoutQueue.GetMessage(Cmd);        in LayoutPkg
+Test 2 = CommandQueueManager.OutQueue.putMessage(Cmd);           in LayoutPkg
+Test 3 = Queue.GetMessage(Cmd);                                  in TrainPkg
+Test 4 5 6 in MessageIO
+Test 7 = SSIQueue.GetMessage(Cmd);                               in SSIPkg
+Test 8 = OutQueue.GetMessage(Message);                           in CommandQueueManager
+
+Turn off delays at test 1 2 3 6 7 8    BAD
+Turn off delays at test 1 6            GOOD
+Turn off delays at test 1 6 2          GOOD
+Turn off delays at test 1 6 2 3        BAD
+Turn off delays at test 1 6 2 8        BAD
+Turn off delays at test 1 6 2 7        GOOD
+Turn off delays at test 1 6 2 7 3      GOOD    after extensive modifications on 12/29/11
+Turn off delays at test 1 6 2 7 3 8    GOOD
+Turn off delays at test 1 6 2 7 3 8 5  GOOD
+

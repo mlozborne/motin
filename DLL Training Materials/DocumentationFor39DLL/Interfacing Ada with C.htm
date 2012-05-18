@@ -1,0 +1,237 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Interfacing Ada with C</title>
+</head>
+
+<body>
+
+<h1>Interfacing Ada with C</h1>
+<p><a href="http://www.dwheeler.com/lovelace/s16s2.htm">
+http://www.dwheeler.com/lovelace/s16s2.htm</a> </p>
+<hr>
+<h1><font color="#996600">Section 16.1 - General Information on Interfacing to 
+Other Languages</font></h1>
+<p>Ada 95 provides a set of packages and some special pragmas to interface with 
+other computer languages. The three most useful pragmas are called Import, 
+Export, and Convention: </p>
+<ol>
+  <li>Pragma import &quot;imports&quot; a subprogram from another (&quot;foreign&quot;) language 
+  into an Ada program. Use pragma import if you want to call, for example, an 
+  existing C function. </li>
+  <li>Pragma export &quot;exports&quot; an Ada subprogram to a &quot;foreign&quot; language. For 
+  example, if you've written an Ada procedure and want to call it from C, use 
+  pragma export. </li>
+  <li>Pragma Convention specifies that a specified type should use the storage 
+  conventions of a given &quot;foreign&quot; language. It is also used on subprograms if 
+  they are &quot;callback&quot; subprograms (described below). </li>
+</ol>
+<p>Here's an example of each: </p>
+<p>&nbsp;</p>
+<pre>  pragma Import(C, getenv);  -- Use the C program getenv in my Ada program.
+  pragma Export(COBOL, Read_Sensor); -- Provide Ada procedure &quot;Read_Sensor&quot;
+                                     -- to the COBOL compiler.
+  pragma Convention(Fortran, State_Vector) -- Read and write State_Vector
+                                     -- using Fortran storage conventions
+                                     -- (e.g. column-major format)
+</pre>
+<p>Here is the <a href="http://www.dwheeler.com/lovelace/bnf.htm">BNF</a> for 
+these pragmas: </p>
+<pre>  import_pragma ::= &quot;pragma Import(&quot;
+                        [ &quot;Convention =&gt;&quot; ] language &quot;,&quot;
+                        [ &quot;Entity =&gt;&quot; ] unit
+                        [ &quot;,&quot; [ &quot;Link_Name =&gt;&quot; ] link_name ]  &quot;);&quot;
+
+  export_pragma ::= &quot;pragma Export(&quot;
+                        [ &quot;Convention =&gt;&quot; ] language &quot;,&quot;
+                        [ &quot;Entity =&gt;&quot; ] unit 
+                        [ &quot;,&quot; [ &quot;Link_Name =&gt;&quot; ] link_name ]  &quot;);&quot;
+
+  convention_pragma ::= &quot;pragma Convention(&quot;
+                        [ &quot;Convention =&gt;&quot; ] language &quot;,&quot;
+                        [ &quot;Entity =&gt;&quot; ] unit &quot;);&quot;
+</pre>
+<p>Ada compilers always support the Convention (language) Ada, naturally enough. 
+Your Ada compiler probably also supports the languages C, Fortran, and possibly 
+COBOL. GNAT supports C++ as the language name CPP, and you can also interface 
+Ada and C++ programs by having both use the C convention to send information to 
+each other. For assembly language modules, use the name of the high level 
+language that the module's interface mimics. </p>
+<p>The &quot;Link_Name&quot; parameter often isn't necessary, but it's useful in some 
+circumstances, for example, if you need access to an object whose name has been 
+&quot;mangled&quot; in a way the Ada compiler doesn't know about or if the name is not a 
+legal Ada identifier (such as names with leading underscores). </p>
+<p>&quot;Callback&quot; subprograms are subprograms which have access (pointer) values 
+held in some external location and are then called later using that external 
+value. If you have an Ada subprogram that will be called this way, use pragma 
+Convention on both the subprogram and on the access type used. This is useful, 
+for example, in dealing with the X window graphical user interface (GUI). </p>
+<p>If the &quot;main&quot; subprogram is not in Ada, there is an additional issue to 
+consider called &quot;elaboration&quot;. The actual main subprogram should make sure that 
+the environment for Ada is correctly set up. This is done automatically if the 
+main subprogram is in Ada, but if it isn't, you have to do it yourself. The
+<a href="http://www.adahome.com/rm95/rm9x-B-01.html">Ada RM section B.1(39)</a> 
+suggests that compilers provide subprograms called &quot;adainit&quot; to start up the Ada 
+environment and &quot;adafinal&quot; to clean it up after the Ada subprograms have stopped 
+running. If you need to have a non-Ada main subprogram, check your compiler 
+manual to see if it supports this and if there are any restrictions on what is 
+and is not permitted. </p>
+<hr>
+<h1><font color="#996600">Section 16.2 - Interfacing with C</font></h1>
+<p>Since there are many useful utilities that can be called from C it's a good 
+idea to know how to call them from Ada. This section assumes you know the C 
+language to some basic level; if you don't know C you can skim this section. </p>
+<p>First, here are some general rules on how Ada and C correspond, based on the
+<a href="http://www.adahome.com/rm95/rm9x-B-03.html">RM B.3(63):</a> </p>
+<ol>
+  <li>An Ada procedure corresponds to a void-returning C function. </li>
+  <li>An Ada function corresponds to a non-void-returning C function. </li>
+  <li>An Ada array corresponds to a C pointer to the first element. </li>
+  <li>Simple scalar types (integers, floats, and access/pointer types) 
+  correspond to the obvious type in the other language. </li>
+</ol>
+<p>Ada 95 provides a set of predefined packages that make it easier to interface 
+with C. The primary package is named &quot;Interfaces.C&quot;, which contains definitions 
+for C types in Ada. These include C's types int, long, unsigned, and double. The 
+C type float is called &quot;C_float&quot; in Ada so that it isn't confused with Ada's 
+type Float (Ada Float and C float are probably identical, but that's not 
+necessarily true). </p>
+<p>The type &quot;char_array&quot; mimics C character arrays. Many C functions assume that 
+character arrays are terminated with the special character &quot;nul&quot; (written in C 
+as '\0'). Since Ada strings aren't normally nul-terminated, functions To_C and 
+To_Ada convert between Ada String types and C char_array types. </p>
+<p>There are additional packages called Interfaces.C.Strings and 
+Interfaces.C.Pointers that provide additional types and operations on C-style 
+strings and C pointers. In particular, package &quot;Interfaces.C.Strings&quot; defines 
+the type &quot;chars_ptr&quot;, which corresponds to the typical C type &quot;char*&quot; when used 
+to point to a C string (i.e. a pointer to an array of characters). The package 
+also defines: </p>
+<ol>
+  <li>constant <em>Null_Ptr</em>, which corresponds to C's <em>(char*)NULL</em>,
+  </li>
+  <li>procedure <em>Free</em>, which corresponds to C's <em>free()</em>, and
+  </li>
+  <li>function <em>Value</em>, which takes a chars_ptr and returns a normal Ada 
+  String. This function raises an exception Dereference_Error if passed a null 
+  pointer. </li>
+</ol>
+<p>Let's work through a real-life example so you can see how this really works. 
+This example is from
+<a href="http://wuarchive.wustl.edu/languages/ada/swcomps/cgi/cgi.html">&quot;package 
+CGI&quot;</a>, an Ada binding to the World Wide Web Common Gateway Interface (CGI). 
+Let's say that you want to get the value of an environment variable from the 
+Operating System, and you want to get this value via a pre-existing C function 
+that does this. In C this function is called &quot;getenv&quot; and it has the following C 
+definition (see [Kernighan and Ritchie 1988, edition 2, page 253]): </p>
+<p>&nbsp;</p>
+<pre>  char *getenv(char *name);
+</pre>
+<p>This can be pretty straightforwardly translated into Ada as: </p>
+<p>&nbsp;</p>
+<pre>  function getenv(Variable : chars_ptr) return chars_ptr;
+  pragma Import(C, getenv);
+</pre>
+<p>That works, but it's inconvenient to have to keep translating values in and 
+out of type &quot;chars_ptr&quot; in an Ada program. It's probably better to write a 
+wrapper program that translates the Ada Strings to C strings (chars_ptr) and 
+back for us. Let's define an Ada function to do that for us: </p>
+<p>&nbsp;</p>
+<pre>with Interfaces.C.Strings; use Interfaces.C.Strings;
+-- ...
+
+ function Get_Environment(Variable : String) return String is
+ -- Return the value of the given environment variable.
+ -- If there's no such environment variable, return an empty string.
+ 
+   function getenv(Variable : chars_ptr) return chars_ptr;
+   pragma Import(C, getenv);
+   -- getenv is a standard C library function; see K&amp;R 2, 1988, page 253.
+   -- it returns a pointer to the first character; do NOT free its results.
+ 
+   Variable_In_C_Format : chars_ptr := New_String(Variable);
+   Result_Ptr : chars_ptr := getenv(Variable_In_C_Format);
+   Result : String := Value_Without_Exception(Result_Ptr);
+
+ begin
+  Free(Variable_In_C_Format);
+  return Result;
+ end Get_Environment;
+</pre>
+<p>Notice that a lot of string manipulation is happening in the declaration 
+section. That's an easy way to get things done, because simple Ada Strings have 
+a fixed length once they're declared. There's a call to some function called 
+Value_Without_Exception; that's because normally an attempt to turn a null C 
+pointer into a string will raise an exception, and we just want to turn it into 
+an empty string instead. That means we'll have to define such a function; here's 
+a definition: </p>
+<p>&nbsp;</p>
+<pre> function Value_Without_Exception(S : chars_ptr) return String is
+ -- Translate S from a C-style char* into an Ada String.
+ -- If S is Null_Ptr, return &quot;&quot;, don't raise an exception.
+ begin
+   if S = Null_Ptr then return &quot;&quot;;
+    else return Value(S);
+   end if;
+ end Value_Without_Exception;
+ pragma Inline(Value_Without_Exception);
+</pre>
+<p>Now we can easily get environment variables in Ada. For example, to get the 
+value of environment variable REQUEST_METHOD, use: </p>
+<p>&nbsp;</p>
+<pre>  Request_Method_Text : String := Get_Environment(&quot;REQUEST_METHOD&quot;);
+</pre>
+<p>One thing we haven't covered are C <em>struct</em>s. Ada records and C 
+structs clearly correspond, but how exactly should they correspond? The Ada RM 
+advises, but does not require, that Ada records always be passed to C as 
+pointers to the beginning of the corresponding C struct. For those (relatively 
+rare) cases where a C function expects to be passed a structure by value (a copy 
+instead of the more common pointer-to-structure), you could create a new C 
+function that converts a pointer into the actual structure and then call that 
+new C function from Ada. However, this is simply advice, and the GNAT compiler 
+does not follow this advice - instead, GNAT sends Ada records by value (copies). 
+Both approaches are reasonable, but unfortunately they are different. The safest 
+approach for passing Ada records is to always pass &quot;access to record&quot; values - 
+since they are scalar, they are guaranteed to pass correctly in all Ada 
+compilers.
+<!-- No quiz question --></p>
+<p>&nbsp;</p>
+<address>
+  <font size="2"><a href="http://www.dwheeler.com/lovelace/dwheeler.htm">David 
+  A. Wheeler (dwheeler@dwheeler.com)</a></font></address>
+<p><font size="2">The master copy of this file is at &quot;<a href="http://www.adahome.com/Tutorials/Lovelace/s16s2.htm">http://www.adahome.com/Tutorials/Lovelace/s16s2.htm</a>&quot;.
+</font>
+<!-- This text is part of the Ada95 Lovelace tutorial program. -->
+<!-- For the contents of lesson 18, the following applies: -->
+<!--  Copyright (C) 1996 Ada Resource Association -->
+<!--  Copyright granted to the ARA under the condition that this text -->
+<!--  will be redistributed to the public domain, without restriction; -->
+<!--  you may use this information in any way you with, commercially or not, -->
+<!--  without restriction. -->
+<!-- = -->
+<!-- For all other files in Ada95 Lovelace tutorial, the following applies: -->
+<!--  Copyright (C) 2002 David A. Wheeler -->
+<!--  This program is free software; you can redistribute it and/or modify -->
+<!--  it under the terms of the GNU General Public License as published by -->
+<!--  the Free Software Foundation; either version 2 of the License, or -->
+<!--  (at your option) any later version. -->
+<!--  This freedom only applies to the electronic version; the author -->
+<!--  and/or publisher retain all rights to non-electronic versions. -->
+<!-- = -->
+<!-- This program is distributed in the hope that it will be useful, -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the -->
+<!-- GNU General Public License for more details. -->
+<!-- = -->
+<!-- You should have received a copy of the GNU General Public License -->
+<!-- along with this program; if not, write to the Free Software -->
+<!-- Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. --></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

@@ -1,0 +1,584 @@
+----------------------------------------------------------------
+scrSendMessage
+----------------------------------------------------------------------------
+var opCode, byte1, byte2, checksum;
+
+opCode = argument0; // OPC_LOCO_DIRF or   -- direction, light, bell, horn
+                    // OPC_LOCO_SND or    -- mute
+                    // OPC_LOCO_ADR or    -- request slot information
+                    // OPC_MOVE_SLOTS     -- register a slot
+
+if (opCode == global.OPC_LOCO_DIRF){
+
+  //<0xA1><SLOT#><DIR_STATE><CHK> 
+  byte1 = global.slotNumber;    
+  byte2 = $00 |
+          global.trainDirection |
+          global.trainLights |
+          global.trainHorn |
+          global.trainBell;
+          
+}else if (opCode == global.OPC_LOCO_SND){
+
+  //<0xA2><SLOT#><SOUND><CHK>
+  byte1 = global.slotNumber;
+  byte2 = $00 | global.trainMute;
+  
+}else if (opCode = global.OPC_LOCO_ADR){
+
+  //<0xBF><adrhigh><adrlow><chk>
+   byte2 = $FF & (global.throttleLocoAddress mod 128);
+   byte1 = $FF & ((global.throttleLocoAddress - byte2) / 128); 
+   //show_message("Client: " + string(byte1) + "  " + string(byte2));
+   
+}else if (opCode = global.OPC_MOVE_SLOTS){
+
+  // <0xBA><slot#><slot#><chk>
+  byte1 = global.slotNumber;
+  byte2 = global.slotNumber;
+  
+}else{
+  exit;     // Should never get here
+}
+   
+checksum = $FF ^ opCode ^ byte1 ^ byte2; 
+  
+clearbuffer();
+writebyte(opCode);
+writebyte(byte1);
+writebyte(byte2);
+writebyte(checksum);  
+sendmessage(global.socketToSimulator);
+
+-------------------------------------------------------------------------
+scrSendSpeedMessage
+--------------------------------------------------------------------------
+var opCode, checksum;
+
+opCode = global.OPC_LOCO_SPD;
+
+checksum = $FF ^ opCode ^ global.slotNumber ^ global.trainSpeed;
+
+clearbuffer();
+writebyte(opCode);
+writebyte(global.slotNumber);
+writebyte(global.trainSpeed);
+writebyte(checksum);  
+sendmessage(global.socketToSimulator);  
+  
+------------------------------------------------------------
+objBrake
+------------------------------------------------------------------
+Mouse Event for Left Released:
+
+global.lastAction = "Break.";
+global.trainSpeed = 0;;
+scrSendSpeedMessage();
+
+-------------------------------------------------
+objF0_Lights
+---------------------------------------------------------
+Create Event:
+
+myId = 0;
+
+Mouse Event for Left Released:
+
+global.lastAction = "Toggle lights.";
+global.F[0] = !global.F[0];
+global.trainLights = global.trainLights ^ global.kLightsOn;
+scrSendMessage(global.OPC_LOCO_DIRF);
+
+-------------------------------------------------
+ objF1_Bell
+---------------------------------------------------------
+Create Event:
+
+myId = 1;
+
+Mouse Event for Left Released:
+
+global.lastAction = "Toggle bell.";
+global.F[1] = !global.F[1];
+global.trainBell = global.trainBell ^ global.kBellOn;
+scrSendMessage(global.OPC_LOCO_DIRF);
+
+-------------------------------------------------------
+objF2_Horn
+-------------------------------------------------------
+Create Event:
+
+myId = 2;
+
+Mouse Event for Left Pressed:
+
+global.lastAction = "Horn on.";
+global.F[2] = true;
+global.trainHorn = global.kHornOn;
+scrSendMessage(global.OPC_LOCO_DIRF);
+
+Mouse Event for Left Released:
+
+global.lastAction = "Horn off.";
+global.F[2] = false;
+global.trainHorn = global.kHornOff;
+scrSendMessage(global.OPC_LOCO_DIRF);
+
+--------------------------------------------------------
+objF8_Mute
+-----------------------------------------------------------
+Create Event:
+
+myId = 8;
+
+Mouse Event for Left Released:
+
+global.lastAction = "Toggle mute.";
+global.F[8] = !global.F[8];
+global.trainMute = global.trainMute ^ global.kMuteOn;
+scrSendMessage(global.OPC_LOCO_SND);
+
+----------------------------------------------------------
+objForward
+------------------------------------------------------------
+Mouse Event for Left Released:
+
+global.lastAction = "Forward.";
+global.trainDirection = global.kForward;
+scrSendMessage(global.OPC_LOCO_DIRF);
+
+-------------------------------------------------------------
+objFParent
+----------------------------------------------------
+Create Event:
+
+myId = 0;
+
+Mouse Event for Left Released:
+
+global.F[myId] = !global.F[myId];
+
+------------------------------------------------------------------
+objDisabledParent
+------------------------------------------------------------
+Create Event:
+
+myId = 0;
+
+Mouse Event for Left Released:
+
+play sound sndSad; looping: false
+
+--------------------------------------------------------
+objLocoAddress
+------------------------------------------------------
+Mouse Event for Left Released:
+
+global.trainColor = " ";
+global.trainId = 0;
+global.throttleLocoAddress = get_integer("Enter loco address", 0);
+if (global.throttleLocoAddress == 1111){
+  global.trainId = 1;
+  global.trainColor = "green";
+}else if (global.throttleLocoAddress == 2222){
+  global.trainId = 2;
+  global.trainColor = "white";
+}else if (global.throttleLocoAddress == 3333){
+  global.trainId = 3;
+  global.trainColor = "red";
+}else if (global.throttleLocoAddress == 4444){
+  global.trainId = 4;
+  global.trainColor = "yellow";
+}else if (global.throttleLocoAddress == 1){
+  global.trainColor = "virtual";
+}else if (global.throttleLocoAddress == 2){
+  global.trainColor = "virtual";
+}else if (global.throttleLocoAddress == 3){
+  global.trainColor = "virtual";
+}else if (global.throttleLocoAddress == 4){
+  global.trainColor = "virtual";
+}else if (global.throttleLocoAddress == 4){
+  global.trainColor = "none";
+}    
+
+Draw Event:
+
+set the drawing color to 0
+at position (60,175) draw text: ' ' + string(global.throttleLocoAddress)  + "  " + global.trainColor
+
+---------------------------------------------------
+objPortConnection
+---------------------------------------------------
+Create Event:
+
+room_caption = "F1 help then ESC";
+ipAddress := get_string("Enter ip address", "127.0.0.1");
+portNumber := get_integer("Enter port number of server", 14804);
+   
+Step Event:
+dllinit(0, true, false);
+global.socketToSimulator = tcpconnect(ipAddress, portNumber, 1);
+if (global.socketToSimulator)
+  room_goto_next();
+else{
+  x += choose (-2, 2);
+  y += choose (-2, 2);
+}
+
+
+
+----------------------------------------------------------
+objReverse
+----------------------------------------------------
+Mouse Event for Left Released:
+
+global.lastAction = "Reverse.";
+global.trainDirection = global.kReverse;
+scrSendMessage(global.OPC_LOCO_DIRF);
+
+--------------------------------------------------------
+objSel
+---------------------------------------------------
+Mouse Event for Left Pressed:
+
+set the sprite to sprFunctionKeyON with subimage 0 and speed 1
+
+Mouse Event for Left Released:
+
+if (global.throttleLocoAddress == global.trainAddress){
+  global.lastAction = "Already have it";
+  exit;
+}
+
+global.trainAddress = 0;
+global.lastAction = "Insufficient slots";
+global.tryingToSelect = true;
+global.trainAddress = 0;
+global.slotNumber = 0;
+global.throttleStatus = "red";
+
+scrSendMessage(global.OPC_LOCO_ADR);
+
+set the sprite to sprFunctionKeyOFF with subimage 0 and speed 1
+
+------------------------------------------------------
+objSpeed0
+------------------------------------------------------
+Mouse Event for Left Released:
+
+global.trainSpeed = 0;
+scrSendSpeedMessage();
+
+----------------------------------------------------
+objStatusLight
+--------------------------------------------------------
+Step Event:
+
+if (global.throttleStatus == "black")
+  sprite_index = sprBlackStatusLight;
+else if (global.throttleStatus == "green")
+  sprite_index = sprGreenStatusLight;
+else if (global.throttleStatus == "red")
+  sprite_index = sprRedStatusLight;
+
+------------------------------------------------------
+objSteal
+------------------------------------------------------
+Mouse Event for Left Pressed:
+
+set the sprite to sprFunctionKeyON with subimage 0 and speed 1
+
+Mouse Event for Left Released:
+
+set the sprite to sprFunctionKeyOFF with subimage 0 and speed 1
+if (global.throttleLocoAddress == global.trainAddress){
+  global.lastAction = "Already have it";
+  exit;
+}
+
+global.trainAddress = 0;
+global.lastAction = "Insufficient slots";
+global.tryingToSteal = true;
+global.trainAddress = 0;
+global.slotNumber = 0;
+global.throttleStatus = "red";
+
+scrSendMessage(global.OPC_LOCO_ADR);
+
+------------------------------------------------------------
+objThrottle
+-------------------------------------------------------
+Create Event:
+// Constants for direction, lights, horn, bell, mute, turnout action
+global.kForward      = $00;  
+global.kReverse      = $20;  // 0010 0000
+global.kLightsOn     = $10;  // 0001 0000 
+global.kLightsOff    = $00;  
+global.kHornOn       = $02;  // 0000 0010
+global.kHornOff      = $00; 
+global.kBellOn       = $01;  // 0000 0001
+global.kBellOff      = $00;
+global.kMuteOn       = $08;  // 0000 1000
+global.kMuteOff      = $00; 
+
+// Opcodes
+global.OPC_LOCO_SPD   = $A0; // set speed
+global.OPC_LOCO_DIRF  = $A1; // set direction, horn, bell, lights
+global.OPC_LOCO_SND   = $A2; // set mute and unmute sound
+global.OPC_LOCO_ADR   = $BF; // request for slot data
+global.OPC_SL_RD_DATA = $E7; // slot data response
+global.OPC_LONG_ACK   = $B4; // insufficient slots
+global.OPC_MOVE_SLOTS = $BA; // register slot
+
+// State of throttle
+global.lastAction     = "";
+global.trainSpeed     = 0;         // 0..127
+global.trainDirection = global.kForward;  
+global.trainLights    = global.kLightsOff;
+global.trainHorn      = global.kHornOff;
+global.trainBell      = global.kBellOff;
+global.trainMute      = global.kMuteOff;
+
+global.trainColor     = "none";   // Color: Green  White  Red   Yellow
+global.trainAddress   = 0;        // Add:   1111   2222   3333  4444      1   2   3   4     other
+global.slotNumber     = 0;        // Slot:  1      2      3     4         5   6   7   8     other
+global.throttleStatus = "black";  // black -- not connected to a loco
+                                  // green -- connected
+                                  // red   -- another throttle controls the loco
+global.throttleLocoAddress = 0
+
+// Trying to select or steal
+global.tryingToSelect = false;
+global.tryingToSteal = false;
+
+// State of function keys
+var i;                        // Function keys 0..12
+for (i = 0; i <= 12; i += 1)  // OFF = false     ON = true
+  global.F[i] = false;  
+global.objF[0]  = objF0_Lights;
+global.objF[1]  = objF1_Bell;         
+global.objF[2]  = objF2_Horn;         
+global.objF[3]  = objF3;         
+global.objF[4]  = objF4;         
+global.objF[5]  = objF5;         
+global.objF[6]  = objF6;         
+global.objF[7]  = objF7;         
+global.objF[8]  = objF8_Mute;         
+global.objF[9]  = objF9;         
+global.objF[10] = objF10;         
+global.objF[11] = objF11;         
+global.objF[12] = objF12;         
+      
+Step Event:
+
+////////////////////////////////////////////////////////////////////////////////
+// Match the train color to the address
+////////////////////////////////////////////////////////////////////////////////
+
+var strTrain;
+switch(global.trainAddress){
+  case 1111: strTrain = "G "; break;
+  case 2222: strTrain = "W "; break;
+  case 3333: strTrain = "R "; break;
+  case 4444: strTrain = "Y "; break;
+  case    1: strTrain = "V1 "; break;
+  case    2: strTrain = "V2 "; break;
+  case    3: strTrain = "V3 "; break;
+  case    4: strTrain = "V4 "; break;
+  default  : strTrain = "None ";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Display the last action for the selected train
+////////////////////////////////////////////////////////////////////////////////
+
+room_caption = strTrain + global.lastAction;
+
+////////////////////////////////////////////////////////////////////////////////
+// On the throttle GUI indicate the state of all buttons
+////////////////////////////////////////////////////////////////////////////////
+
+with (objStatusLight){ 
+  if (global.throttleStatus == "black")
+    sprite_index = sprBlackStatusLight;
+  else if (global.throttleStatus == "green")
+    sprite_index = sprGreenStatusLight;
+  else
+    sprite_index = sprRedStatusLight;
+}
+  
+if (global.trainDirection == global.kForward){
+  with (objForward) sprite_index = sprRFON;
+  with (objReverse) sprite_index = sprRFOFF;
+}else{
+  with (objForward) sprite_index = sprRFOFF;
+  with (objReverse) sprite_index = sprRFON;
+}
+
+if (global.trainSpeed == 0){
+  with (objBrake)    sprite_index = sprBrakeON;
+  with (objSpeed0)   sprite_index = sprSpeedON;
+  with (objSpeed31)  sprite_index = sprSpeedOFF;
+  with (objSpeed63)  sprite_index = sprSpeedOFF;
+  with (objSpeed95)  sprite_index = sprSpeedOFF;
+  with (objSpeed127) sprite_index = sprSpeedOFF;
+}else if (global.trainSpeed == 31){
+  with (objBrake)    sprite_index = sprBrakeOFF;
+  with (objSpeed0)   sprite_index = sprSpeedOFF;
+  with (objSpeed31)  sprite_index = sprSpeedON;
+  with (objSpeed63)  sprite_index = sprSpeedOFF;
+  with (objSpeed95)  sprite_index = sprSpeedOFF;
+  with (objSpeed127) sprite_index = sprSpeedOFF;
+}else if (global.trainSpeed == 63){
+  with (objBrake)    sprite_index = sprBrakeOFF;
+  with (objSpeed0)   sprite_index = sprSpeedOFF;
+  with (objSpeed31)  sprite_index = sprSpeedOFF;
+  with (objSpeed63)  sprite_index = sprSpeedON;
+  with (objSpeed95)  sprite_index = sprSpeedOFF;
+  with (objSpeed127) sprite_index = sprSpeedOFF;
+}else if (global.trainSpeed == 95){
+  with (objBrake)    sprite_index = sprBrakeOFF;
+  with (objSpeed0)   sprite_index = sprSpeedOFF;
+  with (objSpeed31)  sprite_index = sprSpeedOFF;
+  with (objSpeed63)  sprite_index = sprSpeedOFF;
+  with (objSpeed95)  sprite_index = sprSpeedON;
+  with (objSpeed127) sprite_index = sprSpeedOFF;
+}else if (global.trainSpeed == 127){
+  with (objBrake)    sprite_index = sprBrakeOFF;
+  with (objSpeed0)   sprite_index = sprSpeedOFF;
+  with (objSpeed31)  sprite_index = sprSpeedOFF;
+  with (objSpeed63)  sprite_index = sprSpeedOFF;
+  with (objSpeed95)  sprite_index = sprSpeedOFF;
+  with (objSpeed127) sprite_index = sprSpeedON;
+}
+
+if (global.trainDirection == global.kForward){
+  with (objForward) sprite_index = sprRFON;
+  with (objReverse) sprite_index = sprRFOFF;
+} else if (global.trainDirection == global.kReverse){
+  with (objForward) sprite_index = sprRFOFF;
+  with (objReverse) sprite_index = sprRFON;
+}
+
+var i;
+for (i = 0; i <= 12; i += 1){
+  if (global.F[i]) 
+    with (global.objF[i]) sprite_index = sprFunctionKeyON;
+  else             
+    with (global.objF[i]) sprite_index = sprFunctionKeyOFF;
+}         
+
+////////////////////////////////////////////////////////////////////////////////
+// Process messages received from the simulator.
+// Some of these are echos of messages sent by other clients to the simulator.
+////////////////////////////////////////////////////////////////////////////////
+
+while(1){
+
+    var size, message, opcode, i;
+    var addressReceived, addressIsAlreadyRegistered, slotReceived;
+    
+    // Receive a message and read the opcode
+    size = receivemessage(global.socketToSimulator);
+    if (size <= 0) break;
+    message[0] = readbyte();
+
+    // Test the opcode
+    if (message[0] == global.OPC_LONG_ACK){
+      // NOP
+      // An attempted registration by this or some other throttle doesn't occur
+    }else if (message[0] != global.OPC_SL_RD_DATA){ 
+      // NOP
+      // This message doesn't interest us.
+    }else{ 
+      // Opcode OPC_SL_RD_DATA in response to a select or steal    
+      // Read the rest of the message                 
+      for (i = 1; i < 14; i += 1){
+         message[i] = readbyte();
+         room_caption += string(message[i]) + " ";
+      }
+      
+      // Build the address from adrlow (byte 4) and adrhigh (byte 9).
+      // Build the status (addressIsAlreadyRegistered) from bits 5 and 4 of byte 3.  
+      // Obtain the slot # from byte 2    
+      addressReceived = message[4] + 128 * message[9];
+      addressIsAlreadyRegistered = ((message[3] & $30) == $30);
+      slotNumberReceived = message[2]
+      
+      if (addressReceived != global.throttleLocoAddress){
+        // NOP
+        // This message is a response to another client
+      }else{
+      
+        if (global.tryingToSteal){
+          // Responding to a steal
+          global.tryingToSteal = false;
+          if (!addressIsAlreadyRegistered){
+             // Error, steal failed because loco address not yet registered
+             global.lastAction = "Steal failed";
+          }else{
+             // Steal successful
+             // Record train address and slot number
+             global.lastAction = "Stolen";
+             global.throttleStatus = "green";
+             global.trainAddress = global.throttleLocoAddress;
+             global.slotNumber = slotNumberReceived;
+            
+            // Update the loco to the throttle settings
+            scrSendSpeedMessage();
+            scrSendMessage(global.OPC_LOCO_DIRF);
+            scrSendMessage(global.OPC_LOCO_SND);          }
+        }
+        
+        if (global.tryingToSelect){
+          //Responding to a select
+          global.tryingToSelect = false;
+          if (addressIsAlreadyRegistered){
+            // Error, select failed because loco address already registered 
+            global.lastAction = "Select failed";
+          }else{
+            // Select successful. 
+            // Record train address and slot number.
+            // Send OPC_MOVE_SLOTS to register the slot
+            global.lastAction = "Selected";
+            global.throttleStatus = "green";
+            global.trainAddress = global.throttleLocoAddress;
+            global.slotNumber = slotNumberReceived;
+            scrSendMessage(global.OPC_MOVE_SLOTS);
+            
+            // Update the loco to the throttle settings
+            scrSendSpeedMessage();
+            scrSendMessage(global.OPC_LOCO_DIRF);
+            scrSendMessage(global.OPC_LOCO_SND);
+          }
+        }
+      }      
+    }// end Opcode OPC_SL_RD_DATA 
+} // end while
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

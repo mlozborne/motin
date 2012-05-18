@@ -1,0 +1,1 @@
+gnatmake main -largs -lTestdll
