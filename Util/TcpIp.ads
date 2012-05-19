@@ -8,7 +8,7 @@ package TcpIp is
 
    function sendTcpMessage(msg : msgType) return integer;
    function receiveTcpMessageBlocking return msgType;   
-   function makeTcpConnection return boolean;   
+   procedure makeTcpConnection(IP : string; Port : string);   
    
 private
    kLFString           : string(1..1) := ( 1=> standard.ascii.LF);   

@@ -42,7 +42,7 @@ package body TcpIp is
          raise;
    end receiveTCPMessageBlocking;
    
-   function makeTcpConnection return boolean is
+   procedure makeTcpConnection(IP : string; Port : string) is
       Connected          : Boolean := False;
       line               : string(1..100);
       lineLen            : natural;
@@ -50,8 +50,13 @@ package body TcpIp is
       pos                : natural;
       char               : character := 'S';
       haveInputs         : boolean;
-      inControllerMode   : boolean := true;
    begin
+      Put_Line("Trying to connect to controller using IP " & IP & " and port " & Port);
+      put_line("and if that doesn't work, you will get a chance to change the values.");
+      new_line;
+      IpStrC := New_String(IP);
+      ServerPort := c.double(integer'value(Port)); 
+      
       -- loop
          -- put("Enter Standalone mode or Controller mode (S/C): ");
          -- get(char);
@@ -61,12 +66,9 @@ package body TcpIp is
       -- end loop;
       -- inControllerMode := (char = 'C');
    
-      IpStrC := New_String("127.0.0.1");
+      -- IpStrC := New_String("127.0.0.1");
 
-      inControllerMode := true;
-      new_line;
-      Put_Line("Trying to connect to controller using IP 127.0.0.1 and port 1235,");
-      ServerPort := c.double(1235); 
+      -- inControllerMode := true;
       
       -- inControllerMode := false;   
       -- Put_Line("Trying to connect to simulator using IP 127.0.0.1 and port 1234,");
@@ -76,7 +78,6 @@ package body TcpIp is
       -- Put_Line("Using IP 127.0.0.1 and port 1236,");
       -- ServerPort := c.double(1236);
 
-      put_line("and if that doesn't work, you will get a chance to change the values.");
       haveInputs := true;
       CValue := DllInit;
       LOOP
@@ -119,7 +120,6 @@ package body TcpIp is
       END LOOP;
 
       new_line; put_line("Connected"); new_line;
-      return inControllerMode;
    end makeTcpConnection;
    
 end TcpIp;
