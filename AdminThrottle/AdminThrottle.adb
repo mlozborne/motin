@@ -14,8 +14,8 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 PROCEDURE AdminThrottle IS
    kLFString           : string(1..1) := ( 1=> standard.ascii.LF);
    inControllerMode    : boolean := true;     
-   IP                  : unbounded_String := to_unbounded_string("127.0.0.1");   
-   Port                : unbounded_String := to_unbounded_string("1235");
+   IP                  : unbounded_String;-- := to_unbounded_string("127.0.0.1");   
+   Port                : unbounded_String;-- := to_unbounded_string("1235");
    
    function stringToLower (str :string) return string is
       Result : String (Str'Range);
@@ -33,9 +33,9 @@ BEGIN
    screenManager.objScreenManager.clearTheScreen;
    
    for arg in 1..argument_count loop
-      if stringToLower(argument(arg)) = "port" then
+      if stringToLower(argument(arg)) = "port" and then arg + 1 <= argument_count then
          port := to_unbounded_string(argument(arg+1));
-      elsif stringToLower(argument(arg)) = "ip" then
+      elsif stringToLower(argument(arg)) = "ip" and then arg + 1 <= argument_count then
          ip := to_unbounded_string(argument(arg+1));
       end if;
    end loop;
