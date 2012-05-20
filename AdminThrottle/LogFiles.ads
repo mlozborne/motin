@@ -3,6 +3,7 @@ with ada.text_io; use ada.text_io;
 
 package LogFiles is
 
+   procedure initialize(adminLog : boolean; keyboardLog : boolean);
    procedure createKeyboardLog;
    procedure openKeyboardLog;
    procedure closeKeyboardLog;
@@ -14,6 +15,9 @@ package LogFiles is
    procedure putLineAdminLog(str : string);
 
 private  
+   withAdminLog            : boolean := true;
+   withKeyboardLog         : boolean := true;
+
    adminLog                : file_type;                        -- created in LogFiles.adb
    adminLogFileName        : String := "AdminLog.txt";
    

@@ -4,6 +4,8 @@ with messageTranslationTypes;
 
 package TcpIp is
 
+   ConnectionError      : exception;
+
    subtype msgType is messageTranslationTypes.messageType;
 
    function sendTcpMessage(msg : msgType) return integer;
