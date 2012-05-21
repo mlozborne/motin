@@ -3,6 +3,13 @@ with Ada.Exceptions; use Ada.Exceptions;
 
 package body globals is
 
+   procedure myPutLine(str : string) is
+   begin
+      if withTrace then
+         put_line(str);
+      end if;
+   end myPutLine;
+
    procedure disposeSensorArray(ptr : in out SensorArrayAccess) is
    begin
       if ptr /= null then
@@ -19,7 +26,7 @@ package body globals is
 		end loop;
    EXCEPTION
       WHEN error: OTHERS =>
-         Put_Line("************ EXCEPTION Error convertSensorArrayToList:" & Exception_Information(Error));
+         put_line("************ EXCEPTION Error convertSensorArrayToList:" & Exception_Information(Error));
          RAISE;
 	end convertSensorArrayToList;
 	
@@ -27,7 +34,6 @@ package body globals is
 		iter : listIteratorType;
 	begin
 		if getCount(L) = 0 then
-			-- A := new SensorArrayType(1..1);
          A := null;
 		else
 			A := new SensorArrayType(1..getCount(L));
@@ -39,7 +45,7 @@ package body globals is
 		end if;
    EXCEPTION
       WHEN error: OTHERS =>
-         Put_Line("************ EXCEPTION Error convertSensorListToArray:" & Exception_Information(Error));
+         put_line("************ EXCEPTION Error convertSensorListToArray:" & Exception_Information(Error));
          RAISE;
 	end convertSensorListToArray;
    

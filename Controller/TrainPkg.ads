@@ -28,6 +28,5 @@ PACKAGE TrainPkg IS
 PRIVATE
    LayoutPtr     : LayoutManagerAccess;
    TrainTaskList : Lists.List;
-   -- WaitTime : CONSTANT Integer := 50;                        -- mo 12/29/11
 END TrainPkg;
 

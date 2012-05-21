@@ -99,11 +99,6 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf (
             TrainId : TrainIdType);
 
-      -- PROCEDURE GetTrainSensors (
-            -- TrainId :        TrainIdType;
-            -- Sensors :    OUT SensorArrayAccess);
-
-      -- Procedures below are used by XMLParser to build the Layout Data Members
 
       -- Creates a new section using private variable CurrentSection
       PROCEDURE NewSection (
@@ -227,8 +222,6 @@ PRIVATE
          State : SensorStateType := Open;
          StartTime : Time := Clock;
       END RECORD;
-   -- PROCEDURE disposeBasicSensorObj IS 
-      -- NEW Ada.Unchecked_Deallocation(Object=>SensorObj, Name=>SensorObjPtr);	   
       
    TYPE SensorNode IS
       RECORD

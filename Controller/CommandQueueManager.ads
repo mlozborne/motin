@@ -17,7 +17,7 @@ PACKAGE CommandQueueManager IS
    TrainIdNotFound: exception;
 
    --put messages incoming to adarail on correct queue
-   PROCEDURE Put(message : IN MessageType);
+   PROCEDURE put(message : IN MessageType);
 
    --get first message from outqueue
    PROCEDURE Get(message : OUT MessageType);
@@ -34,15 +34,6 @@ PACKAGE CommandQueueManager IS
    PRIVATE
       SocketListArray: SocketListType := (OTHERS=>(-1.0));
    END SocketListT;
--------------------------------------------------------------
-   -- PROTECTED TYPE MessageQueueType IS                                    -- mo 12/22/11
-      -- PROCEDURE putMessage(message : IN MessageType);
-      -- PROCEDURE GetMessage(message : OUT MessageType);
-      -- FUNCTION IsEmpty RETURN Boolean;
-   -- PRIVATE
-      -- Queue: MessageQueue.Queue;         
-   -- END MessageQueueType;
-----------------------------------------------------------
 
    PROTECTED TYPE MessageQueueType IS                                       -- mo 12/22/11    
       procedure putMessage(message : IN MessageType);

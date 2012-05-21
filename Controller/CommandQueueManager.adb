@@ -14,103 +14,42 @@ PACKAGE BODY CommandQueueManager IS
       --sort into correct list
       CASE message.ByteArray(1) IS
          when OPC_GPON | OPC_GPOFF =>
-            put_line("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");
+            myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");
             CommandQueueManager.OutQueue.putMessage(message);
-         -- WHEN OPC_GPON =>                                       -- mo 12/14/11
-            -- Put_Line("  OPC_GPON      ComQuMngr.Put to out queue... ");
-            -- CommandQueueManager.OutQueue.putMessage(makePowerOnMsg);
-         -- WHEN OPC_GPOFF =>                                      -- mo 12/14/11
-            -- Put_Line("  OPC_GPOFF     ComQuMngr.Put to out queue... ");
-            -- CommandQueueManager.OutQueue.putMessage(makePowerOffMsg);
-            
          when OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
-            put_line("  " & toEnglish(message) & "            ComQuMngr.Put to train queue... ");
+            myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to train queue... ");
             TrainIdQueueList.GetQueue(Integer(message.ByteArray(2)), TrainQueuePtr);
-            TrainQueuePtr.putMessage(Message);         
-         -- WHEN OPC_LOCO_SPD =>--send to train queue
-            -- Put_Line("  OPC_LOCO_SPD  ComQuMngr.Put to train queue... ");
-            -- TrainIdQueueList.GetQueue(Integer(message.ByteArray(2)), TrainQueuePtr);
-            -- TrainQueuePtr.putMessage(Message);
-         -- WHEN OPC_LOCO_DIRF =>--send to train queue
-            -- Put_Line("  OPC_LOCO_DIRF ComQuMngr.Put to train queue... ");
-            -- TrainIdQueueList.GetQueue(Integer(message.ByteArray(2)), TrainQueuePtr);
-            -- TrainQueuePtr.putMessage(Message);
-         -- WHEN OPC_LOCO_SND =>--send to train queue
-            -- Put_Line("  OPC_LOCO_SND  ComQuMngr.Put to train queue... ");
-            -- TrainIdQueueList.GetQueue(Integer(message.ByteArray(2)), TrainQueuePtr);
-            -- TrainQueuePtr.putMessage(Message);
-            
+            TrainQueuePtr.putMessage(Message);                    
          when OPC_SW_REQ | OPC_SW_REP | OPC_INPUT_REP =>
-            put_line("  " & toEnglish(message) & "            ComQuMngr.Put to layout queue... ");
+            myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to layout queue... ");
             LayoutQueue.putMessage(Message);
-         -- WHEN OPC_SW_REQ =>--send to layout queue
-            -- Put_Line("  OPC_SW_REQ    ComQuMngr.Put to layout queue... ");
-            -- LayoutQueue.putMessage(Message);
-         -- WHEN OPC_SW_REP =>--send to layout queue
-            -- Put_Line("  OPC_SW_REP    ComQuMngr.Put to layout queue... ");
-            -- LayoutQueue.putMessage(Message);
-         -- WHEN OPC_INPUT_REP => --send to Layout queue
-            -- Put_Line("  OPC_INPUT_REP ComQuMngr.Put to layout queue... ");
-            -- LayoutQueue.putMessage(Message);
-            
          when OPC_LOCO_ADR | OPC_SL_RD_DATA | OPC_LONG_ACK =>
-            put_line("  " & toEnglish(message) & "            ComQuMngr.Put to SSI queue... ");
+            myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to SSI queue... ");
             SSIQueue.putMessage(Message);
-         -- WHEN OPC_LOCO_ADR =>--send to SSIQueue
-            -- Put_Line("  OPC_LOCO_ADR  ComQuMngr.Put to SSI queue... ");
-            -- SSIQueue.putMessage(Message);
-         -- WHEN OPC_SL_RD_DATA =>--send to SSI Queue
-            -- Put_Line("  OPC_SL_RD_DATA ComQuMngr.Put to SSI queue... ");
-            -- SSIQueue.putMessage(Message);
-         -- WHEN OPC_LONG_ACK=>--send to SSI queue
-            -- Put_Line("  OPC_LONG_ACK   CommandQueueManager.Putto SSI queue... ");
-            -- SSIQueue.putMessage(Message);
-            
          WHEN UZero =>
          
             CASE message.ByteArray(2) IS
             
                when MsgTrainTaskQuit | MsgReinitializeTrain =>
-                  put_line("  " & toEnglish(message) & "            ComQuMngr.Put to train queue... ");
+                  myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to train queue... ");
                   TrainIdQueueList.GetQueue(Integer(message.ByteArray(3)), TrainQueuePtr);
                   TrainQueuePtr.putMessage(Message);                             
-               -- when MsgTrainTaskQuit => -- send to train queue i           -- mo 1/28/12
-                  -- Put_Line("  MsgTrainTaskQuit      ComQuMngr.Put to train queue... ");
-                  -- TrainIdQueueList.GetQueue(Integer(message.ByteArray(3)), TrainQueuePtr);
-                  -- TrainQueuePtr.putMessage(Message);                             
-               -- when MsgReinitializeTrain => -- send to train queue i           -- mo 1/28/12
-                  -- Put_Line("  MsgReinitializeTrain  ComQuMngr.Put to train queue... ");
-                  -- TrainIdQueueList.GetQueue(Integer(message.ByteArray(3)), TrainQueuePtr);
-                  -- TrainQueuePtr.putMessage(Message);              
-               
                WHEN DoLocoInit=>--send to SSI queue
-                  put_line("  " & toEnglish(message) & "            ComQuMngr.Put to SSI queue... ");
-                  -- Put_Line("  DoLocoInit            ComQuMngr.Put to SSI queue... ");
-                  SSIQueue.putMessage(Message);
-                
+                  myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to SSI queue... ");
+                  SSIQueue.putMessage(Message);                
                when GetSwitchSuccessor | DoReadLayout | GetSwitchStates =>
-                  put_line("  " & toEnglish(message) & "            ComQuMngr.Put to layout queue... ");
+                  myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to layout queue... ");
                   LayoutQueue.putMessage(Message);
-               -- WHEN GetSwitchSuccessor=>--send to layout queue
-                  -- Put_Line("  GetSwitchSucessor    ComQuMngr.Put to layout queue... ");
-                  -- LayoutQueue.putMessage(Message);
-               -- WHEN DoReadLayout=>--send to layout queue
-                  -- Put_Line("  DoReadLayout         ComQuMngr.Put to layout queue... ");
-                  -- LayoutQueue.putMessage(Message);
-               -- WHEN GetSwitchStates=>--send to layout queue
-                  -- Put_Line("  GetSwitchStates      ComQuMngr.Put to layout queue... ");
-                  -- LayoutQueue.putMessage(Message);
-                  
                WHEN OTHERS =>
-                  Put_Line("  Undefined Extended Message   ComQuMngr.Put: ");
+                  myPutLine("  Undefined Extended Message   ComQuMngr.Put: ");
             END CASE;
          WHEN OTHERS =>
-            Put_Line("  Undefined Opcode     ComQuMngr.Put: ");
+            myPutLine("  Undefined Opcode     ComQuMngr.Put: ");
       END CASE;
       NULL;
    EXCEPTION
       WHEN error: OTHERS=>
-         Put_Line("**************** EXCEPTION CommandQueueManager in Put: " & Exception_Information(Error));
+         put_line("**************** EXCEPTION CommandQueueManager in Put: " & Exception_Information(Error));
          raise;
    END Put;
 
@@ -122,7 +61,7 @@ PACKAGE BODY CommandQueueManager IS
       OutQueue.GetMessage(Message);
    EXCEPTION
       WHEN error: OTHERS=>
-         Put_Line("**************** EXCEPTION CommandQueueManager: Get " & Exception_Information(Error));
+         put_line("**************** EXCEPTION CommandQueueManager: Get " & Exception_Information(Error));
          raise;
    END Get;
 
@@ -130,7 +69,6 @@ PACKAGE BODY CommandQueueManager IS
    PROTECTED BODY SocketListT IS
 
       PROCEDURE AddSocket (Socket : IN  C.Double) IS
-         -- SocketListFull : EXCEPTION;
       BEGIN
          FOR I IN 1..(SocketListArray'Length-1) LOOP
             IF (Integer(SocketListArray(I)) = -1) THEN
@@ -140,11 +78,8 @@ PACKAGE BODY CommandQueueManager IS
          END LOOP;
          RAISE SocketListFull;
       EXCEPTION
-         -- WHEN SocketListFull =>
-            -- Put_Line("**************** EXCEPTION in CommandQueueManager: SocketList (tried to add socket to full socketlist" & Exception_Information(SocketListFull));
-            -- raise;
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SocketListT.AddSocket " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SocketListT.AddSocket " & Exception_Information(Error));
             raise;
       END AddSocket;
 
@@ -153,7 +88,7 @@ PACKAGE BODY CommandQueueManager IS
          SocketListArray(0) := Socket;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SocketListT.AddRailRoadSocket " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SocketListT.AddRailRoadSocket " & Exception_Information(Error));
             raise;
       END AddRailroadSocket;
 
@@ -163,7 +98,7 @@ PACKAGE BODY CommandQueueManager IS
          Length := SocketListArray'Length;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SocketListT.GetSocketListLength " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SocketListT.GetSocketListLength " & Exception_Information(Error));
             raise;
       END GetSocketListLength;
 
@@ -174,31 +109,14 @@ PACKAGE BODY CommandQueueManager IS
          END IF;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SocketListT.GetSocket " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SocketListT.GetSocket " & Exception_Information(Error));
             raise;
       END GetSocket;
 
    END SocketListT;
---------------------------------------------------------------------------
-   -- PROTECTED BODY MessageQueueType IS                                      -- mo 12/22/11
 
-      -- PROCEDURE putMessage (message : IN     MessageType) IS
-      -- BEGIN
-         -- MessageQueue.Enqueue(Queue, Message);
-      -- END putMessage;
-
-      -- PROCEDURE GetMessage (message :    OUT MessageType) IS
-      -- BEGIN
-         -- MessageQueue.Dequeue(Queue, Message);
-      -- END GetMessage;
-
-      -- FUNCTION IsEmpty RETURN Boolean IS
-      -- BEGIN
-         -- RETURN MessageQueue.IsEmpty(Queue);
-      -- END IsEmpty;
-
-   -- END MessageQueueType;
---------------------------------------------------------------------------
+   --------------------------------------------------------------------------
+   
    PROTECTED BODY MessageQueueType IS                                      -- mo 12/22/11
 
       procedure putMessage(message : IN MessageType) IS
@@ -207,7 +125,7 @@ PACKAGE BODY CommandQueueManager IS
          count := count + 1;
       EXCEPTION
          WHEN error: OTHERS =>
-            Put_Line("**************** EXCEPTION CommandQueueManager putMessage " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager putMessage " & Exception_Information(Error));
             raise;
       END putMessage;
 
@@ -217,7 +135,7 @@ PACKAGE BODY CommandQueueManager IS
          count := count - 1;
       EXCEPTION
          WHEN error: OTHERS =>
-            Put_Line("**************** EXCEPTION CommandQueueManager GetMessage " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager GetMessage " & Exception_Information(Error));
             raise;
       END GetMessage;
 
@@ -226,7 +144,7 @@ PACKAGE BODY CommandQueueManager IS
          return MessageQueue.IsEmpty(Queue);
       EXCEPTION
          WHEN error: OTHERS =>
-            Put_Line("**************** EXCEPTION CommandQueueManager IsEmpty " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager IsEmpty " & Exception_Information(Error));
             raise;
       END IsEmpty;
 
@@ -239,11 +157,11 @@ PACKAGE BODY CommandQueueManager IS
       procedure put is
          ent   : lookupEntry;
       begin
-         new_line;
-         put_line("        virtAddr virtSlot hasVirtSlot phyAddr phySlot hasPhySlot inUse");
+         myPutLine(" ");
+         myPutLine("        virtAddr virtSlot hasVirtSlot phyAddr phySlot hasPhySlot inUse");
          for i in lookupTable'range loop
             ent := lookupTable(I);
-            put_line("        " & 
+            myPutLine("        " & 
                      integer'image(ent.virtTrainAddr) &
                      integer'image(ent.virtSlotNum) &
                      boolean'image(ent.hasVirtSlot) &
@@ -252,14 +170,13 @@ PACKAGE BODY CommandQueueManager IS
                      boolean'image(ent.hasPhySlot) &
                      boolean'image(ent.inuse));
          end loop;
-         new_line;
+         myPutLine(" ");
       end put;
 
       ----------------------------------------------------------
       -- return index of first empty entry in lookup table
       ---------------------------------------------------------
       PROCEDURE RequestTrainId (TrainId : OUT TrainIdType) IS
-         -- LookupTableFull : EXCEPTION;
          EntryFound : Boolean := False;
       BEGIN
          FOR I IN LookupTable'RANGE LOOP
@@ -274,11 +191,8 @@ PACKAGE BODY CommandQueueManager IS
             RAISE LookupTableFull;
          END IF;
       EXCEPTION
-         -- WHEN LookupTableFull =>
-            -- Put_Line("**************** EXCEPTION in CommandQueueManager: no empty entries in lookup table" & Exception_Information(LookupTableFull));
-            -- raise;
          WHEN error: OTHERS =>
-            Put_Line("**************** EXCEPTION CommandQueueManager: RequestTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: RequestTrainId " & Exception_Information(Error));
             raise;
       END RequestTrainId;
     
@@ -301,7 +215,7 @@ PACKAGE BODY CommandQueueManager IS
          END LOOP;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.removeEntryByPhysAddr " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.removeEntryByPhysAddr " & Exception_Information(Error));
             raise;
       end removeEntryByPhysAddr;
       
@@ -320,7 +234,7 @@ PACKAGE BODY CommandQueueManager IS
          end if;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.removeEntryByTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.removeEntryByTrainId " & Exception_Information(Error));
             raise;
       end removeEntryByTrainId;
       
@@ -339,43 +253,30 @@ PACKAGE BODY CommandQueueManager IS
          LookupTable(TrainId).InUse := True;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.CreateEntry " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.CreateEntry " & Exception_Information(Error));
             raise;
       END CreateEntry;
 
       FUNCTION TrainIdToVirtSlotNum(TrainId: TrainIdType) RETURN  SlotType IS
-         -- EntryNotFound: EXCEPTION;
       BEGIN
          RETURN LookupTable(TrainId).VirtSlotNum;
-         -- IF LookupTable(TrainId).InUse THEN
-            -- RETURN LookupTable(TrainId).VirtSlotNum;
-         -- ELSE
-            -- RAISE EntryNotFound;
-         -- END IF;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager TrainIdToVirtSlotNum " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager TrainIdToVirtSlotNum " & Exception_Information(Error));
             raise;
       END TrainIdToVirtSlotNum;
 
       FUNCTION TrainIdToPhysSlotNum(TrainId: TrainIdType) RETURN SlotType IS
-         -- EntryNotFound: EXCEPTION;
       BEGIN
          RETURN LookupTable(TrainId).PhysSlotNum;
-         -- IF Lookuptable(TrainId).InUse THEN
-            -- RETURN LookupTable(TrainId).PhysSlotNum;
-         -- ELSE
-            -- RAISE EntryNotFound;
-         -- END IF;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager TrainIdToPhysSlotNum " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager TrainIdToPhysSlotNum " & Exception_Information(Error));
             raise;
       END TrainIdToPhysSlotNum;
 
       FUNCTION PhysSlotNumToTrainId(PhysSlotNum: SlotType) RETURN
             TrainIdType IS
-         -- EntryNotFound :EXCEPTION;
       BEGIN
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).PhysSlotNum = PhysSlotNum THEN
@@ -385,12 +286,11 @@ PACKAGE BODY CommandQueueManager IS
          RAISE EntryNotFound;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager PhysSlotNumToTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager PhysSlotNumToTrainId " & Exception_Information(Error));
             raise;
       END PhysSlotNumToTrainId;
 
       FUNCTION VirtSlotNumToTrainId(VirtSlotNum: SlotType) RETURN TrainIdType IS
-         -- EntryNotFound: EXCEPTION;
       BEGIN
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).VirtSlotNum = VirtSlotNum THEN
@@ -400,7 +300,7 @@ PACKAGE BODY CommandQueueManager IS
          RAISE EntryNotFound;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager VirtSlotNumToTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager VirtSlotNumToTrainId " & Exception_Information(Error));
             raise;
       END VirtSlotNumToTrainId;
 
@@ -414,12 +314,11 @@ PACKAGE BODY CommandQueueManager IS
          RETURN False;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager IsPhysAddrInTable " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager IsPhysAddrInTable " & Exception_Information(Error));
             raise;
       END IsPhysAddrInTable;
 
       FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType IS
-         -- EntryNotFound: EXCEPTION;
       BEGIN
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).PhysTrainAddr = PhysAddr THEN
@@ -429,7 +328,7 @@ PACKAGE BODY CommandQueueManager IS
          RAISE EntryNotFound;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager PhysAddrToTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager PhysAddrToTrainId " & Exception_Information(Error));
             raise;
       END PhysAddrToTrainId;
 
@@ -444,7 +343,7 @@ PACKAGE BODY CommandQueueManager IS
          return 0;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager addressToTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager addressToTrainId " & Exception_Information(Error));
             raise;
       end addressToTrainId;
 
@@ -459,38 +358,26 @@ PACKAGE BODY CommandQueueManager IS
          RETURN 1;          
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager VirtAddrToTrainId " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager VirtAddrToTrainId " & Exception_Information(Error));
             raise;
       END VirtAddrToTrainId;
 
       FUNCTION TrainIdToVirtAddr(TrainId: TrainIdType) RETURN
             LocoAddressType IS
-         -- EntryNotFound: EXCEPTION;
       BEGIN
          RETURN LookupTable(TrainId).VirtTrainAddr;
-         -- IF LookupTable(TrainId).InUse THEN
-            -- RETURN LookupTable(TrainId).VirtTrainAddr;
-         -- ELSE
-            -- RAISE EntryNotFound;
-         -- END IF;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION CommandQueueManager TrainIdToVirAddr " & Exception_Information(Error));
+            put_line("**************** EXCEPTION CommandQueueManager TrainIdToVirAddr " & Exception_Information(Error));
             raise;
       END TrainIdToVirtAddr;
 
       FUNCTION TrainIdToPhysAddr(TrainId: TrainIdType) RETURN LocoAddressType IS
-         -- EntryNotFound: EXCEPTION;
       BEGIN
          RETURN LookupTable(TrainId).PhysTrainAddr;
-         -- IF LookupTable(TrainId).InUse THEN
-            -- RETURN LookupTable(TrainId).PhysTrainAddr;
-         -- ELSE
-            -- RAISE EntryNotFound;
-         -- END IF;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager TrainIdToPhysAddr " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager TrainIdToPhysAddr " & Exception_Information(Error));
             raise;
       END TrainIdToPhysAddr;
 
@@ -499,7 +386,7 @@ PACKAGE BODY CommandQueueManager IS
          RETURN LookupTable(TrainId).HasVirtSlot AND LookupTable(TrainId).HasPhySlot;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager HasBothSlots " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager HasBothSlots " & Exception_Information(Error));
             raise;
       END HasBothSlots;
 
@@ -516,7 +403,7 @@ PACKAGE BODY CommandQueueManager IS
          Result := False;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager SavePhySlot " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager SavePhySlot " & Exception_Information(Error));
             raise;
       END SavePhySlot;
 
@@ -533,7 +420,7 @@ PACKAGE BODY CommandQueueManager IS
          Result := False;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager SaveVirSlot " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager SaveVirSlot " & Exception_Information(Error));
             raise;
       END SaveVirtSlot;
 
@@ -546,7 +433,7 @@ PACKAGE BODY CommandQueueManager IS
          END LOOP;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager SetTrainSensors " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager SetTrainSensors " & Exception_Information(Error));
             raise;
       END SetTrainSensors;
 
@@ -558,7 +445,7 @@ PACKAGE BODY CommandQueueManager IS
          END LOOP;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager GetTrainSensors " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager GetTrainSensors " & Exception_Information(Error));
             raise;
       END GetTrainSensors;
 
@@ -575,36 +462,31 @@ PACKAGE BODY CommandQueueManager IS
             put(natural'image(tempEntry.trainId));
             Lists.moveNext(trainList);
          end loop;
-         new_line;
+         myPutLine(" ");
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.listTrains " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.listTrains " & Exception_Information(Error));
             raise;
       END listTrains;
 
       procedure removeTrain(trainId : trainIdType) is
          TempEntry : TrainQueueEntry;
-         -- TrainIdNotFound : EXCEPTION;
       begin
-         put("                   RemoveTrain before: "); listTrains;
+         myPutLine("                   RemoveTrain before: "); listTrains;
          Lists.moveFirst(TrainList);
          while Lists.hasCurrent(trainList) loop
             tempEntry := Lists.retrieveCurrent(trainList);
             if tempEntry.trainId = trainId then
-               -- makeEmpty(tempEntry.trainQueue);    -- memory leak
                Lists.removeCurrent(trainList);  
-               put("                   RemoveTrain after: "); listTrains;
+               myPutLine("                   RemoveTrain after: "); listTrains;
                return;
             end if;
             Lists.moveNext(trainList);
          end loop;
          raise trainIdNotFound;
       EXCEPTION
-         -- WHEN TrainIdNotFound=>
-            -- Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.removeTrain: Train id not found" & Exception_Information(TrainIdNotFound));
-            -- raise;
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.removeTrain " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.removeTrain " & Exception_Information(Error));
             raise;
       END removeTrain;
          
@@ -612,14 +494,14 @@ PACKAGE BODY CommandQueueManager IS
       PROCEDURE AddTrain (TrainId : IN     TrainIdType) IS
          TempElement : TrainQueueEntry;
       BEGIN
-         put("                   AddTrain before: "); listTrains;
+         myPutLine("                   AddTrain before: "); listTrains;
          TempElement.TrainId := TrainId;
          TempElement.TrainQueue := NEW MessageQueueType;
          Lists.AddToEnd(TrainList, TempElement);
-         put("                   AddTrain after: "); listTrains;
+         myPutLine("                   AddTrain after: "); listTrains;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.AddTrain " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.AddTrain " & Exception_Information(Error));
             raise;
       END AddTrain;
 
@@ -627,8 +509,6 @@ PACKAGE BODY CommandQueueManager IS
             TrainId    :        TrainIdType;
             TrainQueue :    OUT QueuePtr) IS
          TempEntry : TrainQueueEntry;
-         -- TempList  : Lists.List;
-         -- TrainIdNotFound : EXCEPTION;
       BEGIN
          Lists.moveFirst(TrainList);
          while Lists.hasCurrent(trainList) loop
@@ -640,27 +520,9 @@ PACKAGE BODY CommandQueueManager IS
             Lists.moveNext(trainList);
          end loop;
          raise trainIdNotFound;
-         -- WHILE NOT Lists.IsEmpty(TrainList) LOOP
-            -- TempEntry := Lists.RetrieveFront(TrainList);
-            -- Lists.RemoveFront(TrainList);
-            -- IF TempEntry.TrainId = TrainId THEN
-               -- TrainQueue := TempEntry.TrainQueue;
-            -- END IF;
-            -- Lists.AddToEnd(TempList, TempEntry);
-         -- END LOOP;
-         -- WHILE NOT Lists.IsEmpty(TempList) LOOP
-            -- Lists.AddToEnd(TrainList, Lists.RetrieveFront(TempList));
-            -- Lists.RemoveFront(TempList);
-         -- END LOOP;
-         -- IF TrainQueue = NULL THEN
-            -- RAISE TrainIdNotFound;
-         -- END IF;
       EXCEPTION
-         -- WHEN TrainIdNotFound=>
-            -- Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.GetQueue: Train id not found"  & Exception_Information(TrainIdNotFound));
-            -- raise;
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.GetQueue " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.GetQueue " & Exception_Information(Error));
             raise;
       END GetQueue;
 
@@ -668,7 +530,6 @@ PACKAGE BODY CommandQueueManager IS
             TrainId : TrainIdType;
             Result : OUT Boolean) IS
          TempEntry : TrainQueueEntry;
-         -- TempList  : Lists.List;
       BEGIN
          Lists.moveFirst(TrainList);
          while Lists.hasCurrent(trainList) loop
@@ -681,22 +542,9 @@ PACKAGE BODY CommandQueueManager IS
          end loop;
          result := false;
          return;
-         -- Result := False;
-         -- WHILE NOT Lists.IsEmpty(TrainList) LOOP
-            -- TempEntry := Lists.RetrieveFront(TrainList);
-            -- Lists.RemoveFront(TrainList);
-            -- IF TempEntry.TrainId = TrainId THEN
-               -- Result := True;
-            -- END IF;
-            -- Lists.AddToEnd(TempList, TempEntry);
-         -- END LOOP;
-         -- WHILE NOT Lists.IsEmpty(TempList) LOOP
-            -- Lists.AddToEnd(TrainList, Lists.RetrieveFront(TempList));
-            -- Lists.RemoveFront(TempList);
-         -- END LOOP;
       EXCEPTION
          WHEN error: OTHERS=>
-            Put_Line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.HasTrain " & Exception_Information(Error));
+            put_line("**************** EXCEPTION in CommandQueueManager.TrainIdQueueList.HasTrain " & Exception_Information(Error));
             raise;
       END HasTrain;
 

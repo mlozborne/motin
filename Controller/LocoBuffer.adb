@@ -42,11 +42,11 @@ PACKAGE BODY LocoBuffer IS
                   EXIT;
                END IF;
             END LOOP;
-            Put_Line("LocoBuffer pkg in ListenForClientTask: accepted client connection");
+            put_line("LocoBuffer pkg in ListenForClientTask: accepted client connection");
             DELAY 0.01; --0.1;                                                    -- mo 12/17/11
          EXCEPTION
             WHEN error: OTHERS =>
-               Put_Line("**************** EXCEPTION in LocoBuffer pkg: ListenForClients " & Exception_Information(Error));
+               put_line("**************** EXCEPTION in LocoBuffer pkg: ListenForLocoBufferClientsTaskType " & Exception_Information(Error));
          END;
       END LOOP;
    END ListenForLocoBufferClientsTaskType;
@@ -70,7 +70,7 @@ PACKAGE BODY LocoBuffer IS
                   --read from client
                   CValue := ClearBuffer(CZero);
                   Size := Integer(ReceiveMessage(SocketListArray(I), CZero, CZero));
-                  Put_Line("LocoBufferPkg in WriteLocoString: recieved message from client");
+                  put_line("LocoBufferPkg in WriteLocoString: recieved message from client");
                   FOR J IN 1..Size LOOP
                      MyArray(J) := Unsigned_8(ReadByte(CZero));
                   END LOOP;
@@ -90,7 +90,7 @@ PACKAGE BODY LocoBuffer IS
             DELAY 0.01; --0.1;                                                -- mo 12/17/11
          EXCEPTION
             WHEN Error: OTHERS=>
-               Put_Line("**************** EXCEPTION in LocoBuffer pkg: WriteLocoStringType " & Exception_Information(Error));
+               put_line("**************** EXCEPTION in LocoBuffer pkg: WriteLocoBufferStringTaskType " & Exception_Information(Error));
          END;
       END LOOP;
    END WriteLocoBufferStringTaskType;
@@ -108,13 +108,13 @@ PACKAGE BODY LocoBuffer IS
       Size, ReturnVal : Integer;
    BEGIN
       --Initialize locoBuffer port
-      Put_Line("locobuffer pkg in ReadLocoBufferByteTask: trying to  connect to locoBuffer");
+      put_line("locobuffer pkg in ReadLocoBufferByteTask: trying to  connect to locoBuffer");
       LOOP
          ReturnVal := InitializePort;
-         Put_Line("LocoBufferPkg in  ReadLocoBufferByteTask: initialize port returns" & Integer'Image(ReturnVal));
+         put_line("LocoBufferPkg in  ReadLocoBufferByteTask: initialize port returns" & Integer'Image(ReturnVal));
          EXIT WHEN ReturnVal > 0;
       END LOOP;
-      Put_Line("locobuffer pkg in  ReadLocoBufferByteTask: connected to locoBuffer");
+      put_line("locobuffer pkg in  ReadLocoBufferByteTask: connected to locoBuffer");
       LOOP
          BEGIN
             --read single message from locobuffer
@@ -148,7 +148,7 @@ PACKAGE BODY LocoBuffer IS
                END LOOP;
                FOR I IN SocketListArray'RANGE LOOP--write to all clients
                   IF (Integer(SocketListArray(I)) >= 0) THEN
-                     Put_Line("locobuffer pkg  in  ReadLocoBufferByteTask: sending message to MessageIO");
+                     put_line("locobuffer pkg  in  ReadLocoBufferByteTask: sending message to MessageIO");
                      Size := Integer(SendMessage(SocketListArray(I),
                            New_String(""), CZero, CZero));
                   END IF;
@@ -157,7 +157,7 @@ PACKAGE BODY LocoBuffer IS
             DELAY 0.01; --0.1;                                       -- mo 12/17/11
          EXCEPTION
             WHEN error: OTHERS =>
-               Put_Line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));
+               put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));
          END;
       END LOOP;
    END ReadLocoBufferByteTaskType;

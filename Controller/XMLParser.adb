@@ -19,7 +19,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.NewSection(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("*********** EXCEPTION Error adding section:" & Positive'Image(Id) & " " & Exception_Information(Error));
+         put_line("*********** EXCEPTION Error adding section:" & Positive'Image(Id) & " " & Exception_Information(Error));
          RAISE;
    END Get_Section_Values;
 
@@ -38,7 +38,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.AddSensor(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("************ EXCEPTION Error adding sensor:" & Positive'Image(Id) & " " & Exception_Information(Error));
+         put_line("************ EXCEPTION Error adding sensor:" & Positive'Image(Id) & " " & Exception_Information(Error));
          RAISE;
    END Get_Sensor_Values;
 
@@ -61,7 +61,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.AddSwitch(Id, State);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("************* EXCEPTION Error adding switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
+         put_line("************* EXCEPTION Error adding switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
          RAISE;
    END Get_Switch_Values;
 
@@ -81,7 +81,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.UpdateSwitch(Id, TypeOfSwitch);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("************* EXCEPTION Error updating switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
+         put_line("************* EXCEPTION Error updating switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
          RAISE;
    END Update_Switch;
 
@@ -95,7 +95,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.UpdateSwitchNarrow(NarrowId);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("*************** EXCEPTION Error updating switch narrow end. Sensor Id:" & Positive'Image(NarrowId) & " " & Exception_Information(Error));
+         put_line("*************** EXCEPTION Error updating switch narrow end. Sensor Id:" & Positive'Image(NarrowId) & " " & Exception_Information(Error));
          RAISE;
    END Update_Switch_Narrow;
 
@@ -109,7 +109,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.UpdateSwitchClosed(ClosedId);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("*********** EXCEPTION Error updating switch closed end. Sensor Id:" & Positive'Image(ClosedId) & " " & Exception_Information(Error));
+         put_line("*********** EXCEPTION Error updating switch closed end. Sensor Id:" & Positive'Image(ClosedId) & " " & Exception_Information(Error));
          RAISE;
    END Update_Switch_Closed;
 
@@ -123,7 +123,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.UpdateSwitchThrown(ThrownId);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("*************** EXCEPTION Error updating switch thrown end. Sensor Id:" & Positive'Image(ThrownId) & " " & Exception_Information(Error));
+         put_line("*************** EXCEPTION Error updating switch thrown end. Sensor Id:" & Positive'Image(ThrownId) & " " & Exception_Information(Error));
          RAISE;
    END Update_Switch_Thrown;
 
@@ -142,7 +142,7 @@ PACKAGE BODY XMLParser IS
       LayoutPtr.AddBlocking(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("************** EXCEPTION Error getting blocking values " & Exception_Information(Error));
+         put_line("************** EXCEPTION Error getting blocking values " & Exception_Information(Error));
          RAISE;
    END Get_Blocking_Values;
 
@@ -189,7 +189,7 @@ PACKAGE BODY XMLParser IS
       END IF;
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("*********** EXCEPTION Error reading XML starting tag " & Exception_Information(Error));
+         put_line("*********** EXCEPTION Error reading XML starting tag " & Exception_Information(Error));
          RAISE;
    END Start_Element;
 
@@ -215,7 +215,7 @@ PACKAGE BODY XMLParser IS
       END IF;
    EXCEPTION
       WHEN Error : OTHERS =>
-         Put_Line("*********** EXCEPTION Error reading XML ending tag " & Exception_Information(Error));
+         put_line("*********** EXCEPTION Error reading XML ending tag " & Exception_Information(Error));
          RAISE;
    END End_Element;
 

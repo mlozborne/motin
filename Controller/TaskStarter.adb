@@ -8,30 +8,48 @@ WITH SSIPkg; USE SSIPkg;
 WITH LocoBuffer; USE LocoBuffer;
 with Ada.Text_IO, Ada.Exceptions;
 USE Ada.Text_IO, Ada.Exceptions;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Command_Line; use Ada.Command_Line;
+
 
 PROCEDURE TaskStarter IS
    LayoutPtr : LayoutManagerAccess := NEW LayoutManager;
    Char      : Character;
 
-BEGIN
-   -- Put("Enter 's' for simulator or 'r' for railroad: ");
-   -- Get(Char);
-   -- IF Char = 's' THEN
-      -- Simulator := True;
-   -- END IF;
-
-   -- Put_Line("TaskStart pkg in TaskStarter: starting tasks");
+   function stringToLower (str :string) return string is
+      Result : String (Str'Range);
+   begin
+     for C in  Str'Range loop
+        Result (C) := To_Lower (Str (C));
+     end loop;
+     return Result;
+  end stringToLower;
    
-   -- simulator := true;
 
+BEGIN
+   declare
+      Port      : unbounded_String := to_unbounded_string("0000");
+   begin
+      for arg in 1..argument_count loop
+         if stringToLower(argument(arg)) = "port" and then arg + 1 <= argument_count then
+            port := to_unbounded_string(argument(arg+1));
+         elsif stringToLower(argument(arg)) = "ip" and then arg + 1 <= argument_count then
+            IpStrAda := to_unbounded_string(argument(arg+1));
+         elsif stringToLower(argument(arg)) = "notrace" then
+            withTrace := false;
+         end if;
+      end loop;
+      simulator := (port = "1234");
+   end;
+   
    DECLARE
       LayoutTask : LayoutTaskType;
       SSITask    : SSITaskType;
-      --MessageIO package
       ListenForThrottleTask              : ListenForThrottleTaskType;
       ConnectToSimulatorOrLocoBufferTask : ConnectToSimulatorOrLocoBufferTaskType;
       SendMessageTask                    : SendMessageTaskType;
-      ReceiveMessageTask                 : ReceiveMessageTaskType;
+      ReceiveMessageTask                 : ReceiveMessageTaskType;     
    BEGIN
       LayoutTask.SetLayout(LayoutPtr);
       SSITask.SetLayout(LayoutPtr);
@@ -45,12 +63,10 @@ BEGIN
          END;
       END IF;
    END;
-   -- put_line("Enter any character to end");
-   -- get(char);
 EXCEPTION
    WHEN Error : OTHERS =>
-      Put_Line("**************** EXCEPTION   in TaskStarter: " & Exception_Information(Error));
-      put_line("Enter any character to end");
+      put_line("**************** EXCEPTION   in TaskStarter: " & Exception_Information(Error));
+      myPutLine("Enter any character to end");
       get(char);
 END TaskStarter;
 
