@@ -69,7 +69,7 @@ PACKAGE Globals IS
 	-- End declarations needed by MessageTranslationLibrary
 	--------------------------------------------------------------------------------------
 
-   Simulator : Boolean := False;
+   -- Simulator : Boolean := False;
 
    -- add in an extra slots for error handling
    -- KTrainSlots  : CONSTANT Natural := 125;

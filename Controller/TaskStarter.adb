@@ -22,7 +22,7 @@ BEGIN
 
    -- Put_Line("TaskStart pkg in TaskStarter: starting tasks");
    
-   simulator := true;
+   -- simulator := true;
 
    DECLARE
       LayoutTask : LayoutTaskType;
@@ -38,15 +38,15 @@ BEGIN
       IF NOT Simulator THEN
          DECLARE
             ListenForLocoBufferClientsTask       : ListenForLocoBufferClientsTaskType;
-            WriteLocoBufferStringTask  : WriteLocoBufferStringTaskType;
-            ReadLocoBufferByteTask     : ReadLocoBufferByteTaskType;
+            WriteLocoBufferStringTask            : WriteLocoBufferStringTaskType;
+            ReadLocoBufferByteTask               : ReadLocoBufferByteTaskType;
          BEGIN
             NULL;
          END;
       END IF;
    END;
-   put_line("Enter any character to end");
-   get(char);
+   -- put_line("Enter any character to end");
+   -- get(char);
 EXCEPTION
    WHEN Error : OTHERS =>
       Put_Line("**************** EXCEPTION   in TaskStarter: " & Exception_Information(Error));
