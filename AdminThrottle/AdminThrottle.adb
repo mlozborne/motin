@@ -36,7 +36,7 @@ BEGIN
          port := to_unbounded_string(argument(arg+1));
       elsif stringToLower(argument(arg)) = "ip" and then arg + 1 <= argument_count then
          ip := to_unbounded_string(argument(arg+1));
-      elsif stringToLower(argument(arg)) = "nocontroller" then
+      elsif stringToLower(argument(arg)) = "standalone" then
          withController := false;
       elsif stringToLower(argument(arg)) = "noadminlog" then
          withAdminLog := false;

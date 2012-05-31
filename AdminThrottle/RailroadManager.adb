@@ -330,14 +330,20 @@ package body RailroadManager is
                     else
                       -- Steal successful
                       -- Record train address and slot number
-                      objScreenManager.putError("Steal successful.");
-                      NumTrainsInUse := NumTrainsInUse + 1;
-                      trains(NumTrainsInUse).isConnected := true;
-                      trains(NumTrainsInUse).PhyAdr := addressBeingSet;
-                      trains(NumTrainsInUse).viradr := addressBeingSet;
-                      trains(NumTrainsInUse).physlot := slotNumberReceived;
-                      trains(NumTrainsInUse).virslot := slotNumberReceived;
-                      end if;
+                      
+                      completeEntryForTrainWith(addressBeingSet, slotNumberReceived, addressBeingSet, slotNumberReceived);
+                      objScreenManager.putError("Successful steal");
+                      putTrains(trains);         
+                        
+                      -- objScreenManager.putError("Steal successful.");
+                      -- NumTrainsInUse := NumTrainsInUse + 1;
+                      -- trains(NumTrainsInUse).isConnected := true;
+                      -- trains(NumTrainsInUse).sensorsOK := true;
+                      -- trains(NumTrainsInUse).PhyAdr := addressBeingSet;
+                      -- trains(NumTrainsInUse).viradr := addressBeingSet;
+                      -- trains(NumTrainsInUse).physlot := slotNumberReceived;
+                      -- trains(NumTrainsInUse).virslot := slotNumberReceived;
+                    end if;
                   end if;
 
                   if (tryingToSelect) then
@@ -350,13 +356,19 @@ package body RailroadManager is
                       -- Select successful.
                       -- Record train address and slot number.
                       -- Send OPC_MOVE_SLOTS to set the slot to in-use
-                      objScreenManager.putError("Select successful.");
-                      NumTrainsInUse := NumTrainsInUse + 1;
-                      trains(NumTrainsInUse).isConnected := true;
-                      trains(NumTrainsInUse).PhyAdr := addressBeingSet;
-                      trains(NumTrainsInUse).viradr := addressBeingSet;
-                      trains(NumTrainsInUse).physlot := slotNumberReceived;
-                      trains(NumTrainsInUse).virslot := slotNumberReceived;
+                      
+                      completeEntryForTrainWith(addressBeingSet, slotNumberReceived, addressBeingSet, slotNumberReceived);
+                      objScreenManager.putError("Successful select");
+                      putTrains(trains);                       
+
+                      -- objScreenManager.putError("Select successful.");
+                      -- NumTrainsInUse := NumTrainsInUse + 1;
+                      -- trains(NumTrainsInUse).isConnected := true;
+                      -- trains(NumTrainsInUse).sensorsOK := true;
+                      -- trains(NumTrainsInUse).PhyAdr := addressBeingSet;
+                      -- trains(NumTrainsInUse).viradr := addressBeingSet;
+                      -- trains(NumTrainsInUse).physlot := slotNumberReceived;
+                      -- trains(NumTrainsInUse).virslot := slotNumberReceived;
                       command.cmd := MoveSlots;
                       command.n := slotNumberReceived;
                       sendMessage(command);
@@ -568,11 +580,9 @@ package body RailroadManager is
                if sendThisMessage then
                   if cmd = SelectLoco then
                      tryingToSelect := true;
-                     --objScreenManager.putError("Attempting to select a physical loco address by sending OPC_LOC_ADR.");
                      objScreenManager.putError("Attempting to select a physical loco address.");
                   else
                      tryingToSteal := true;
-                     --objScreenManager.putError("Attempting to steal a physical loco address by sending OPC_LOC_ADR.");
                      objScreenManager.putError("Attempting to steal a physical loco address.");
                   end if;
                   message := makeLocoAdrMsg(addressBeingSet);
@@ -651,8 +661,6 @@ package body RailroadManager is
                   -- This is a request to remove all trains
                   removeAllTrains;
                   PutTrains(Trains);
-                  -- sendThisMessage := false;
-                  -- objScreenManager.putError("ERROR: This feature not implemented yet");
                ELSIF getCount(command.sensors) = 0 THEN
                   -- This is a request to remove one train, which may or may not have been established
                   -- by this admin throttle.
@@ -661,17 +669,16 @@ package body RailroadManager is
                   location := getIdOfTrainFromPhyAdr(command.n);
                   IF Location = 0 THEN
                      -- The train is not in the array
-                     --sendThisMessage := false;
-                     objScreenManager.putError("Success: you haven't established this train's physical address but message sent to controller");
+                     objScreenManager.putError
+                     ("Success: you haven't established this train's physical address but message sent to controller");
                   ELSE
                      -- The train is in the array, so get rid of it
-                     -- If the train is not connected then just remove it from trains and don't send the messages else remove and send the 
-                     -- message
                      if not trains(location).isConnected then
-                        --sendThisMessage := false;
-                        objScreenManager.putError("Success: this train was never initialized successfully but message sent to controller");
+                        objScreenManager.putError
+                        ("Success: this train was never initialized successfully but message sent to controller");
                      else
-                        objScreenManager.putError("Success: message sent to the controller");
+                        objScreenManager.putError
+                        ("Success: message sent to the controller");
                      end if;
                   END IF;
                   removeTrainUsingPhyAdr(command.n);
