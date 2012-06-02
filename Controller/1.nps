@@ -1,0 +1,28 @@
+<NotepadPlus>
+    <Session activeView="1">
+        <mainView activeIndex="9">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\CommandQueueManager.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\Globals.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\LayoutPkg.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="976" startPos="912" endPos="926" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\LocoBuffer.adb" />
+            <File firstVisibleLine="59" xOffset="0" scrollWidth="1120" startPos="3440" endPos="3449" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\MessageIO.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1056" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\MessageTranslationLibrary.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\SSIPkg.adb" />
+            <File firstVisibleLine="7" xOffset="0" scrollWidth="760" startPos="704" endPos="704" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\TaskStarter.adb" />
+            <File firstVisibleLine="259" xOffset="0" scrollWidth="1256" startPos="3486" endPos="3490" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\TrainPkg.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="984" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\XMLParser.adb" />
+        </mainView>
+        <subView activeIndex="0">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="752" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\CommandQueueManager.ads" />
+            <File firstVisibleLine="145" xOffset="0" scrollWidth="936" startPos="8014" endPos="8028" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\Globals.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="896" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\LayoutPkg.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="448" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\LocoBuffer.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="432" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\MessageIO.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1064" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\MessageTranslationLibrary.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="888" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\MessageTranslationTypes.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="408" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\SSIPkg.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="624" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\TrainPkg.ads" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="560" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Controller\XMLParser.ads" />
+        </subView>
+    </Session>
+</NotepadPlus>

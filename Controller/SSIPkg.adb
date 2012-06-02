@@ -37,6 +37,7 @@ PACKAGE BODY SSIPkg IS
       
       -- Tell the train task to quit
       CommandQueueManagerPut(makeTrainTaskQuitMsg(trainId));
+      delay 0.1;
       
       -- Free all sections occupied or reserved by train
       LayoutPtr.freeAllSectionsOccupiedOrReservedByTrain(trainId);

@@ -29,8 +29,6 @@ package body TcpIp is
          Buffid => C.Double(0));
       msg.size := integer(cvalue);
 
-      -- if size > kMaxLenMsg then size := kMaxLenMsg; end if;
-
       for i in 1..msg.size loop
          msg.byteArray(i) := unsigned_8(readByte(cZero));
       end loop;

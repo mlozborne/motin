@@ -19,13 +19,13 @@ rem --------------controller--------------------
 rem options for TaskStarter.exe
 rem trace/noTrace: for display of internal behavior of controller
 rem When running all throttles in standalone mode, DO NOT RUN taskstarter.exe
-rem start ..\controller\taskstarter.exe ip 127.0.0.1 port 1234 notrace
-rem PING -n 2 127.0.0.1>nul
+start ..\controller\taskstarter.exe ip 127.0.0.1 port 1234 notrace
+PING -n 2 127.0.0.1>nul
 
 rem ---------------adminthrottle---------------
 rem options for AdminThrottle.exe
 rem controller/standalone mode
 rem keyboardLog/noKeyboardLog
 rem adminLog/noAdminLog
-start ..\adminthrottle\adminthrottle.exe ip 127.0.0.1 port 1234 standalone nokeyboardLog adminLog
+start ..\adminthrottle\adminthrottle.exe ip 127.0.0.1 port 1235 controller nokeyboardLog adminLog
 PING -n 2 127.0.0.1>nul

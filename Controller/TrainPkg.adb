@@ -276,6 +276,7 @@ PACKAGE BODY TrainPkg IS
                         CASE Cmd.ByteArray(2) IS 
                         
                            when msgTrainTaskQuit =>               -- this will end the train task
+                              sendToOutQueue(makeLocoSpdMsg(trainId, kSpeedAbruptStop)); 
                               exit;
                            when MsgReinitializeTrain =>              -- mo 1/28/12
                               state := halted;

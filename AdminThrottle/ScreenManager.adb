@@ -60,7 +60,7 @@ PACKAGE BODY ScreenManager IS
          if isInControllerMode then
             MyPut(33,11,"Xf  read XML      Za  s#...s#  initialize loco");
          else
-            MyPut(33,12,"SEa select loco   STa steal loco");
+            MyPut(33,12,"SEa select loco   STa steal loco   SXa remove loco");
          end if;
          MyPut(33,13," ");
          MyPut(33,14,"Vt n  velocity (n=0..127)");
