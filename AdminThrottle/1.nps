@@ -1,23 +1,23 @@
 <NotepadPlus>
     <Session activeView="0">
-        <mainView activeIndex="5">
+        <mainView activeIndex="4">
             <File firstVisibleLine="0" xOffset="0" scrollWidth="840" startPos="987" endPos="987" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\AdminThrottle.adb" />
-            <File firstVisibleLine="14" xOffset="0" scrollWidth="1064" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\KeyboardTask.adb" />
+            <File firstVisibleLine="93" xOffset="0" scrollWidth="1064" startPos="4191" endPos="4191" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\KeyboardTask.adb" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="736" startPos="1139" endPos="1139" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\LogFiles.adb" />
-            <File firstVisibleLine="557" xOffset="0" scrollWidth="1296" startPos="24308" endPos="24308" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadManager.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="1296" startPos="28188" endPos="28205" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadManager.adb" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="888" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadTask.adb" />
             <File firstVisibleLine="40" xOffset="0" scrollWidth="984" startPos="1991" endPos="1991" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\ScreenManager.adb" />
-            <File firstVisibleLine="15" xOffset="0" scrollWidth="1144" startPos="1998" endPos="1998" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\TcpIp.adb" />
+            <File firstVisibleLine="10" xOffset="0" scrollWidth="1144" startPos="1041" endPos="1041" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\TcpIp.adb" />
         </mainView>
-        <subView activeIndex="6">
+        <subView activeIndex="7">
             <File firstVisibleLine="0" xOffset="0" scrollWidth="552" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\KeyboardTask.ads" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="712" startPos="144" endPos="144" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\LogFiles.ads" />
-            <File firstVisibleLine="0" xOffset="0" scrollWidth="840" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadManager.ads" />
+            <File firstVisibleLine="30" xOffset="0" scrollWidth="896" startPos="2927" endPos="2942" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadManager.ads" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="552" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadTask.ads" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="696" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\ScreenManager.ads" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="552" startPos="161" endPos="161" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\TcpIp.ads" />
-            <File firstVisibleLine="0" xOffset="0" scrollWidth="776" startPos="1241" endPos="1241" selMode="0" lang="Batch" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\RunSoftware\mystart.bat" />
-            <File firstVisibleLine="652" xOffset="18" scrollWidth="1296" startPos="29385" endPos="29400" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\AdminThrottle\RailroadManager.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="776" startPos="1445" endPos="1445" selMode="0" lang="Batch" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\RunSoftware\mystart.bat" />
+            <File firstVisibleLine="54" xOffset="0" scrollWidth="1096" startPos="6659" endPos="6686" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\Trains SVN\Util\MessageTranslationLibrary.ads" />
         </subView>
     </Session>
 </NotepadPlus>

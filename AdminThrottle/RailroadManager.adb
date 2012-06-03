@@ -561,7 +561,34 @@ package body RailroadManager is
 
             when RemoveLoco =>
             
-               see line 642 for a copy of needed code
+                  -- This is a request to remove one train.
+                  -- Find out where the train is stored in the trains array and remove it.
+                  -- Send the message to the railroad if the train was in the trains array.
+                  location := getIdOfTrainFromPhyAdr(command.n);
+                  IF Location = 0 THEN
+                     -- The train is not in the array
+                     objScreenManager.putError
+                     ("Failure: you haven't established this train's physical address");
+                     return;
+                  ELSE
+                     -- The train is in the array, so get rid of it
+                     if not trains(location).isConnected then
+                        objScreenManager.putError
+                        ("Failure: this train was never registered successfully by this throttle");
+                        return;
+                     else
+                        objScreenManager.putError("Success: message sent to the controller");
+                     end if;
+                  END IF;
+                  
+                  -- Stop the train
+                  message := makeLocoSpdMsg(trains(location).phySlot, 1);
+                  size := sendTCPMessage(message);
+
+                  -- Clear the entry in the slot lookup table
+                  message := makeWriteSlotDataToClearMsg(trains(location).phySlot);
+                  removeTrainUsingPhyAdr(command.n);
+                  PutTrains(Trains);
             
             when Forward | Backward | Horn | Bell | Light =>
             

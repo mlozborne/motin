@@ -120,7 +120,7 @@ PACKAGE BODY KeyboardTask IS
             command.cmd := selectLoco;
          elsif chr2 = 'T' then
             command.cmd := stealLoco;
-         elsif chr2 ' 'X' then
+         elsif chr2 = 'X' then
             command.cmd := removeLoco;
          else
             objScreenManager.putError("ERROR: Bad command: 2nd letter must be E or T");
