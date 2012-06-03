@@ -1,0 +1,28 @@
+TASK STRUCTURE
+
+TaskStarter starts the following
+
+   LayoutTask                             gets messages from LayoutQueue
+                                             OPC_INPUT_REP, OPC_SW_REQ, OPC_SW_REP,
+                                             DoReadLayout, GetSwitchStates
+                                          and updates Layout
+                                          
+   SSITask                                gets messages from SSIQueue
+                                             DoLocoInit, OPC_SL_RD_DATA, OPC_LOCO_ADR,
+                                             opc_long_ack, opc_move_slots 
+                                          and send to OutQueue
+                                          
+   ListenForThrottleTask                  listens on port 1235 for a throttle and
+                                          and adds socket to SocketList (in CommandQueueManager.ads)
+                                          
+   ConnectToSimulatorOrLocoBufferTask     obtains ConnectSocket (in Globals.ads, used for outgoing messages)
+                                          to port 1234 (simulator)
+                                          or to port 1236 (locobuffer)
+                                          
+   SendMessageTask
+   ReceiveMessageTask
+   if not simulator then
+      ListenForLocoBufferClientsTask
+      WriteLocoBufferStringTask
+      ReadLocoBufferByteTask
+   end if

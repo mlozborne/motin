@@ -203,7 +203,6 @@ PACKAGE BODY SSIPkg IS
                
                   DECLARE
                      Slot                  : SlotType;
-                     -- Status                : Integer;
                      PhysAddr              : LocoAddressType;
                      VirtAddr              : LocoAddressType;
                      Result                : Boolean;

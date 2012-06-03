@@ -44,8 +44,8 @@ BEGIN
    end;
    
    DECLARE
-      LayoutTask : LayoutTaskType;
-      SSITask    : SSITaskType;
+      LayoutTask                         : LayoutTaskType;
+      SSITask                            : SSITaskType;
       ListenForThrottleTask              : ListenForThrottleTaskType;
       ConnectToSimulatorOrLocoBufferTask : ConnectToSimulatorOrLocoBufferTaskType;
       SendMessageTask                    : SendMessageTaskType;
