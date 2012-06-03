@@ -41,7 +41,7 @@ PACKAGE RailroadManager IS
    -- Commands
    kMaxLenFileName         : natural := 125;  -- = KMaxLenMsg - 3 in MessageTranslationLibrary.ads
    subtype fileNameType is string(1..kMaxLenFileName);   
-   type cmdType is (ReadXML, InitializeLoco, SelectLoco, StealLoco, Close, Throw, Forward, Backward,
+   type cmdType is (ReadXML, InitializeLoco, SelectLoco, StealLoco, RemoveLoco, Close, Throw, Forward, Backward,
                     Speed, Halt, Horn, Bell, Mute, Light, MoveSlots, Unknown, Quit,
                     PowerOn, PowerOff);
    type CommandType is record

@@ -276,9 +276,6 @@ package body RailroadManager is
          physSlot, virtslot         : slotType;
 			physAdd, virtAdd           : locoAddressType;
          sensors                    : naturalListType;
-
-		 ii : integer := 0;
-		 jj : integer := 0;
       begin
          case message.byteArray(1) is
 
@@ -329,20 +326,11 @@ package body RailroadManager is
                       objScreenManager.putError("ERROR: Steal failed because address not yet in-use");
                     else
                       -- Steal successful
-                      -- Record train address and slot number
-                      
+                      -- Record train address and slot number                     
+                      addTrainUsingPhyAdr(addressBeingSet);
                       completeEntryForTrainWith(addressBeingSet, slotNumberReceived, addressBeingSet, slotNumberReceived);
                       objScreenManager.putError("Successful steal");
                       putTrains(trains);         
-                        
-                      -- objScreenManager.putError("Steal successful.");
-                      -- NumTrainsInUse := NumTrainsInUse + 1;
-                      -- trains(NumTrainsInUse).isConnected := true;
-                      -- trains(NumTrainsInUse).sensorsOK := true;
-                      -- trains(NumTrainsInUse).PhyAdr := addressBeingSet;
-                      -- trains(NumTrainsInUse).viradr := addressBeingSet;
-                      -- trains(NumTrainsInUse).physlot := slotNumberReceived;
-                      -- trains(NumTrainsInUse).virslot := slotNumberReceived;
                     end if;
                   end if;
 
@@ -355,20 +343,12 @@ package body RailroadManager is
                     else
                       -- Select successful.
                       -- Record train address and slot number.
-                      -- Send OPC_MOVE_SLOTS to set the slot to in-use
-                      
+                      -- Send OPC_MOVE_SLOTS to set the slot to in-use                      
+                      addTrainUsingPhyAdr(addressBeingSet);
                       completeEntryForTrainWith(addressBeingSet, slotNumberReceived, addressBeingSet, slotNumberReceived);
                       objScreenManager.putError("Successful select");
                       putTrains(trains);                       
 
-                      -- objScreenManager.putError("Select successful.");
-                      -- NumTrainsInUse := NumTrainsInUse + 1;
-                      -- trains(NumTrainsInUse).isConnected := true;
-                      -- trains(NumTrainsInUse).sensorsOK := true;
-                      -- trains(NumTrainsInUse).PhyAdr := addressBeingSet;
-                      -- trains(NumTrainsInUse).viradr := addressBeingSet;
-                      -- trains(NumTrainsInUse).physlot := slotNumberReceived;
-                      -- trains(NumTrainsInUse).virslot := slotNumberReceived;
                       command.cmd := MoveSlots;
                       command.n := slotNumberReceived;
                       sendMessage(command);
@@ -511,7 +491,6 @@ package body RailroadManager is
                objScreenManager.putMessage(toString(message), "Unknown LocoNet message");
 
          end case;
-		 -- ii := ii / jj;    -- checking exception handling
       exception
          when error : others =>
             put_line("UNPLANNED EXCEPTION in RailroadManager.Put --" & kLFString & Exception_Information (error));
@@ -536,7 +515,6 @@ package body RailroadManager is
          message           : messageType;
          cmd               : cmdType := command.cmd;
          n                 : natural := command.n;
-         sendThisMessage   : boolean := true;
          size              : integer := -1;
          switchDirection   : switchStateType;
          location          : natural := 0;
@@ -562,37 +540,34 @@ package body RailroadManager is
             when SelectLoco | StealLoco =>
 
                addressBeingSet := n;
-
-               for i in trains'range loop
-                 if addressBeingSet = trains(i).PhyAdr then
-                   addressBeingSet := 0;
-                   sendThisMessage := false;
-                   objScreenManager.putError("ERROR: You have already listed this physical loco address.");
-                   exit;
-                 end if;
-               end loop;
-
-               if sendThisMessage and trainTableIsFull then
-                   sendThisMessage := false;
-                   objScreenManager.putError("ERROR: You have already set the maximum number of trains.");
+               if getIdOfTrainFromPhyAdr(addressBeingSet) /= 0 then
+                  objScreenManager.putError("ERROR: You have already listed this physical loco address.");
+                  return;
                end if;
 
-               if sendThisMessage then
-                  if cmd = SelectLoco then
-                     tryingToSelect := true;
-                     objScreenManager.putError("Attempting to select a physical loco address.");
-                  else
-                     tryingToSteal := true;
-                     objScreenManager.putError("Attempting to steal a physical loco address.");
-                  end if;
-                  message := makeLocoAdrMsg(addressBeingSet);
+               if trainTableIsFull then
+                  objScreenManager.putError("ERROR: You have already set the maximum number of trains.");
+                  return;
                end if;
 
+               if cmd = SelectLoco then
+                  tryingToSelect := true;
+                  objScreenManager.putError("Attempting to select a physical loco address.");
+               else
+                  tryingToSteal := true;
+                  objScreenManager.putError("Attempting to steal a physical loco address.");
+               end if;
+               message := makeLocoAdrMsg(addressBeingSet);
+
+            when RemoveLoco =>
+            
+               see line 642 for a copy of needed code
+            
             when Forward | Backward | Horn | Bell | Light =>
             
                if not trainIdIsValid(n) then
-                  sendThisMessage := false;
                   objScreenManager.putError("ERROR: A train with this id has NOT been established properly");
+                  return;
                else
                   case cmd is
                      when Forward  => trains(n).direction := Forward;
@@ -609,8 +584,8 @@ package body RailroadManager is
             when Mute =>
 
                if not trainIdIsValid(n) then
-                  sendThisMessage := false;
                   objScreenManager.putError("ERROR: A train with this id has NOT been established properly");
+                  return;
                else
                   trains(n).Mute := toggle(trains(n).Mute);
                   message := makeLocoSndMsg(trains(n).virslot, trains(n).mute);
@@ -620,8 +595,8 @@ package body RailroadManager is
             when Speed =>
 
                if not trainIdIsValid(n) then
-                  sendThisMessage := false;
                   objScreenManager.putError("ERROR: A train with this id has NOT been established properly");
+                  return;
                else
                   trains(n).speed := command.speed;
                   message := makeLocoSpdMsg(trains(n).virslot, trains(n).speed);
@@ -691,8 +666,8 @@ package body RailroadManager is
                      -- This is a request to initialize a new train
                      if trainTableIsFull then
                         -- The table is full, so don't send the message
-                        sendThisMessage := false;
                         objScreenManager.putError("ERROR: Max num trains already present");
+                        return;
                      else
                         -- Add this train to the table by initializing the phyAddr field
                         addTrainUsingPhyAdr(command.n);
@@ -707,17 +682,17 @@ package body RailroadManager is
 
             when others =>
 
-               sendThisMessage := false;
                objScreenManager.putError("ERROR: Unrecongized message");
+               return;
 
          end case;
 
-         if sendThisMessage and cmd /= halt then
+         if cmd /= halt then
             size := sendTCPMessage(message);
             objScreenManager.putError("sending " & toEnglish(message));
          end if;
 
-         if sendThisMessage and cmd = halt then
+         if cmd = halt then
             for i in trains'range loop
                if trainIdIsValid(i) then
                   message := makeLocoSpdMsg(trains(i).virslot, 0);
