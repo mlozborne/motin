@@ -30,7 +30,7 @@ PACKAGE LocoBuffer IS
 
    END ReadLocoBufferByteTaskType;
 
-   TYPE SocketListType IS ARRAY (0..9) OF C.Double;
+   TYPE SocketListType IS ARRAY (0..19) OF C.Double;
    SocketListArray: SocketListType := (OTHERS=>(-1.0));
 PRIVATE
    PRAGMA Import(C, InitializePort, "StartSerialPort");

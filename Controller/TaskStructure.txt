@@ -10,19 +10,42 @@ TaskStarter starts the following
    SSITask                                gets messages from SSIQueue
                                              DoLocoInit, OPC_SL_RD_DATA, OPC_LOCO_ADR,
                                              opc_long_ack, opc_move_slots 
-                                          and send to OutQueue
+                                          and sends to OutQueue
                                           
    ListenForThrottleTask                  listens on port 1235 for a throttle and
                                           and adds socket to SocketList (in CommandQueueManager.ads)
                                           
+                                          SocketList(0) to/from railroad/simulator
+                                          SocketList(1,2,...) to/from throttles
+                                          
    ConnectToSimulatorOrLocoBufferTask     obtains ConnectSocket (in Globals.ads, used for outgoing messages)
                                           to port 1234 (simulator)
-                                          or to port 1236 (locobuffer)
+                                          or to port 1236 (loco buffer)
                                           
-   SendMessageTask
-   ReceiveMessageTask
+   SendMessageTask                        gets messages from CommandQueueManager
+                                             all
+                                          sends messages for the railroad to SocketList(0)
+                                             OPC_LOCO_SPD, OPC_LOCO_DIRF, OPC_LOCO_SND,
+                                             OPC_LOCO_ADR, OPC_MOVE_SLOTS, OPC_WR_SL_DATA, OPC_GPON,
+                                             OPC_GPOFF, OPC_SW_REQ 
+                                          sends messages to the throttles to SocketList(1,2,...)
+                                             OPC_SL_RD_DATA, OPC_LONG_ACK, OPC_SW_REP, extended messages
+                                             
+   ReceiveMessageTask                     receives messages from all sockets in SocketList
+                                             discard OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ if from railroad
+                                             discard OPC_LONG_ACK                               if from throttle
+                                             
    if not simulator then
-      ListenForLocoBufferClientsTask
-      WriteLocoBufferStringTask
-      ReadLocoBufferByteTask
+   
+      ListenForLocoBufferClientsTask      listens on port 1236 for clients (controller and throttles that bypass the controller)
+                                          and for each creates a socket and stores it in SocketListArray
+                                          
+      WriteLocoBufferStringTask           receives messages from all sockets in SocketListArray and 
+                                          for each writes the bytes to the LocoBuffer
+                                          incoming messages have a two byte prefix indicating length of message (uses 39DLL)
+                                          outgoing messages don't have this prefix (uses CLocoBuffer.c and a USB port)
+      
+      ReadLocoBufferByteTask              reads bytes using CLocoBuffer.c from a USB port
+                                          examines type of message to determine number of bytes to read
+                                          uses 39DLL to send the message to all sockets in SocketListArray
    end if

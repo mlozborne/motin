@@ -4,7 +4,7 @@ WITH Ada.Text_IO; USE Ada.Text_IO;
 WITH Api39dll; USE Api39dll;
 WITH Globals; USE Globals;
 WITH Interfaces.C.Strings; USE Interfaces.C.Strings;
-WITH MessageTranslationLibrary;
+--WITH MessageTranslationLibrary;
 WITH Ada.Exceptions; USE Ada.Exceptions;
 with MessageTranslationTypes; use messageTranslationTypes;
 
@@ -75,8 +75,8 @@ PACKAGE BODY LocoBuffer IS
                      MyArray(J) := Unsigned_8(ReadByte(CZero));
                   END LOOP;
                   --check if message is valid
-                  IF (MyArray(1) AND 16#20#) = 16#20# THEN
-                     --is first byte opcode?
+                  IF (MyArray(1) AND 16#80#) = 16#80# THEN
+                     --is first byte opcode? leading bit should be 1
                      Checksum := MessageTranslationLibrary.makeChecksumByte(MyArray, Size);
                      IF Checksum /= MyArray(Size) THEN
                         MyArray(Size) := Checksum;
@@ -149,8 +149,7 @@ PACKAGE BODY LocoBuffer IS
                FOR I IN SocketListArray'RANGE LOOP--write to all clients
                   IF (Integer(SocketListArray(I)) >= 0) THEN
                      put_line("locobuffer pkg  in  ReadLocoBufferByteTask: sending message to MessageIO");
-                     Size := Integer(SendMessage(SocketListArray(I),
-                           New_String(""), CZero, CZero));
+                     Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
                   END IF;
                END LOOP;
             END IF;
