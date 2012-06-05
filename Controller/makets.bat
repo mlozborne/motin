@@ -1,3 +1,0 @@
-rem Build TaskStarter
-rem gnatmake TaskStarter -aILayoutManager -aI../MessageTranslationLibrary -aILayoutManager/XMLAda/obj -aILayoutManager/XMLAda/sax -aILayoutManager/XMLAda/input_sources -aILayoutManager/XMLAda/unicode -aO. -D obj -largs CLocoBuffer.o -l39dll -D obj
-gnatmake TaskStarter -aILayoutManager -aI../Util -aI../Util/XMLAda/sax -aI../Util/XMLAda/input_sources -aI../Util/XMLAda/unicode -D obj -aO../Util -largs ../util/CLocoBuffer.o -l39dll 
