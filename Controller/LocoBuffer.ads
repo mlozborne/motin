@@ -36,8 +36,10 @@ PRIVATE
    PRAGMA Import(C, InitializePort, "StartSerialPort");
    PRAGMA Import(C, ReadData, "ReadFromSerial");
    PRAGMA Import(C, WriteData, "WriteToSerial");
-
-
+   LocoBufferPort  : C.Double := C.Double(1236);   -- for loco buffer
+   kLFString      : string(1..1) := ( 1=> standard.ascii.LF);  
+   KMaxLenMsg       : constant Integer := 128; -- = kMaxLenFileName + 3, from RailroadManager.ads
+   type byteArrayType is array (1..kMaxLenMsg) of unsigned_8;
 END LocoBuffer;
 
 

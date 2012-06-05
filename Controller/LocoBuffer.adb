@@ -2,12 +2,8 @@
 --4/5/2011
 WITH Ada.Text_IO; USE Ada.Text_IO;
 WITH Api39dll; USE Api39dll;
-WITH Globals; USE Globals;
 WITH Interfaces.C.Strings; USE Interfaces.C.Strings;
---WITH MessageTranslationLibrary;
 WITH Ada.Exceptions; USE Ada.Exceptions;
-with MessageTranslationTypes; use messageTranslationTypes;
-
 
 PACKAGE BODY LocoBuffer IS
 
@@ -56,11 +52,29 @@ PACKAGE BODY LocoBuffer IS
    --  filter out messages that are not LocoNet messages
    --  send to LocoBuffer one byte at a time
    ---------------------------------------------------------------
+
+   FUNCTION makeChecksumByte (
+         ByteArray : ByteArrayType;
+         Size      : Integer) RETURN Unsigned_8 IS
+      Checksum : Unsigned_8;
+   BEGIN
+      Checksum := 16#ff# XOR ByteArray(1);
+      FOR I IN 2..(Size-1) LOOP
+         Checksum := Checksum XOR ByteArray(I);
+      END LOOP;
+      RETURN Checksum;
+   EXCEPTION
+      WHEN error: OTHERS =>
+		   put_line("**************** EXCEPTION in LocoBuffer.makeChecksumByte function --" & kLFString & Exception_Information (error));
+         RAISE;
+   END makeChecksumByte;
+   
    TASK BODY WriteLocoBufferStringTaskType IS
       Size      : Integer;
       MyArray   : ByteArrayType;
       Checksum  : Unsigned_8;
       CValue    : C.Double;
+      
    BEGIN
       LOOP
          BEGIN
@@ -77,7 +91,7 @@ PACKAGE BODY LocoBuffer IS
                   --check if message is valid
                   IF (MyArray(1) AND 16#80#) = 16#80# THEN
                      --is first byte opcode? leading bit should be 1
-                     Checksum := MessageTranslationLibrary.makeChecksumByte(MyArray, Size);
+                     Checksum := makeChecksumByte(MyArray, Size);
                      IF Checksum /= MyArray(Size) THEN
                         MyArray(Size) := Checksum;
                      END IF;
@@ -160,8 +174,5 @@ PACKAGE BODY LocoBuffer IS
          END;
       END LOOP;
    END ReadLocoBufferByteTaskType;
-
-
-
 END LocoBuffer;
 

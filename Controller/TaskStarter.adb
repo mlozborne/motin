@@ -5,7 +5,7 @@ WITH MessageTranslationLibrary; USE MessageTranslationLibrary;
 WITH Globals; USE Globals;
 WITH LayoutPkg; USE LayoutPkg;
 WITH SSIPkg; USE SSIPkg;
-WITH LocoBuffer; USE LocoBuffer;
+--WITH LocoBuffer; USE LocoBuffer;
 with Ada.Text_IO, Ada.Exceptions;
 USE Ada.Text_IO, Ada.Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -40,7 +40,7 @@ BEGIN
             withTrace := false;
          end if;
       end loop;
-      simulator := (port = "1234");
+      simulator := (port = "1234");  -- global variable used by ConnectToSimulatorOrLocoBufferTaskType
    end;
    
    DECLARE
@@ -53,15 +53,15 @@ BEGIN
    BEGIN
       LayoutTask.SetLayout(LayoutPtr);
       SSITask.SetLayout(LayoutPtr);
-      IF NOT Simulator THEN
-         DECLARE
-            ListenForLocoBufferClientsTask       : ListenForLocoBufferClientsTaskType;
-            WriteLocoBufferStringTask            : WriteLocoBufferStringTaskType;
-            ReadLocoBufferByteTask               : ReadLocoBufferByteTaskType;
-         BEGIN
-            NULL;
-         END;
-      END IF;
+      -- IF NOT Simulator THEN
+         -- DECLARE
+            -- ListenForLocoBufferClientsTask       : ListenForLocoBufferClientsTaskType;
+            -- WriteLocoBufferStringTask            : WriteLocoBufferStringTaskType;
+            -- ReadLocoBufferByteTask               : ReadLocoBufferByteTaskType;
+         -- BEGIN
+            -- NULL;
+         -- END;
+      -- END IF;
    END;
 EXCEPTION
    WHEN Error : OTHERS =>
