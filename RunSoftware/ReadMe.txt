@@ -2,11 +2,14 @@
 -------------------- INSTRUCTIONS FOR RUNNING SOFTWARE ----------------------------
 -----------------------------------------------------------------------------------
 
-EXAMPLE OF COMMAND WINDOW SCRIPT TO RUN SOFTWARE
+EXAMPLE OF A COMMAND WINDOW SCRIPT TO RUN THE SOFTWARE
 
-This example assumes that all the exe files and the layout file for the simulator are in
-the same folder.
+This example assumes that all the following files are in the same folder:
+   all exe files 
+   the layout file for the simulator
+   39DLL.DLL
 
+Here is the script:
    start RailroadBig.exe
    start Throttle.exe 
    start StartController.exe IP 127.0.0.1 PORT 1234 TRACE no
