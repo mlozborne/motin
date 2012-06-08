@@ -1,19 +1,12 @@
 --MessageIO package body
 --4/8/2011
-WITH Interfaces.C.Strings;
-USE Interfaces.C.Strings;
-WITH Interfaces;
-USE Interfaces;
-WITH Ada.Text_IO;
-USE Ada.Text_IO;
-WITH Api39dll;
-USE Api39dll;
-WITH CommandQueueManager;
-USE CommandQueueManager;
-WITH Globals;
-USE Globals;
-WITH Ada.Exceptions;
-USE  Ada.Exceptions;
+WITH Interfaces.C.Strings; USE Interfaces.C.Strings;
+WITH Interfaces; USE Interfaces; 
+WITH Ada.Text_IO; USE Ada.Text_IO;
+WITH Api39dll; USE Api39dll;
+WITH CommandQueueManager; USE CommandQueueManager;
+WITH Globals; USE Globals;
+WITH Ada.Exceptions; USE  Ada.Exceptions;
 with MessageTranslationLibrary; use MessageTranslationLibrary;  -- mo 1/7/12
 with MessageTranslationTypes; use messageTranslationTypes;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -116,6 +109,12 @@ PACKAGE BODY MessageIO IS
       Size,
       SocketListLen   : Integer;
    BEGIN
+      loop
+         SocketList.GetSocket(0, Socket);
+         exit when integer(socket) > 0;
+         delay 1.0;
+      end loop;
+      
       LOOP
          BEGIN
             CommandQueueManager.Get(InternalMessage);
@@ -208,6 +207,12 @@ PACKAGE BODY MessageIO IS
       internalMessage : MessageType;
       TrainId         : TrainIdType;
    BEGIN
+      loop
+         SocketList.GetSocket(0, Socket);
+         exit when integer(socket) > 0;
+         delay 1.0;
+      end loop;
+
       LOOP
          BEGIN
             SocketList.GetSocketListLength(Length);

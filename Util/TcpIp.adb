@@ -43,17 +43,20 @@ package body TcpIp is
    procedure makeTcpConnection(IP : string; Port : string) is
       Connected          : Boolean := False;
    begin
-      Put_Line("Trying to connect to controller using IP " & IP & " and port " & Port);
-      IpStrC := New_String(IP);
-      CValue := DllInit;
-      ServerPort := c.double(integer'value(Port)); 
-      ConnectSocket := TcpConnect(
-         Ip   => IpStrC,
-         Port => ServerPort,
-         Mode => BlockingMode);     
-      if integer(connectSocket) <= 0 then
-         raise ConnectionError;
-      end if;
+      loop
+         Put_Line("Trying to connect to controller using IP " & IP & " and port " & Port);
+         IpStrC := New_String(IP);
+         CValue := DllInit;
+         ServerPort := c.double(integer'value(Port)); 
+         ConnectSocket := TcpConnect(
+            Ip   => IpStrC,
+            Port => ServerPort,
+            Mode => BlockingMode);     
+         -- if integer(connectSocket) <= 0 then
+            -- raise ConnectionError;
+         -- end if;
+         exit when integer(connectSocket) > 0;
+      end loop;
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.makeTcpConnection --" & kLFString & Exception_Information (error));

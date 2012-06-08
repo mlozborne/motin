@@ -32,8 +32,6 @@ PROCEDURE AdminThrottle IS
   end stringToLower;
    
 BEGIN
-   delay 5.0;
-
    screenManager.objScreenManager.clearTheScreen;
    
    for arg in 1..argument_count loop

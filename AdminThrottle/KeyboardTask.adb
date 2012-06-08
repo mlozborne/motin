@@ -25,7 +25,6 @@ PACKAGE BODY KeyboardTask IS
       ACCEPT Start(inConMode : boolean) do
          isInControllerMode := inConMode;
       end;
-      delay 1.0;
       LOOP
          begin
             objscreenManager.PutPrompt(">");
