@@ -459,7 +459,7 @@ PACKAGE BODY CommandQueueManager IS
          Lists.moveFirst(TrainList);
          while Lists.hasCurrent(trainList) loop
             tempEntry := Lists.retrieveCurrent(trainList);
-            put(natural'image(tempEntry.trainId));
+            myPutLine("              " & natural'image(tempEntry.trainId));
             Lists.moveNext(trainList);
          end loop;
          myPutLine(" ");

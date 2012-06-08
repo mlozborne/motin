@@ -2,12 +2,12 @@
 -------------------- INSTRUCTIONS FOR RUNNING SOFTWARE ----------------------------
 -----------------------------------------------------------------------------------
 
-EXAMPLE COMMAND WINDOW SCRIPT TO RUN SOFTWARE
+EXAMPLE OF COMMAND WINDOW SCRIPT TO RUN SOFTWARE
 
 start RailroadBig.exe
 start Throttle.exe 
-start StartController.exe ip 127.0.0.1 port 1234 notrace
-start AdminThrottle.exe ip 127.0.0.1 port 1235 controller layoutfile simulator.xml nokeyboardLog adminLog
+start StartController.exe IP 127.0.0.1 PORT 1234 TRACE no
+start AdminThrottle.exe IP 127.0.0.1 PORT 1235 MODE controller LAYOUTFILE simulator.xml KEYBOARDLOG no ADMINLOG no
 
 PORT USAGE
 
@@ -73,27 +73,43 @@ COMMAND LINE PARAMETERS FOR PROGRAMS
 GameMaker Simulator
       no parameters needed
 
-GameMaker Throttle
-      no parameters needed
-      once started the program will ask for the ip address and the connection port in a popup dialog: 
-         set port to simulator or locobuffer server with physical loco address to bypass the controller if there is one
-         set port to simulator or locobuffer server with virtual loco address to involve the controller
-
-Controller
-      ip <address>      : use the address of the computer running the simulator/locobuffer server.
-      port <number>     : use the port number of the simulator/locobuffer server
-      trace/notrace     : use to display the internal behavior of the controller
-
-AdminThrottle
-      ip <address>      : use the address of the computer running the controller/simulator/locobuffer server
-      port <number>     : in controller mode use the port number of the controller
-                        : in standalone mode use the port number of the simulator/locobuffer server
-      controller/standalone          : specify mode 
-      keyboardLog/noKeyboardLog      : indicate if a keyboard log is desired
-      adminLog/noAdminLog            : indicate if an adminlog is desired
-
 LocoBufferServer
       no parameters needed
       
+ GameMaker Throttle
+      no parameters needed
+      once started the program will ask for the IP address and the connection PORT in a popup dialog: 
+         set port to simulator or locobuffer server with a physical loco address 
+         to bypass the controller if there is one.
+         set port to simulator or locobuffer server with a virtual loco address 
+         to involve the controller.
+
+Controller
+      IP <address>      : required
+                          the address of the computer running the simulator/locobuffer server
+      PORT <number>     : required
+                          the port number of the simulator/locobuffer server
+      TRACE <yes|no>    : optional, default is "yes"
+                          "yes" will cause the controller to display internal message passing activity
+
+AdminThrottle
+      IP <address>      : required
+                          the address of the computer running the controller/simulator/locobuffer server
+      PORT <number>     : required
+                          in controller mode use the port number of the controller
+                          in standalone mode use the port number of the simulator/locobuffer server
+      MODE <controller|standalone>    : optional, default is "controller"
+                                        specifies whether to run the admin throttle in controller or 
+                                        standalone mode 
+      LAYOUTFILE <file name>          : optional, no default value
+                                        if provided, the throttle will send the name of the XML layout
+                                        file to the controller else the user must enter the "x" throttle
+                                        command
+      KEYBOARDLOG <yes|no>            : optional, default is "yes"
+                                        indicates if a keyboard log is desired
+      ADMINLOG <yes|no>               : optional, default value is "yes" 
+                                        indicates if an adminlog is desired
+
+     
 
 

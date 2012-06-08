@@ -37,18 +37,29 @@ BEGIN
    screenManager.objScreenManager.clearTheScreen;
    
    for arg in 1..argument_count loop
-      if stringToLower(argument(arg)) = "port" and then arg + 1 <= argument_count then
-         port := to_unbounded_string(argument(arg+1));
-      elsif stringToLower(argument(arg)) = "ip" and then arg + 1 <= argument_count then
+      if stringToLower(argument(arg)) = "ip" 
+         and then arg + 1 <= argument_count then
          ip := to_unbounded_string(argument(arg+1));
-      elsif stringToLower(argument(arg)) = "layoutfile" and then arg + 1 <= argument_count then
+         
+      elsif stringToLower(argument(arg)) = "port" 
+         and then arg + 1 <= argument_count then
+         port := to_unbounded_string(argument(arg+1));
+         
+      elsif stringToLower(argument(arg)) = "mode" 
+         and then arg + 1 <= argument_count then
+         withController := (stringToLower(argument(arg+1)) = "controller");
+         
+      elsif stringToLower(argument(arg)) = "layoutfile" 
+         and then arg + 1 <= argument_count then
          layoutFileName := to_unbounded_string(argument(arg+1));
-      elsif stringToLower(argument(arg)) = "standalone" then
-         withController := false;
-      elsif stringToLower(argument(arg)) = "noadminlog" then
-         withAdminLog := false;
-      elsif stringToLower(argument(arg)) = "nokeyboardlog" then
-         withKeyboardLog := false;
+         
+      elsif stringToLower(argument(arg)) = "keyboardlog"  
+         and then arg + 1 <= argument_count then
+         withKeyboardLog := (stringToLower(argument(arg+1)) = "yes");
+         
+      elsif stringToLower(argument(arg)) = "adminlog" 
+         and then arg + 1 <= argument_count then
+         withAdminLog := (stringToLower(argument(arg+1)) = "yes");
       end if;
    end loop;
    
@@ -67,12 +78,6 @@ BEGIN
       command.fileName(1..length(layoutFileName)) := to_string(layoutFileName);
       command.fnInUse := length(layoutFileName);
       railroadManager.objRailroadManager.sendMessage(command);
-      declare
-         chr  : character;
-      begin
-         put_line(command.fileName(1..length(layoutFileName)));
-         get(chr);
-      end; 
     end if;  
 
 exception

@@ -32,12 +32,17 @@ BEGIN
       Port      : unbounded_String := to_unbounded_string("0000");
    begin
       for arg in 1..argument_count loop
-         if stringToLower(argument(arg)) = "port" and then arg + 1 <= argument_count then
+         if stringToLower(argument(arg)) = "port" 
+            and then arg + 1 <= argument_count then
             port := to_unbounded_string(argument(arg+1));
-         elsif stringToLower(argument(arg)) = "ip" and then arg + 1 <= argument_count then
+            
+         elsif stringToLower(argument(arg)) = "ip" 
+            and then arg + 1 <= argument_count then
             IpStrAda := to_unbounded_string(argument(arg+1));
-         elsif stringToLower(argument(arg)) = "notrace" then
-            withTrace := false;
+            
+         elsif stringToLower(argument(arg)) = "trace" 
+            and then arg + 1 <= argument_count then
+            withTrace := (stringToLower(argument(arg+1)) = "yes");
          end if;
       end loop;
       simulator := (port = "1234");  -- global variable used by ConnectToSimulatorOrLocoBufferTaskType
