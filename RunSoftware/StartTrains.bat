@@ -3,5 +3,5 @@ cls
 rem start startlocobufferserver.exe 
 start RailroadBig.exe
 start Throttle.exe 
-start StartController.exe ip 127.0.0.1 port 1234 trace
-start AdminThrottle.exe ip 127.0.0.1 port 1235 controller layoutfile simulator.xml nokeyboardLog adminLog
+start StartController.exe IP 127.0.0.1 PORT 1234 TRACE yes
+start AdminThrottle.exe IP 127.0.0.1 PORT 1235 MODE controller LAYOUTFILE simulator.xml KEYBOARDLOG yes ADMINLOG yes
