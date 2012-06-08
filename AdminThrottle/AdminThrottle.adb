@@ -10,6 +10,7 @@ with TcpIp;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with logFiles;
+with MessageTranslationTypes;
 
 PROCEDURE AdminThrottle IS
    kLFString           : string(1..1) := ( 1=> standard.ascii.LF);
@@ -18,6 +19,8 @@ PROCEDURE AdminThrottle IS
    withKeyboardLog     : boolean := true;
    IP                  : unbounded_String := to_unbounded_string("0.0.0.0");   
    Port                : unbounded_String := to_unbounded_string("0000");
+   layoutFileName      : unbounded_String := to_unbounded_string(""); 
+   command             : railroadManager.commandType;
    
    function stringToLower (str :string) return string is
       Result : String (Str'Range);
@@ -29,6 +32,8 @@ PROCEDURE AdminThrottle IS
   end stringToLower;
    
 BEGIN
+   delay 5.0;
+
    screenManager.objScreenManager.clearTheScreen;
    
    for arg in 1..argument_count loop
@@ -36,6 +41,8 @@ BEGIN
          port := to_unbounded_string(argument(arg+1));
       elsif stringToLower(argument(arg)) = "ip" and then arg + 1 <= argument_count then
          ip := to_unbounded_string(argument(arg+1));
+      elsif stringToLower(argument(arg)) = "layoutfile" and then arg + 1 <= argument_count then
+         layoutFileName := to_unbounded_string(argument(arg+1));
       elsif stringToLower(argument(arg)) = "standalone" then
          withController := false;
       elsif stringToLower(argument(arg)) = "noadminlog" then
@@ -54,6 +61,19 @@ BEGIN
    railroadManager.ObjRailroadManager.Initialize;
    railroadTask.objRailroadTask.start;
    keyboardTask.ObjKeyboardTask.Start(withController);
+   
+   if layoutFileName /= "" then
+      command.cmd := railroadManager.readXML;
+      command.fileName(1..length(layoutFileName)) := to_string(layoutFileName);
+      command.fnInUse := length(layoutFileName);
+      railroadManager.objRailroadManager.sendMessage(command);
+      declare
+         chr  : character;
+      begin
+         put_line(command.fileName(1..length(layoutFileName)));
+         get(chr);
+      end; 
+    end if;  
 
 exception
       when error : others =>
