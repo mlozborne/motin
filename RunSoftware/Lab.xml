@@ -1,5 +1,21 @@
-<railroad>
+<railroad>                       <!-- xml for lab layout -->
 	<section-list>
+		<section id="996">         <!-- dummy section at end of siding -->
+			<sensor id="1" />
+			<sensor id="996" />
+		</section>
+		<section id="997">         <!-- dummy section at end of siding -->
+			<sensor id="2" />
+			<sensor id="997" />
+		</section>
+		<section id="998">         <!-- dummy section at end of siding -->
+			<sensor id="3" />
+			<sensor id="998" />
+		</section>
+		<section id="999">         <!-- dummy section at end of siding -->
+			<sensor id="4" />
+			<sensor id="999" />
+		</section>
 		<section id="1">
 			<sensor id="1" />
 			<sensor id="5" />
@@ -125,10 +141,6 @@
 		</section>
 		<section id="21">
 			<sensor id="118" />
-			<sensor id="109" />
-		</section>
-		<section id="22">
-			<sensor id="109" />
 			<sensor id="108" />
 		</section>
 		<section id="23">
@@ -219,10 +231,6 @@
 		<section id="38">
 			<sensor id="25" />
 			<sensor id="29" />
-		</section>
-		<section id="39">
-			<sensor id="30" />
-			<sensor id="18" />
 		</section>
 		<section id="40">
 			<sensor id="18" />
@@ -544,7 +552,7 @@
 		</section>
 		<section id="106">
 			<sensor id="29" />
-			<sensor id="30" />
+			<sensor id="18" />
 		</section>
 		<section id="107">
 			<sensor id="93" />
