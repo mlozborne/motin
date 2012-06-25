@@ -108,6 +108,7 @@ PACKAGE BODY MessageIO IS
       Slot            : SlotType;
       Size,
       SocketListLen   : Integer;
+      messageCount    : natural := 0;
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
@@ -118,8 +119,15 @@ PACKAGE BODY MessageIO IS
       LOOP
          BEGIN
             CommandQueueManager.Get(InternalMessage);
-            myPutLine(toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
             MyArray := internalMessage.ByteArray;
+            
+            if myArray(1) /= uzero then
+               messageCount := messageCount + 1;
+               myPutLine("<" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
+            else
+               myPutLine("< " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
+            end if;
+            
             CValue := ClearBuffer(CZero);--clear buffer
             CASE MyArray(1) IS
                WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
@@ -206,6 +214,7 @@ PACKAGE BODY MessageIO IS
       MyArray         : ByteArrayType; --array of unsigned_8
       internalMessage : MessageType;
       TrainId         : TrainIdType;
+      messageCount    : natural := 0;
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
@@ -234,7 +243,12 @@ PACKAGE BODY MessageIO IS
                      internalMessage.Size := Natural(Size);
                      internalMessage.ByteArray := MyArray;
                      myPutLine(" ");
-                     myPutLine(toEnglish(internalMessage) & " ...in MesIOPkg.RecMesTask");
+                     if myArray(1) = uzero then
+                        myPutLine("> " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
+                     else
+                        messageCount := messageCount + 1;
+                        myPutLine(">" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
+                     end if;
                      CASE MyArray(1) IS
                         WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
                            TrainId := SlotLookupTable.VirtSlotNumToTrainId(Integer(MyArray(2)));

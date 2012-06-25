@@ -74,6 +74,7 @@ PACKAGE BODY LocoBuffer IS
       MyArray   : ByteArrayType;
       Checksum  : Unsigned_8;
       CValue    : C.Double;
+      messageCount : natural := 0;
       
    BEGIN
       LOOP
@@ -84,13 +85,14 @@ PACKAGE BODY LocoBuffer IS
                   --read from client
                   CValue := ClearBuffer(CZero);
                   Size := Integer(ReceiveMessage(SocketListArray(I), CZero, CZero));
-                  put_line("LocoBufferPkg in WriteLocoString: recieved message from client");
                   FOR J IN 1..Size LOOP
                      MyArray(J) := Unsigned_8(ReadByte(CZero));
                   END LOOP;
                   --check if message is valid
                   IF (MyArray(1) AND 16#80#) = 16#80# THEN
                      --is first byte opcode? leading bit should be 1
+                     messageCount := messageCount + 1;
+                     put_line("<" & natural'image(messageCount) & " writing valid message received from client");
                      Checksum := makeChecksumByte(MyArray, Size);
                      IF Checksum /= MyArray(Size) THEN
                         MyArray(Size) := Checksum;
@@ -120,6 +122,7 @@ PACKAGE BODY LocoBuffer IS
       MyArray : ByteArrayType;
       InUse : Natural;
       Size, ReturnVal : Integer;
+      messageCount : natural := 0;
    BEGIN
       --Initialize locoBuffer port
       put_line("locobuffer pkg in ReadLocoBufferByteTask: trying to  connect to locoBuffer");
@@ -129,6 +132,7 @@ PACKAGE BODY LocoBuffer IS
          EXIT WHEN ReturnVal > 0;
       END LOOP;
       put_line("locobuffer pkg in  ReadLocoBufferByteTask: connected to locoBuffer");
+      
       LOOP
          BEGIN
             --read single message from locobuffer
@@ -160,14 +164,16 @@ PACKAGE BODY LocoBuffer IS
                FOR J IN 1..InUse LOOP--write array to buffer
                   Cvalue := WriteByte(C.Double(MyArray(J)), CZero);
                END LOOP;
+               messageCount := messageCount + 1;
+               put_line(">" & natural'image(messageCount) & " read message from railroad trying to send to clients");
                FOR I IN SocketListArray'RANGE LOOP--write to all clients
                   IF (Integer(SocketListArray(I)) >= 0) THEN
-                     put_line("locobuffer pkg  in  ReadLocoBufferByteTask: sending message to MessageIO");
+                     put_line("   sent to client at socket" & integer'image((Integer(SocketListArray(I)))));
                      Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
                   END IF;
                END LOOP;
             END IF;
-            DELAY 0.01; --0.1;                                       -- mo 12/17/11
+            -- DELAY 0.01; --0.1;                                       -- mo 12/17/11
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));
