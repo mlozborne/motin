@@ -1,0 +1,11 @@
+<NotepadPlus>
+    <Session activeView="1">
+        <mainView activeIndex="1">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="616" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\StartLocoBufferServer.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="736" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\LocoBuffer.adb" />
+        </mainView>
+        <subView activeIndex="0">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="448" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\LocoBuffer.ads" />
+        </subView>
+    </Session>
+</NotepadPlus>
