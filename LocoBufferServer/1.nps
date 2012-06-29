@@ -1,11 +1,15 @@
 <NotepadPlus>
-    <Session activeView="1">
-        <mainView activeIndex="1">
+    <Session activeView="0">
+        <mainView activeIndex="2">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="776" startPos="363" endPos="367" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\LocoBuffer.ads" />
             <File firstVisibleLine="0" xOffset="0" scrollWidth="616" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\StartLocoBufferServer.adb" />
-            <File firstVisibleLine="0" xOffset="0" scrollWidth="736" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\LocoBuffer.adb" />
+            <File firstVisibleLine="129" xOffset="0" scrollWidth="1168" startPos="7339" endPos="7339" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\LocoBuffer.adb" />
         </mainView>
-        <subView activeIndex="0">
-            <File firstVisibleLine="0" xOffset="0" scrollWidth="448" startPos="0" endPos="0" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\LocoBufferServer\LocoBuffer.ads" />
+        <subView activeIndex="2">
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="912" startPos="334" endPos="334" selMode="0" lang="Batch" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\RunSoftware\StartTrainsInLabr.bat" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="952" startPos="360" endPos="360" selMode="0" lang="Batch" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\RunSoftware\StartTrainsWithSimulator.bat" />
+            <File firstVisibleLine="106" xOffset="0" scrollWidth="808" startPos="3694" endPos="3694" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\Controller as Submitted by Students\AdaRail\LocoBuffer.adb" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="448" startPos="363" endPos="367" selMode="0" lang="Ada" encoding="-1" filename="C:\Documents and Settings\Martin\Desktop\TrainSVN\Controller as Submitted by Students\AdaRail\LocoBuffer.ads" />
         </subView>
     </Session>
 </NotepadPlus>

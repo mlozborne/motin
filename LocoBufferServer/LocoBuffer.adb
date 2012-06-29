@@ -39,7 +39,7 @@ PACKAGE BODY LocoBuffer IS
                END IF;
             END LOOP;
             put_line("LocoBuffer pkg in ListenForClientTask: accepted client connection");
-            DELAY 0.01; --0.1;                                                    -- mo 12/17/11
+???            DELAY 0.01; --0.1;                                                    -- mo 12/17/11
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg: ListenForLocoBufferClientsTaskType " & Exception_Information(Error));
@@ -58,7 +58,7 @@ PACKAGE BODY LocoBuffer IS
          Size      : Integer) RETURN Unsigned_8 IS
       Checksum : Unsigned_8;
    BEGIN
-      Checksum := 16#ff# XOR ByteArray(1);
+???      Checksum := 16#ff# XOR ByteArray(1);
       FOR I IN 2..(Size-1) LOOP
          Checksum := Checksum XOR ByteArray(I);
       END LOOP;
@@ -70,10 +70,10 @@ PACKAGE BODY LocoBuffer IS
    END makeChecksumByte;
    
    TASK BODY WriteLocoBufferStringTaskType IS
-      Size      : Integer;
-      MyArray   : ByteArrayType;
-      Checksum  : Unsigned_8;
-      CValue    : C.Double;
+      Size         : Integer;
+      MyArray      : ByteArrayType;
+      Checksum     : Unsigned_8;
+      CValue       : C.Double;
       messageCount : natural := 0;
       
    BEGIN
@@ -89,21 +89,18 @@ PACKAGE BODY LocoBuffer IS
                      MyArray(J) := Unsigned_8(ReadByte(CZero));
                   END LOOP;
                   --check if message is valid
-                  IF (MyArray(1) AND 16#80#) = 16#80# THEN
+???                  IF (MyArray(1) AND 16#80#) = 16#80# THEN
                      --is first byte opcode? leading bit should be 1
                      messageCount := messageCount + 1;
                      put_line("<" & natural'image(messageCount) & " writing valid message received from client");
-                     Checksum := makeChecksumByte(MyArray, Size);
-                     IF Checksum /= MyArray(Size) THEN
-                        MyArray(Size) := Checksum;
-                     END IF;
+                     MyArray(Size) := makeChecksumByte(MyArray, Size);
                      FOR K IN 1..Size LOOP
                         WriteData(MyArray(K));
                      END LOOP;
                   END IF;
                END IF;
             END LOOP;
-            DELAY 0.01; --0.1;                                                -- mo 12/17/11
+???            DELAY 0.01; --0.1;                                                -- mo 12/17/11
          EXCEPTION
             WHEN Error: OTHERS=>
                put_line("**************** EXCEPTION in LocoBuffer pkg: WriteLocoBufferStringTaskType " & Exception_Information(Error));
@@ -117,21 +114,21 @@ PACKAGE BODY LocoBuffer IS
    --  send array of bytes to clients
    --------------------------------------------------------------
    TASK BODY ReadLocoBufferByteTaskType IS
-      Data : Unsigned_8;
-      CValue : C.Double;
-      MyArray : ByteArrayType;
-      InUse : Natural;
+      Data            : Unsigned_8;
+      CValue          : C.Double;
+      MyArray         : ByteArrayType;
+      InUse           : Natural;
       Size, ReturnVal : Integer;
-      messageCount : natural := 0;
+      messageCount    : natural := 0;
    BEGIN
       --Initialize locoBuffer port
-      put_line("locobuffer pkg in ReadLocoBufferByteTask: trying to  connect to locoBuffer");
+      put_line("LocoBuffer pkg in ReadLocoBufferByteTask: trying to connect to LocoBuffer");
       LOOP
          ReturnVal := InitializePort;
          put_line("LocoBufferPkg in  ReadLocoBufferByteTask: initialize port returns" & Integer'Image(ReturnVal));
          EXIT WHEN ReturnVal > 0;
       END LOOP;
-      put_line("locobuffer pkg in  ReadLocoBufferByteTask: connected to locoBuffer");
+      put_line("LocoBuffer pkg in  ReadLocoBufferByteTask: connected to LocoBuffer");
       
       LOOP
          BEGIN
@@ -142,14 +139,11 @@ PACKAGE BODY LocoBuffer IS
                --how many bytes follow?
                IF (Data AND 16#F0#) = 16#80# THEN--only Checksum follows
                   InUse := 2;
-               ELSIF (Data AND 16#F0#) = 16#A0# THEN
-                  --2 bytes plus Checksum
+               ELSIF (Data AND 16#F0#) = 16#A0# THEN --2 bytes plus Checksum
                   InUse := 4;
-               ELSIF (Data AND 16#F0#) = 16#B0# THEN
-                  --2 bytes plus Checksum
+               ELSIF (Data AND 16#F0#) = 16#B0# THEN --2 bytes plus Checksum
                   InUse := 4;
-               ELSIF (Data AND 16#F0#) = 16#E0# THEN
-                  --12 bytes plus Checksum
+               ELSIF (Data AND 16#F0#) = 16#E0# THEN --12 bytes plus Checksum
                   InUse := 14;
                ELSE
                   InUse := 1;
@@ -173,7 +167,7 @@ PACKAGE BODY LocoBuffer IS
                   END IF;
                END LOOP;
             END IF;
-            -- DELAY 0.01; --0.1;                                       -- mo 12/17/11
+???            -- DELAY 0.01; --0.1;                                       -- mo 12/17/11
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));
