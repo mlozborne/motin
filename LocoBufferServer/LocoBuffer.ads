@@ -31,15 +31,15 @@ PACKAGE LocoBuffer IS
    END ReadLocoBufferByteTaskType;
 
    TYPE SocketListType IS ARRAY (0..19) OF C.Double;
-   SocketListArray: SocketListType := (OTHERS=>(-1.0));
+   SocketListArray: SocketListType := (OTHERS=>c.double(-1.0));
 PRIVATE
    PRAGMA Import(C, InitializePort, "StartSerialPort");
    PRAGMA Import(C, ReadData, "ReadFromSerial");
    PRAGMA Import(C, WriteData, "WriteToSerial");
    LocoBufferPort  : C.Double := C.Double(1236);   -- for loco buffer
    kLFString      : string(1..1) := ( 1=> standard.ascii.LF);  
-   KMaxLenMsg       : constant Integer := 128; -- = kMaxLenFileName + 3, from RailroadManager.ads
-   type byteArrayType is array (1..kMaxLenMsg) of unsigned_8;
+   -- KMaxLenMsg       : constant Integer := 128; -- = kMaxLenFileName + 3, from RailroadManager.ads
+   -- type byteArrayType is array (1..kMaxLenMsg) of unsigned_8;
 END LocoBuffer;
 
 
