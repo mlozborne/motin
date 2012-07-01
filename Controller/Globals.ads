@@ -7,8 +7,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 PACKAGE Globals IS
 
-   withTrace : boolean := true;
-   procedure myPutLine(str : string);
+   -- withTrace : boolean := true;
+   -- procedure myPutLine(str : string);
 
    KNumSwitches : CONSTANT Natural := 26;
    KNumSegments : CONSTANT Natural := 128;

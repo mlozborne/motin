@@ -1254,19 +1254,29 @@ package body MessageTranslationLibrary is
                return "OPC_INPUT_REP sensor/isHi " & natural'image(sensorId) & " " & boolean'image(isHi);
             when OPC_SW_REP =>
                splitSwRepMsg(msg, switchId, switchState);
-               return "OPC_SW_REP switch/position " & natural'image(switchId) & " " & switchStateType'image(switchState);
+               return "OPC_SW_REP switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
             when OPC_LOCO_SPD =>
                splitLocoSpdMsg(msg, trainId, speed);
                return "OPC_LOCO_SPD trainId/speed " & natural'image(trainId) & " " & natural'image(speed);
             when OPC_LOCO_DIRF =>
-               splitLocoDirfMsg(msg, trainId, direction, light, horn, bell);
-               return "OPC_LOCO_DIRF trainId/direction " & natural'image(trainId) & " " & directionType'image(direction);
+                splitLocoDirfMsg(msg, trainId, direction, light, horn, bell);
+                return "OPC_LOCO_DIRF"
+                       & " slot" & natural'image(trainId) 
+                       & " dir "  & directionType'image(direction)
+                       & " l " & onOffType'image(light) 
+                       & " b " & onOffType'image(bell) 
+                       & " h " & onOffType'image(horn);
+
             when OPC_LOCO_SND =>
-               splitLocoSndMsg(msg, trainId, F5, F6, mute);
-               return "OPC_LOCO_SND set sound/move next switch for train " & natural'image(trainId);
+                splitLocoSndMsg(msg, trainId, F5, F6, mute);
+                return "OPC_LOCO_SND"
+                       & " slot" & natural'image(trainId) 
+                       & " F5 " & onOffType'image(F5) 
+                       & " F6 " & onOffType'image(F6) 
+                       & " mute " & onOffType'image(mute);                                             
             when OPC_SW_REQ =>
                splitSwReqMsg(msg, switchId, switchState); 
-               return "OPC_SW_REQ switch/position " & natural'image(switchId) & " " & switchStateType'image(switchState);
+               return "OPC_SW_REQ switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
             when OPC_LOCO_ADR =>
                splitLocoAdrMsg(msg, locoAdd);
                return "OPC_LOCO_ADR request slot data for loco " & natural'image(locoAdd);
@@ -1282,7 +1292,7 @@ package body MessageTranslationLibrary is
                splitWriteSlotDataToClearMsg(msg, slotNum);
                return "OPC_WR_SL_DATA write data into slot " & natural'image(slotNum);
             when others =>
-               return "LocoNet opcode not handled here: " & natural'image(natural(msg.byteArray(1)));
+               return "Unknown LocoNet opcode: " & toString(msg);
          end case;
       end if;
 
@@ -1358,7 +1368,7 @@ package body MessageTranslationLibrary is
             splitReinitializeTrainMsg(msg, trainId);
             return "msgReinitializeTrain for train " & natural'image(trainId);
          when others =>
-            return "Extended opcode not handled here: " & natural'image(natural(msg.byteArray(2)));
+            return "Unknown extended opcode: " & toString(msg);
       end case;
    exception
 	   when error : others =>

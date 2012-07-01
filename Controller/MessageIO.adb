@@ -10,7 +10,7 @@ WITH Ada.Exceptions; USE  Ada.Exceptions;
 with MessageTranslationLibrary; use MessageTranslationLibrary;  -- mo 1/7/12
 with MessageTranslationTypes; use messageTranslationTypes;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-
+with Tracer; use Tracer;
 
 
 PACKAGE BODY MessageIO IS

@@ -6,6 +6,7 @@ WITH Interfaces.C.Strings; USE Interfaces.C.Strings;
 WITH Ada.Exceptions; USE Ada.Exceptions;
 with messageTranslationTypes; use messageTranslationTypes;
 with messageTranslationLibrary; use messageTranslationLibrary;
+with Tracer; use Tracer;
 
 PACKAGE BODY LocoBuffer IS
 
@@ -101,12 +102,12 @@ PACKAGE BODY LocoBuffer IS
                          END LOOP;
                          
                          messageCount := messageCount + 1;
-                         put_line("<" & natural'image(messageCount) 
+                         myPutLine("<" & natural'image(messageCount) 
                                       & " write to railroad; received on socket" 
                                       & integer'image(Integer(SocketListArray(I))));                                      
                          msg.byteArray := myArray;
                          msg.size := size;
-                         put_line("      " & toEnglish(msg));
+                         myPutLine("      " & toEnglish(msg));
                          
                       END IF;
                   end if;
@@ -175,12 +176,12 @@ PACKAGE BODY LocoBuffer IS
                messageCount := messageCount + 1;
                msg.byteArray := myArray;
                msg.size := inUse;
-               put_line(">" & natural'image(messageCount) & " read from railroad");
-               put_line("      " & toEnglish(msg));
+               myPutLine(">" & natural'image(messageCount) & " read from railroad");
+               myPutLine("      " & toEnglish(msg));
                
                FOR I IN SocketListArray'RANGE LOOP--write to all clients
                   IF (Integer(SocketListArray(I)) >= 0) THEN
-                     put_line("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
+                     myPutLine("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
                      Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
                   END IF;
                END LOOP;

@@ -3,7 +3,7 @@ WITH Input_Sources.File, XMLParser, Ada.Exceptions, CommandQueueManager, Interfa
 USE Input_Sources.File, XMLParser, Ada.Exceptions, CommandQueueManager, Interfaces;
 USE MessageTranslationLibrary;
 with NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
-
+with Tracer; use Tracer;
 
 PACKAGE BODY LayoutPkg IS
 
@@ -459,7 +459,7 @@ PACKAGE BODY LayoutPkg IS
             -- Therefore we slow down sending messages when the LocoBufferServer is 
             -- running.
             if not simulator then
-               delay 2.0;
+               delay 0.5;
             end if;
             
             SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));

@@ -8,6 +8,7 @@ WITH Ada.Exceptions, Ada.Text_IO, Interfaces;
 USE Globals, CommandQueueManager, LayoutPkg, MessageTranslationLibrary;
 USE Ada.Exceptions, Ada.Text_IO, Interfaces;
 with MessageTranslationTypes; use messageTranslationTypes;
+with Tracer; use Tracer;
 
 
 PACKAGE BODY TrainPkg IS

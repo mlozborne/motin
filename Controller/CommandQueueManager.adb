@@ -3,6 +3,7 @@
 WITH Ada.Text_IO, Ada.Exceptions;
 USE Ada.Text_IO, Ada.Exceptions;
 WITH MessageTranslationLibrary; USE MessageTranslationLibrary;
+with Tracer; use Tracer;
 -- mo 12/16/11
 
 PACKAGE BODY CommandQueueManager IS

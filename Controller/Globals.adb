@@ -3,12 +3,12 @@ with Ada.Exceptions; use Ada.Exceptions;
 
 package body globals is
 
-   procedure myPutLine(str : string) is
-   begin
-      if withTrace then
-         put_line(str);
-      end if;
-   end myPutLine;
+   -- procedure myPutLine(str : string) is
+   -- begin
+      -- if withTrace then
+         -- put_line(str);
+      -- end if;
+   -- end myPutLine;
 
    procedure disposeSensorArray(ptr : in out SensorArrayAccess) is
    begin

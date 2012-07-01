@@ -9,23 +9,13 @@ WITH SSIPkg; USE SSIPkg;
 with Ada.Text_IO, Ada.Exceptions;
 USE Ada.Text_IO, Ada.Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line; use Ada.Command_Line;
+with Tracer; use Tracer;
 
 
 PROCEDURE StartController IS
    LayoutPtr : LayoutManagerAccess := NEW LayoutManager;
    Char      : Character;
-
-   function stringToLower (str :string) return string is
-      Result : String (Str'Range);
-   begin
-     for C in  Str'Range loop
-        Result (C) := To_Lower (Str (C));
-     end loop;
-     return Result;
-  end stringToLower;
-
 
 BEGIN
    declare

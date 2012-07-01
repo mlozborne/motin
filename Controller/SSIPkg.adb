@@ -5,7 +5,7 @@ USE TrainPkg, CommandQueueManager, Globals, Interfaces,
 USE Ada.Text_IO, Ada.Exceptions;
 with MessageTranslationTypes; use messageTranslationTypes;
 with NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
-
+with Tracer; use Tracer;
 
 PACKAGE BODY SSIPkg IS
 
