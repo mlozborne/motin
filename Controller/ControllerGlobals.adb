@@ -1,7 +1,7 @@
 with ada.text_io; use ada.text_io;
 with Ada.Exceptions; use Ada.Exceptions;
 
-package body globals is
+package body ControllerGlobals is
 
    -- procedure myPutLine(str : string) is
    -- begin
@@ -49,4 +49,4 @@ package body globals is
          RAISE;
 	end convertSensorListToArray;
    
-end globals;
+end ControllerGlobals;

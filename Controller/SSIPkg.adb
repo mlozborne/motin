@@ -1,6 +1,6 @@
-WITH TrainPkg, CommandQueueManager, Globals, Interfaces, MessageTranslationLibrary;
+WITH TrainPkg, CommandQueueManager, ControllerGlobals, Interfaces, MessageTranslationLibrary;
 WITH Ada.Text_IO, Ada.Exceptions;
-USE TrainPkg, CommandQueueManager, Globals, Interfaces,
+USE TrainPkg, CommandQueueManager, ControllerGlobals, Interfaces,
    MessageTranslationLibrary;
 USE Ada.Text_IO, Ada.Exceptions;
 with MessageTranslationTypes; use messageTranslationTypes;

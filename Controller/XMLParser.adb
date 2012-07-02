@@ -1,5 +1,5 @@
-WITH Unicode.CES, LayoutPkg, Ada.Text_IO, Ada.Exceptions, Globals;
-USE Unicode.CES, LayoutPkg, Ada.Text_IO, Ada.Exceptions, Globals;
+WITH Unicode.CES, LayoutPkg, Ada.Text_IO, Ada.Exceptions, ControllerGlobals;
+USE Unicode.CES, LayoutPkg, Ada.Text_IO, Ada.Exceptions, ControllerGlobals;
 with MessageTranslationTypes; use messageTranslationTypes;
 
 
@@ -68,15 +68,15 @@ PACKAGE BODY XMLParser IS
    PROCEDURE Update_Switch (
          Atts : Sax.Attributes.Attributes'Class) IS
       Id           : Positive;
-      TypeOfSwitch : Globals.SwitchType;
+      TypeOfSwitch : ControllerGlobals.SwitchType;
    BEGIN
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
       END IF;
       IF Get_Index(Atts, "type") /= -1 THEN
-         TypeOfSwitch := Globals.SwitchType'Value(Get_Value(Atts, "type"));
+         TypeOfSwitch := ControllerGlobals.SwitchType'Value(Get_Value(Atts, "type"));
       ELSE
-         TypeOfSwitch := Globals.SwitchType'Value("Normal");
+         TypeOfSwitch := ControllerGlobals.SwitchType'Value("Normal");
       END IF;
       LayoutPtr.UpdateSwitch(Id, TypeOfSwitch);
    EXCEPTION

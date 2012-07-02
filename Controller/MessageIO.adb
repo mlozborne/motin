@@ -5,7 +5,7 @@ WITH Interfaces; USE Interfaces;
 WITH Ada.Text_IO; USE Ada.Text_IO;
 WITH Api39dll; USE Api39dll;
 WITH CommandQueueManager; USE CommandQueueManager;
-WITH Globals; USE Globals;
+WITH ControllerGlobals; USE ControllerGlobals;
 WITH Ada.Exceptions; USE  Ada.Exceptions;
 with MessageTranslationLibrary; use MessageTranslationLibrary;  -- mo 1/7/12
 with MessageTranslationTypes; use messageTranslationTypes;

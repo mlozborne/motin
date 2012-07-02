@@ -2,7 +2,7 @@ WITH Ada.Text_IO; USE Ada.Text_IO;
 WITH MessageIO; USE MessageIO;
 WITH Interfaces; USE Interfaces;
 WITH MessageTranslationLibrary; USE MessageTranslationLibrary;
-WITH Globals; USE Globals;
+WITH ControllerGlobals; USE ControllerGlobals;
 WITH LayoutPkg; USE LayoutPkg;
 WITH SSIPkg; USE SSIPkg;
 --WITH LocoBuffer; USE LocoBuffer;

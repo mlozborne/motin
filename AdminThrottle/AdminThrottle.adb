@@ -11,6 +11,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with logFiles;
 with MessageTranslationTypes;
+with Tracer; use Tracer;
 
 PROCEDURE AdminThrottle IS
    kLFString           : string(1..1) := ( 1=> standard.ascii.LF);
@@ -21,16 +22,7 @@ PROCEDURE AdminThrottle IS
    Port                : unbounded_String := to_unbounded_string("0000");
    layoutFileName      : unbounded_String := to_unbounded_string(""); 
    command             : railroadManager.commandType;
-   
-   function stringToLower (str :string) return string is
-      Result : String (Str'Range);
-   begin
-     for C in  Str'Range loop
-        Result (C) := To_Lower (Str (C));
-     end loop;
-     return Result;
-  end stringToLower;
-   
+     
 BEGIN
    screenManager.objScreenManager.clearTheScreen;
    

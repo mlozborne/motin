@@ -5,7 +5,7 @@ WITH Ada.Unchecked_Deallocation;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 
-PACKAGE Globals IS
+PACKAGE ControllerGlobals IS
 
    -- withTrace : boolean := true;
    -- procedure myPutLine(str : string);
@@ -87,4 +87,4 @@ PACKAGE Globals IS
    KClosed         : CONSTANT Unsigned_8 := 16#30#; --0011 0000
    KThrown         : CONSTANT Unsigned_8 := 16#10#; --0001 0000     -- mo I use 4 constants for this stuff
 
-END Globals;
+END ControllerGlobals;

@@ -1,5 +1,5 @@
-WITH Ada.Unchecked_Deallocation, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Ada.Calendar;
-USE Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Ada.Calendar;
+WITH Ada.Unchecked_Deallocation, Ada.Strings.Unbounded, Ada.Text_IO, ControllerGlobals, CommandQueueManager, Ada.Calendar;
+USE Ada.Strings.Unbounded, Ada.Text_IO, ControllerGlobals, CommandQueueManager, Ada.Calendar;
 with MessageTranslationTypes; use messageTranslationTypes;
 
 PACKAGE LayoutPkg IS
@@ -128,7 +128,7 @@ PACKAGE LayoutPkg IS
       -- set the type of the switch
       PROCEDURE UpdateSwitch (
             Id           : Positive;
-            TypeOfSwitch : Globals.SwitchType);
+            TypeOfSwitch : ControllerGlobals.SwitchType);
 
       -- Add a pointer to the sensor with Id = NarrowId to the list of narrow
       --   sensors in CurrentSwitch
@@ -242,7 +242,7 @@ PRIVATE
    TYPE SwitchObj IS NEW LayoutObj WITH
       RECORD
          State         : SwitchStateType := Closed;
-         TypeOfSwitch  : Globals.SwitchType  := Normal;
+         TypeOfSwitch  : ControllerGlobals.SwitchType  := Normal;
          ClosedSensors : SensorObjList;
          NarrowSensors : SensorObjList;
          ThrownSensor  : SensorObjPtr;

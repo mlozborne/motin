@@ -6,7 +6,7 @@ USE Interfaces.C;
 WITH Interfaces; USE Interfaces;
 WITH GenericQueue;
 WITH GenericList;
-WITH Globals; USE Globals;
+WITH ControllerGlobals; USE ControllerGlobals;
 with MessageTranslationTypes; use messageTranslationTypes;
 
 PACKAGE CommandQueueManager IS

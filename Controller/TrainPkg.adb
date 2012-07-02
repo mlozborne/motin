@@ -3,9 +3,9 @@
 -- Keeps a list of TrainTasks
 -- Added 4/26/2011 By Alex Eveleth
 
-WITH Globals, CommandQueueManager, LayoutPkg, MessageTranslationLibrary;
+WITH ControllerGlobals, CommandQueueManager, LayoutPkg, MessageTranslationLibrary;
 WITH Ada.Exceptions, Ada.Text_IO, Interfaces;
-USE Globals, CommandQueueManager, LayoutPkg, MessageTranslationLibrary;
+USE ControllerGlobals, CommandQueueManager, LayoutPkg, MessageTranslationLibrary;
 USE Ada.Exceptions, Ada.Text_IO, Interfaces;
 with MessageTranslationTypes; use messageTranslationTypes;
 with Tracer; use Tracer;

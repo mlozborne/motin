@@ -2,8 +2,8 @@
 -- Defines procedures and task to handle train information
 -- Added 4/26/2011 By Alex Eveleth
 
-WITH Globals, LayoutPkg, GenericList;
-USE Globals, LayoutPkg;
+WITH ControllerGlobals, LayoutPkg, GenericList;
+USE ControllerGlobals, LayoutPkg;
 with MessageTranslationTypes; use messageTranslationTypes;
 
 

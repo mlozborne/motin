@@ -559,7 +559,7 @@ PACKAGE BODY LayoutPkg IS
 
       PROCEDURE UpdateSwitch (
             Id           : Positive;
-            TypeOfSwitch : Globals.SwitchType) IS
+            TypeOfSwitch : ControllerGlobals.SwitchType) IS
          SwitchPtr : SwitchNodePtr;
       BEGIN
          FindSwitch(SwitchList, Id, SwitchPtr);
@@ -1979,7 +1979,7 @@ PACKAGE BODY LayoutPkg IS
                Indent, Output);
             IF NOT PrintOnlyId THEN
                Print("Switch State: " & SwitchStateType'Image(SwitchPtr.Switch.State), Indent, Output);
-               Print("Switch Type: " & Globals.SwitchType'Image(SwitchPtr.Switch.TypeOfSwitch), Indent, Output);
+               Print("Switch Type: " & ControllerGlobals.SwitchType'Image(SwitchPtr.Switch.TypeOfSwitch), Indent, Output);
                Print("Switch Narrow Sensors:", Indent, Output);
                Print_Sensors(SwitchPtr.Switch.NarrowSensors, Indent + 2, Output, True);
                Print("Switch Closed Sensors:", Indent, Output);
