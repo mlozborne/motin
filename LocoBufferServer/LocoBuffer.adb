@@ -42,7 +42,7 @@ PACKAGE BODY LocoBuffer IS
                END IF;
             END LOOP;
             put_line("LocoBuffer pkg in ListenForClientTask: accepted client connection");
-            DELAY 0.1; --0.01;   ???
+            DELAY 0.1; --  ???
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg: ListenForLocoBufferClientsTaskType " & Exception_Information(Error));
@@ -113,7 +113,7 @@ PACKAGE BODY LocoBuffer IS
                   end if;
                END IF;
             END LOOP;
-            DELAY 0.1; --0.01;  ??? 
+            DELAY 0.001; -- ??? 
          EXCEPTION
             WHEN Error: OTHERS=>
                put_line("**************** EXCEPTION in LocoBuffer pkg: WriteLocoBufferStringTaskType " & Exception_Information(Error));
@@ -149,44 +149,52 @@ PACKAGE BODY LocoBuffer IS
             --read single message from locobuffer
             Data := ReadData;
             IF (Data AND 16#80#) = 16#80# THEN
+			
                --if first bit is 1, is opcode
                --how many bytes follow?
-               IF (Data AND 16#F0#) = 16#80# THEN--only Checksum follows
+               IF (Data AND 16#F0#) = 16#80# THEN
                   InUse := 2;
-               ELSIF (Data AND 16#F0#) = 16#A0# THEN --2 bytes plus Checksum
+               ELSIF (Data AND 16#F0#) = 16#A0# THEN 
                   InUse := 4;
-               ELSIF (Data AND 16#F0#) = 16#B0# THEN --2 bytes plus Checksum
+               ELSIF (Data AND 16#F0#) = 16#B0# THEN 
                   InUse := 4;
-               ELSIF (Data AND 16#F0#) = 16#E0# THEN --12 bytes plus Checksum
+               ELSIF Data = 16#EF# OR Data = 16#E7# THEN 
                   InUse := 14;
+               ELSIF Data = 16#E5#  THEN 
+                  InUse := 16;
+               ELSIF Data = 16#ED#  THEN 
+                  InUse := 11;
                ELSE
-                  InUse := 1;
+                  InUse := 0;
                END IF;
-
-               MyArray(1) := Data;
-               FOR I IN 2..InUse LOOP
-                  Data := ReadData;
-                  MyArray(I) := Data;
-               END LOOP;
-               CValue := ClearBuffer(CZero);--clear buffer
-               FOR J IN 1..InUse LOOP--write array to buffer
-                  Cvalue := WriteByte(C.Double(MyArray(J)), CZero);
-               END LOOP;
                
-               messageCount := messageCount + 1;
-               msg.byteArray := myArray;
-               msg.size := inUse;
-               myPutLine(">" & natural'image(messageCount) & " read from railroad");
-               myPutLine("      " & toEnglish(msg));
-               
-               FOR I IN SocketListArray'RANGE LOOP--write to all clients
-                  IF (Integer(SocketListArray(I)) >= 0) THEN
-                     myPutLine("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
-                     Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
-                  END IF;
-               END LOOP;
+			   if inUse /= 0 then
+				   MyArray(1) := Data;
+				   FOR I IN 2..InUse LOOP
+					  Data := ReadData;
+					  MyArray(I) := Data;
+				   END LOOP;
+				   CValue := ClearBuffer(CZero);--clear buffer
+				   FOR J IN 1..InUse LOOP--write array to buffer
+					  Cvalue := WriteByte(C.Double(MyArray(J)), CZero);
+				   END LOOP;
+				   
+				   messageCount := messageCount + 1;
+				   msg.byteArray := myArray;
+				   msg.size := inUse;
+				   myPutLine(">" & natural'image(messageCount) & " read from railroad");
+				   myPutLine("      " & toEnglish(msg));
+				   
+				   FOR I IN SocketListArray'RANGE LOOP--write to all clients
+					  IF (Integer(SocketListArray(I)) >= 0) THEN
+						 myPutLine("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
+						 Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
+					  END IF;
+				   END LOOP;
+			   end if;
+				   
             END IF;
-            DELAY 0.1; --0.01;  ??? 
+            DELAY 0.001; -- ??? 
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));

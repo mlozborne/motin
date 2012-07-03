@@ -125,65 +125,7 @@ PACKAGE BODY ScreenManager IS
             put_line("UNPLANNED EXCEPTION in ScreenManager.PutTrain --" & kLFString & Exception_Information (error));
             raise;
       END PutTrain;  
-   
-       -- PROCEDURE PutTrains (Trains : in out TrainArrayType) IS
-         -- TheDirection : Character;
-         -- TheLight, TheBell, TheHorn, TheMute : String(1..3);
-      -- BEGIN
-         -- FOR I IN 1..kNumTrains LOOP
-            -- IF trains(I).phyAdr = 0 THEN
-               -- MyPut(2, I+2, ToString80(" "));
-               -- myput (67, i+2, "                      ");
-            -- else
-               -- IF Trains(I).Direction = Forward THEN TheDirection := 'F';
-               -- ELSE TheDirection := 'R';
-               -- END IF;
-
-               -- IF (Trains(I).Light = On) THEN TheLight := "on ";
-               -- ELSE TheLight := "off";
-               -- END IF;
-
-               -- IF (Trains(I).Bell = On) THEN TheBell := "on ";
-               -- ELSE TheBell := "off";
-               -- END IF;
-
-               -- IF (Trains(I).Horn = On) THEN TheHorn := "on ";
-               -- ELSE TheHorn := "off";
-               -- END IF;
-
-               -- IF (Trains(I).Mute= On) THEN TheMute := "on ";
-               -- ELSE TheMute := "off";
-               -- END IF;
-
-               -- MyPut(2, I+2,
-                  -- toString80(i)(1..6) &                                            -- id
-                  -- ToString80(trains(i).phyadr)(2..6) & "/" &                       -- phyadr
-                  -- toString80(trains(i).physlot)(1..6) &                            -- physlot
-                  -- ToString80(Trains(I).viradr)(2..6) & "/" &                       -- viradr
-                  -- toString80(trains(i).virslot)(1..7) &                            -- virslot
-                  -- ToString80(Trains(I).state)(1..5) &                              -- state
-                  -- ToString80(Trains(I).Speed)(2..7) &                              -- speed
-                  -- Character'Image(TheDirection)(2..2) & "   " &                    -- direction
-                  -- ToString80(TheLight)(1..5) &                                     -- light
-                  -- ToString80(TheBell)(1..5) &                                      -- bell
-                  -- ToString80(TheHorn)(1..5) &                                      -- horn
-                  -- ToString80(TheMute)(1..5)                                        -- mute
-                  -- );
-               -- myput (67, i+2, "                      ");
-               -- moveFront(trains(i).sensors);
-               -- for j in 1..getCount(trains(i).Sensors) loop
-                  -- myPut (67 + (j-1)*4, i+2, toString80(getCurrent(trains(i).sensors))(1..4));
-                  -- moveNext(trains(i).sensors);
-               -- end loop;
-            -- END IF;
-         -- END LOOP;
-         -- MoveCursor(3,kPromptRow);
-      -- exception
-         -- when error: others =>
-            -- put_line("UNPLANNED EXCEPTION in ScreenManager.PutTrains --" & kLFString & Exception_Information (error));
-            -- raise;
-      -- END PutTrains;  
-   
+      
       PROCEDURE PutMessage (str1 : string; str2 : String) IS
       begin
          MyPut(20, kMessageRow, toString80(str2)(1..60));

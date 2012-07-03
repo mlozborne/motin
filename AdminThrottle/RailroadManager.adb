@@ -20,8 +20,10 @@ package body RailroadManager is
                   str(i) := 'C';
                when thrown =>
                   str(i) := 'T';
-               when beginThrown | beginClosed =>
-                  str(i) := '*';
+               when beginThrown => 
+                  str(i) := 't';
+			   when beginClosed =>
+                  str(i) := 'c';
                when unknown =>
                   str(i) := '?';
             end case;
@@ -279,39 +281,30 @@ package body RailroadManager is
             when OPC_GPON =>
 			
 			   null;
-               -- objScreenManager.putMessage(toString(message), "Another throttle is turning the power on");
 
             when OPC_GPOFF =>
 			
                null;
-               -- objScreenManager.putMessage(toString(message), "Another throttle is turning the power off");
 
             when OPC_INPUT_REP =>
 
 			   null;
-               -- splitInputRepMsg(message, sensorNum, isHi);
-               -- if isHi then
-                  -- objScreenManager.putMessage(toString(message) , "Railroad is reporting sensor " & natural'image(sensorNum) & " fired hi");
-               -- else
-                  -- objScreenManager.putMessage(toString(message) , "Railroad is reporting sensor " & natural'image(sensorNum) & " fired low");
-               -- end if;
 
             when OPC_SW_REP =>
 
                splitSwRepMsg(message, switchNum, switchSetting);
-               -- switchStr := toString(switchSetting);
-               -- objScreenManager.putMessage(toString(message), "Railroad is reporting switch " & natural'image(switchNum)& " " & switchStr);
-               switches(switchNum) := switchSetting;
-               objScreenManager.putSwitches(toString(switches));
-
+               if switchNum <= kNumSwitches then
+				   switches(switchNum) := switchSetting;
+				   objScreenManager.putSwitches(toString(switches));
+               else
+                   objScreenManager.putError("OPC_SW_REP: Switch number" & integer'image(switchNum) & " out of range");
+			   end if;
+			   
             when OPC_LOCO_ADR =>
 
 			   null;
-               -- objScreenManager.putMessage(toString(message), "Another throttle is requesting address info with OPC_LOCO_ADR");
 
             when OPC_SL_RD_DATA =>
-
-               -- objScreenManager.putMessage(toString(message), "Railroad is reporting slot info with OPC_SL_RD_DATA");
 
                splitSlRdDataMsg(message, addressReceived, addressIsAlreadyInUse, slotNumberReceived);
                if (addressReceived /= addressBeingSet) then
@@ -362,37 +355,26 @@ package body RailroadManager is
             when OPC_LONG_ACK =>
 
 			   null;
-               -- objScreenManager.putMessage(toString(message), "Railroad is reporting OPC_LONG_ACK");
 
             when OPC_MOVE_SLOTS =>
 
 			   null;
-               -- objScreenManager.putMessage(toString(message), "Another throttle is sending OPC_MOVE_SLOTS");
 
             when OPC_LOCO_SPD =>
 
 			   null;
-               -- splitLocoSpdMsg(message, slotNum, speed);
-               -- objScreenManager.putMessage(toString(message), "Another throttle is setting speed slot " & natural'image(slotNum) & " to " & natural'image(speed));
 
             when OPC_LOCO_DIRF =>
    
                null;
-               -- splitLocoDirfMsg(message, slotNum, trainDirection, light, horn, bell);
-               -- objScreenManager.putMessage(toString(message), "Another throttle is setting DIRF slot " & natural'image(slotNum) & " to " & getDIRF(message));
 
             when OPC_LOCO_SND =>
 
 			   null;
-               -- splitLocoSndMsg(message, slotNum, F5, F6, mute);
-               -- objScreenManager.putMessage(toString(message), "Another throttle is setting SND slot " &natural'image(slotNum) & " to " & getSND(message));
 
             when OPC_SW_REQ =>
 
-			   null;
-               -- splitSwReqMsg(message, switchNum, switchSetting);
-               -- switchStr := toString(switchSetting);
-               -- objScreenManager.putMessage(toString(message), "Another throttle is moving switch " & natural'image(switchNum) & " " & switchStr);
+               null;
 
             when 16#00# =>
 
@@ -401,7 +383,6 @@ package body RailroadManager is
 
                   when putTrainState =>
 
-                     -- objScreenManager.putMessage(toString(message), "putTrainState " & toEnglish(message));
                      splitPutTrainStateMsg(message, virSlotNum, trainState);
                      trainId := getIdOfTrainFromVSlot(virSlotNum);
                      if trainId = 0 then
@@ -414,7 +395,6 @@ package body RailroadManager is
 
                   when putTrainPosition =>
 
-                     -- objScreenManager.putMessage(toString(message), "putTrainPosition " & toEnglish(message));
                      splitPutTrainPositionMsg(message, virSlotNum, sensors);
                      trainId := getIdOfTrainFromVSlot(virSlotNum);
                      if trainId = 0 then
@@ -430,11 +410,9 @@ package body RailroadManager is
                   when putSectionState =>
 				  
 				     null;
-                     -- objScreenManager.putMessage(toString(message), "putSectionState " & toEnglish(message));
 
                   when putSwitchState =>
 
-                     -- objScreenManager.putMessage(toString(message), "putSwitchState " & toEnglish(message));
                      splitPutSwitchStateMsg(message, switchNum, switchSetting);
                      switches(switchNum) := switchSetting;
                      objScreenManager.putError("putSwitchState processed");
@@ -443,13 +421,10 @@ package body RailroadManager is
                   when putSensorState =>
 
 				     null;
-                     -- objScreenManager.putMessage(toString(message), "putSensorState " & toEnglish(message));
 
                   when putInitOutcome =>
 
                      -- This is assumed to be a response to a prior doLocoInit.
-                     -- objScreenManager.putMessage(toString(message), "putInitOutcome " & toEnglish(message));
-
                      splitPutInitOutcomeMsg(message, physAdd, physSlot, virtAdd, virtSlot);
 
                      if physSlot = 121 then
@@ -471,11 +446,9 @@ package body RailroadManager is
                   when putReadLayoutResponse =>
 
 				     null;
-                     -- objScreenManager.putMessage(toString(message), "putReadLayoutResponse " & toEnglish(message));
 
                   when putTrainInformation =>
 
-                     -- objScreenManager.putMessage(toString(message), "putTInfo " & toEnglish(message));
                      splitPutTrainInformationMsg(message, virSlotNum, speed, trainDirection, light, bell, horn, mute);
                      trainId := getIdOfTrainFromVSlot(virSlotNum);
                      if trainId = 0 then
@@ -494,14 +467,12 @@ package body RailroadManager is
                   when others =>
 
 				     null;
-                     -- objScreenManager.putMessage(toString(message), "unknown extended message " & toEnglish(message));
 
                   end case;
 
             when others =>
 
 			   null;
-               -- objScreenManager.putMessage(toString(message), "Unknown LocoNet message");
 
          end case;
       exception

@@ -93,9 +93,9 @@ PACKAGE BODY TrainPkg IS
 
       LOOP
          BEGIN
-            IF false THEN   
-               DELAY 0.01; -- Wait so that other tasks have a chance to run     test 3              
-            else
+            -- IF false THEN   
+               -- DELAY 0.01; -- Wait so that other tasks have a chance to run     test 3              
+            -- else
                Queue.GetMessage(Cmd);
                myPutLine("        ........... " & toEnglish(cmd) & "  received in TrainTask" & TrainIdType'Image(TrainId));
                CASE Cmd.ByteArray(1) IS
@@ -362,7 +362,7 @@ PACKAGE BODY TrainPkg IS
                   WHEN OTHERS => -- G
                      myPutLine("        ............. unknown message 2" & "    in TrainTask" & TrainIdType'Image(TrainId));
                END CASE;
-            END IF;                       
+            -- END IF;                       
          EXCEPTION
             WHEN Error : OTHERS =>
                put_line("**************** EXCEPTION in TrainTask" & Integer'Image(TrainId) & " : " & Exception_Information(Error));

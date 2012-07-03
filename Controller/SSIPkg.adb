@@ -104,9 +104,9 @@ PACKAGE BODY SSIPkg IS
 
       LOOP
          BEGIN
-            IF  false THEN    
-               DELAY 0.01;      -- test 7                            
-            else
+            -- IF  false THEN    
+               -- DELAY 0.01;      -- test 7                            
+            -- else
                SSIQueue.GetMessage(Cmd);
                myPutLine("    " & toEnglish(cmd) & "....... received by SSITask");
                
@@ -343,7 +343,7 @@ PACKAGE BODY SSIPkg IS
                   null;
                   
                END IF;
-            END IF;                                      
+            -- END IF;                                      
          EXCEPTION
             WHEN Error : OTHERS =>
                put_line("**************** EXCEPTION: SSIPkg in SSITask " & Exception_Information(Error));

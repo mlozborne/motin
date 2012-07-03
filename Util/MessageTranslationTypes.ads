@@ -15,7 +15,7 @@ package MessageTranslationTypes is
    KNumTrains              : CONSTANT Natural := 4;
    SUBTYPE TrainIdType     IS natural RANGE 1..KNumTrains;
 	
-   kMaxNumSwitches         : constant natural := 127;
+   kMaxNumSwitches         : constant natural := 65000;
    subtype switchIdType    is natural range 1..kMaxNumSwitches;
 	
    TYPE  DirectionType    IS (Forward, Backward);

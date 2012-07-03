@@ -85,9 +85,9 @@ PACKAGE BODY LayoutPkg IS
       LOOP
          BEGIN
             -- Get Messages from the LayoutQueue
-            IF false THEN    
-               DELAY 0.01; -- Wait so that other tasks have a chance to run    test 1
-            else
+            -- IF false THEN    
+               -- DELAY 0.01; -- Wait so that other tasks have a chance to run    test 1
+            -- else
                CommandQueueManager.LayoutQueue.GetMessage(Cmd);
                myPutLine("      " & toEnglish(cmd) & "       received by LayoutTask");
                CASE Cmd.ByteArray(1) IS
@@ -146,7 +146,7 @@ PACKAGE BODY LayoutPkg IS
                   WHEN OTHERS =>
                      NULL;
                END CASE;
-            END IF;                                            
+            -- END IF;                                            
          EXCEPTION
             WHEN Error : OTHERS =>
                put_line("**************** EXCEPTION in LayoutTask: " & Exception_Information(Error));
