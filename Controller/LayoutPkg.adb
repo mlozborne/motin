@@ -519,8 +519,7 @@ PACKAGE BODY LayoutPkg IS
       END FindSensor;
 
       PROCEDURE AddSwitch (
-            Id    : Positive;
-            State : SwitchStateType) IS
+            Id    : Positive) IS
          SwitchPtr : SwitchNodePtr;
       BEGIN
          IF CurrentSection.SwitchList.Head = NULL THEN
@@ -545,7 +544,6 @@ PACKAGE BODY LayoutPkg IS
             SwitchPtr := CurrentSection.SwitchList.Tail;
             SwitchPtr.Switch := NEW SwitchObj;
             SwitchPtr.Switch.Id := Id;
-            SwitchPtr.Switch.State := State;
             SwitchList.Tail.Switch := SwitchPtr.Switch;
          ELSE
             CurrentSection.SwitchList.Tail.Switch := SwitchPtr.Switch;
@@ -559,13 +557,15 @@ PACKAGE BODY LayoutPkg IS
 
       PROCEDURE UpdateSwitch (
             Id           : Positive;
-            TypeOfSwitch : ControllerGlobals.SwitchType) IS
+            TypeOfSwitch : ControllerGlobals.SwitchType;
+            state        : switchStateType) IS
          SwitchPtr : SwitchNodePtr;
       BEGIN
          FindSwitch(SwitchList, Id, SwitchPtr);
          IF SwitchPtr /= NULL THEN
             CurrentSwitch := SwitchPtr.Switch;
             CurrentSwitch.TypeOfSwitch := TypeOfSwitch;
+            currentSwitch.state := state;
          ELSE
             RAISE InvalidSwitchId;
          END IF;

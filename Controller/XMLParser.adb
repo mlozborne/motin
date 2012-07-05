@@ -50,15 +50,15 @@ PACKAGE BODY XMLParser IS
    PROCEDURE Get_Switch_Values (
          Atts : Sax.Attributes.Attributes'Class) IS
       Id    : Positive;
-      State : SwitchStateType;
+      -- State : SwitchStateType;
    BEGIN
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      IF Get_Index(Atts, "state") /= -1 THEN
-         State := SwitchStateType'Value(Get_Value(Atts, "state"));
-      END IF;
-      LayoutPtr.AddSwitch(Id, State);
+      -- IF Get_Index(Atts, "state") /= -1 THEN
+         -- State := SwitchStateType'Value(Get_Value(Atts, "state"));
+      -- END IF;
+      LayoutPtr.AddSwitch(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************* EXCEPTION Error adding switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
@@ -69,16 +69,20 @@ PACKAGE BODY XMLParser IS
          Atts : Sax.Attributes.Attributes'Class) IS
       Id           : Positive;
       TypeOfSwitch : ControllerGlobals.SwitchType;
+      state        : switchStateType;
    BEGIN
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
+      END IF;
+      IF Get_Index(Atts, "state") /= -1 THEN
+         State := SwitchStateType'Value(Get_Value(Atts, "state"));
       END IF;
       IF Get_Index(Atts, "type") /= -1 THEN
          TypeOfSwitch := ControllerGlobals.SwitchType'Value(Get_Value(Atts, "type"));
       ELSE
          TypeOfSwitch := ControllerGlobals.SwitchType'Value("Normal");
       END IF;
-      LayoutPtr.UpdateSwitch(Id, TypeOfSwitch);
+      LayoutPtr.UpdateSwitch(Id, TypeOfSwitch, state);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************* EXCEPTION Error updating switch:" & Positive'Image(Id) & " " & Exception_Information(Error));

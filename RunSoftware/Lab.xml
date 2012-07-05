@@ -23,7 +23,7 @@
 		<section id="2">
 			<sensor id="5" />
 			<sensor id="33" />
-			<switch id="3" state="thrown" />
+			<switch id="3" />
 			<blocking id="4" />
 			<blocking id="6" />
 			<blocking id="8" />
@@ -35,8 +35,8 @@
 		<section id="4">
 			<sensor id="6" />
 			<sensor id="33" />
-			<switch id="3" state="thrown" />
-			<switch id="2" state="thrown" />
+			<switch id="3" />
+			<switch id="2" />
 			<blocking id="2" />
 			<blocking id="6" />
 			<blocking id="8" />
@@ -48,8 +48,8 @@
 		<section id="6">
 			<sensor id="7" />
 			<sensor id="33" />
-			<switch id="3" state="thrown" />
-			<switch id="2" state="thrown" />
+			<switch id="3" />
+			<switch id="2" />
 			<switch id="1" state="closed" />
 			<blocking id="2" />
 			<blocking id="4" />
@@ -62,8 +62,8 @@
 		<section id="8">
 			<sensor id="8" />
 			<sensor id="33" />
-			<switch id="3" state="thrown" />
-			<switch id="2" state="thrown" />
+			<switch id="3" />
+			<switch id="2" />
 			<switch id="1" state="closed" />
 			<blocking id="2" />
 			<blocking id="4" />
@@ -72,13 +72,13 @@
 		<section id="9">
 			<sensor id="33" />
 			<sensor id="35" />
-			<switch id="4" state="thrown" />
+			<switch id="4" />
 			<blocking id="10" />
 		</section>
 		<section id="10">
 			<sensor id="34" />
 			<sensor id="35" />
-			<switch id="4" state="thrown" />
+			<switch id="4" />
 			<blocking id="9" />
 		</section>
 		<section id="11">
@@ -88,51 +88,51 @@
 		<section id="12">
 			<sensor id="62" />
 			<sensor id="59" />
-			<switch id="12" state="thrown" />
+			<switch id="12" />
 			<blocking id="13" />
 			<blocking id="102" />
 		</section>
 		<section id="13">
 			<sensor id="61" />
 			<sensor id="59" />
-			<switch id="12" state="thrown" />
+			<switch id="12" />
 			<blocking id="12" />
 			<blocking id="102" />
 		</section>
 		<section id="14">
 			<sensor id="59" />
 			<sensor id="77" />
-			<switch id="13" state="thrown" />
+			<switch id="13" />
 			<blocking id="15" />
 		</section>
 		<section id="15">
 			<sensor id="59" />
 			<sensor id="80" />
-			<switch id="13" state="thrown" />
+			<switch id="13" />
 			<blocking id="14" />
 		</section>
 		<section id="16">
 			<sensor id="77" />
 			<sensor id="95" />
-			<switch id="16" state="thrown" />
+			<switch id="16" />
 			<blocking id="17" />
 		</section>
 		<section id="17">
 			<sensor id="78" />
 			<sensor id="95" />
-			<switch id="16" state="thrown" />
+			<switch id="16" />
 			<blocking id="16" />
 		</section>
 		<section id="18">
 			<sensor id="95" />
 			<sensor id="93" />
-			<switch id="18" state="thrown" />
+			<switch id="18" />
 			<blocking id="19" />
 		</section>
 		<section id="19">
 			<sensor id="95" />
 			<sensor id="92" />
-			<switch id="18" state="thrown" />
+			<switch id="18" />
 			<blocking id="18" />
 		</section>
 		<section id="20">
@@ -150,20 +150,20 @@
 		<section id="24">
 			<sensor id="103" />
 			<sensor id="99" />
-			<switch id="22" state="thrown" />
+			<switch id="22" />
 			<blocking id="25" />
 		</section>
 		<section id="25">
 			<sensor id="99" />
 			<sensor id="104" />
-			<switch id="22" state="thrown" />
+			<switch id="22" />
 			<blocking id="24" />
 			<blocking id="26" />
 		</section>
 		<section id="26">
 			<sensor id="104" />
 			<sensor id="101" />
-			<switch id="22" state="thrown" />
+			<switch id="22" />
 			<blocking id="25" />
 		</section>
 		<section id="27">
@@ -177,13 +177,13 @@
 		<section id="29">
 			<sensor id="87" />
 			<sensor id="65" />
-			<switch id="15" state="thrown" />
+			<switch id="15" />
 			<blocking id="30" />
 		</section>
 		<section id="30">
 			<sensor id="87" />
 			<sensor id="72" />
-			<switch id="15" state="thrown" />
+			<switch id="15" />
 			<blocking id="29" />
 			<blocking id="31" />
 		</section>
@@ -194,7 +194,7 @@
 		<section id="31">
 			<sensor id="72" />
 			<sensor id="88" />
-			<switch id="15" state="thrown" />
+			<switch id="15" />
 			<blocking id="30" />
 		</section>
 		<section id="32">
@@ -212,20 +212,20 @@
 		<section id="35">
 			<sensor id="45" />
 			<sensor id="25" />
-			<switch id="9" state="thrown" />
+			<switch id="9" />
 			<blocking id="36" />
 		</section>
 		<section id="36">
 			<sensor id="25" />
 			<sensor id="44" />
-			<switch id="9" state="thrown" />
+			<switch id="9" />
 			<blocking id="35" />
 			<blocking id="37" />
 		</section>
 		<section id="37">
 			<sensor id="44" />
 			<sensor id="47" />
-			<switch id="9" state="thrown" />
+			<switch id="9" />
 			<blocking id="36" />
 		</section>
 		<section id="38">
@@ -239,13 +239,13 @@
 		<section id="41">
 			<sensor id="9" />
 			<sensor id="34" />
-			<switch id="8" state="thrown" />
+			<switch id="8" />
 			<blocking id="42" />
 		</section>
 		<section id="42">
 			<sensor id="10" />
 			<sensor id="34" />
-			<switch id="8" state="thrown" />
+			<switch id="8" />
 			<blocking id="41" />
 		</section>
 		<section id="43">
@@ -259,13 +259,13 @@
 		<section id="45">
 			<sensor id="74" />
 			<sensor id="94" />
-			<switch id="17" state="thrown" />
+			<switch id="17" />
 			<blocking id="46" />
 		</section>
 		<section id="46">
 			<sensor id="73" />
 			<sensor id="94" />
-			<switch id="17" state="thrown" />
+			<switch id="17" />
 			<blocking id="45" />
 		</section>
 		<section id="47">
@@ -279,13 +279,13 @@
 		<section id="49">
 			<sensor id="100" />
 			<sensor id="98" />
-			<switch id="23" state="thrown" />
+			<switch id="23" />
 			<blocking id="50" />
 		</section>
 		<section id="50">
 			<sensor id="101" />
 			<sensor id="98" />
-			<switch id="23" state="thrown" />
+			<switch id="23" />
 			<blocking id="49" />
 		</section>
 		<section id="51">
@@ -295,13 +295,13 @@
 		<section id="52">
 			<sensor id="82" />
 			<sensor id="85" />
-			<switch id="19" state="thrown" />
+			<switch id="19" />
 			<blocking id="53" />
 		</section>
 		<section id="53">
 			<sensor id="82" />
 			<sensor id="86" />
-			<switch id="19" state="thrown" />
+			<switch id="19" />
 			<blocking id="52" />
 		</section>
 		<section id="54">
@@ -311,13 +311,13 @@
 		<section id="55">
 			<sensor id="50" />
 			<sensor id="54" />
-			<switch id="11" state="thrown" />
+			<switch id="11" />
 			<blocking id="56" />
 		</section>
 		<section id="56">
 			<sensor id="51" />
 			<sensor id="54" />
-			<switch id="11" state="thrown" />
+			<switch id="11" />
 			<blocking id="55" />
 		</section>
 		<section id="57">
@@ -335,25 +335,25 @@
 		<section id="60">
 			<sensor id="27" />
 			<sensor id="28" />
-			<switch id="5" state="thrown" />
+			<switch id="5" />
 			<blocking id="61" />
 		</section>
 		<section id="61">
 			<sensor id="26" />
 			<sensor id="28" />
-			<switch id="5" state="thrown" />
+			<switch id="5" />
 			<blocking id="60" />
 		</section>
 		<section id="62">
 			<sensor id="28" />
 			<sensor id="19" />
-			<switch id="6" state="thrown" />
+			<switch id="6" />
 			<blocking id="63" />
 		</section>
 		<section id="63">
 			<sensor id="31" />
 			<sensor id="19" />
-			<switch id="6" state="thrown" />
+			<switch id="6" />
 			<blocking id="62" />
 		</section>
 		<section id="64">
@@ -363,13 +363,13 @@
 		<section id="65">
 			<sensor id="12" />
 			<sensor id="10" />
-			<switch id="7" state="thrown" />
+			<switch id="7" />
 			<blocking id="66" />
 		</section>
 		<section id="66">
 			<sensor id="12" />
 			<sensor id="11" />
-			<switch id="7" state="thrown" />
+			<switch id="7" />
 			<blocking id="65" />
 		</section>
 		<section id="67">
@@ -410,13 +410,13 @@
 		<section id="75">
 			<sensor id="57" />
 			<sensor id="71" />
-			<switch id="14" state="thrown" />
+			<switch id="14" />
 			<blocking id="76" />
 		</section>
 		<section id="76">
 			<sensor id="57" />
 			<sensor id="70" />
-			<switch id="14" state="thrown" />
+			<switch id="14" />
 			<blocking id="75" />
 		</section>
 		<section id="77">
@@ -442,13 +442,13 @@
 		<section id="82">
 			<sensor id="105" />
 			<sensor id="107" />
-			<switch id="21" state="thrown" />
+			<switch id="21" />
 			<blocking id="83" />
 		</section>
 		<section id="83">
 			<sensor id="106" />
 			<sensor id="107" />
-			<switch id="21" state="thrown" />
+			<switch id="21" />
 			<blocking is="82" />
 		</section>
 		<section id="84">
@@ -466,13 +466,13 @@
 		<section id="87">
 			<sensor id="116" />
 			<sensor id="113" />
-			<switch id="20" state="thrown" />
+			<switch id="20" />
 			<blocking id="88" />
 		</section>
 		<section id="88">
 			<sensor id="116" />
 			<sensor id="114" />
-			<switch id="20" state="thrown" />
+			<switch id="20" />
 			<blocking id="87" />
 		</section>
 		<section id="89">
@@ -510,13 +510,13 @@
 		<section id="97">
 			<sensor id="52" />
 			<sensor id="55" />
-			<switch id="10" state="thrown" />
+			<switch id="10" />
 			<blocking id="98" />
 		</section>
 		<section id="98">
 			<sensor id="53" />
 			<sensor id="55" />
-			<switch id="10" state="thrown" />
+			<switch id="10" />
 			<blocking id="97" />
 		</section>
 		<section id="99">
@@ -564,123 +564,123 @@
         </section>
 	</section-list>
 	<switch-list>
-		<switch id="1">
+		<switch id="1" state="thrown">
 			<narrow-end id="33" />
 			<closed-end id="8" />
 			<thrown-end id="7" />
 		</switch>
-		<switch id="2">
+		<switch id="2" state="thrown">
 			<narrow-end id="33" />
 			<closed-end id="7" />
 			<closed-end id="8" />
 			<thrown-end id="6" />
 		</switch>
-		<switch id="3">
+		<switch id="3" state="thrown">
 			<narrow-end id="33" />
 			<closed-end id="6" />
 			<closed-end id="7" />
 			<closed-end id="8" />
 			<thrown-end id="5" />
 		</switch>
-		<switch id="4">
+		<switch id="4" state="thrown">
 			<narrow-end id="35" />
 			<closed-end id="34" />
 			<thrown-end id="33" />
 		</switch>
-		<switch id="5">
+		<switch id="5" state="thrown">
 			<narrow-end id="28" />
 			<closed-end id="27" />
 			<thrown-end id="26" />
 		</switch>
-		<switch id="6">
+		<switch id="6" state="thrown">
 			<narrow-end id="19" />
 			<closed-end id="28" />
 			<thrown-end id="31" />
 		</switch>
-		<switch id="7">
+		<switch id="7" state="thrown">
 			<narrow-end id="12" />
 			<closed-end id="10" />
 			<thrown-end id="11" />
 		</switch>
-		<switch id="8">
+		<switch id="8" state="thrown">
 			<narrow-end id="34" />
 			<closed-end id="10" />
 			<thrown-end id="9" />
 		</switch>
-		<switch id="9" type="crossover">
+		<switch id="9" type="crossover" state="thrown">
 			<narrow-end id="44" />
 			<narrow-end id="25" />
 			<closed-end id="47" />
 			<closed-end id="45" />
 		</switch>
-		<switch id="10">
+		<switch id="10" state="thrown">
 			<narrow-end id="55" />
 			<closed-end id="53" />
 			<thrown-end id="52" />
 		</switch>
-		<switch id="11">
+		<switch id="11" state="thrown">
 			<narrow-end id="54" />
 			<closed-end id="50" />
 			<thrown-end id="51" />
 		</switch>
-		<switch id="12">
+		<switch id="12" state="thrown">
 			<narrow-end id="59" />
 			<closed-end id="61" />
 			<thrown-end id="62" />
 		</switch>
-		<switch id="13">
+		<switch id="13" state="closed">
 			<narrow-end id="59" />
 			<closed-end id="80" />
 			<thrown-end id="77" />
 		</switch>
-		<switch id="14">
+		<switch id="14" state="closed">
 			<narrow-end id="57" />
 			<closed-end id="70" />
 			<thrown-end id="71" />
 		</switch>
-		<switch id="15" type="crossover">
+		<switch id="15" type="crossover" state="closed">
 			<narrow-end id="87" />
 			<narrow-end id="72" />
 			<closed-end id="65" />
 			<closed-end id="88" />
 		</switch>
-		<switch id="16">
+		<switch id="16" state="closed">
 			<narrow-end id="95" />
 			<closed-end id="78" />
 			<thrown-end id="77" />
 		</switch>
-		<switch id="17">
+		<switch id="17" state="closed">
 			<narrow-end id="94" />
 			<closed-end id="74" />
 			<thrown-end id="73" />
 		</switch>
-		<switch id="18">
+		<switch id="18" state="closed">
 			<narrow-end id="95" />
 			<closed-end id="92" />
 			<thrown-end id="115" />
 		</switch>
-		<switch id="19">
+		<switch id="19" state="closed">
 			<narrow-end id="82" />
 			<closed-end id="85" />
 			<thrown-end id="86" />
 		</switch>
-		<switch id="20">
+		<switch id="20" state="closed">
 			<narrow-end id="116" />
 			<closed-end id="114" />
 			<thrown-end id="113" />
 		</switch>
-		<switch id="21">
+		<switch id="21" state="closed">
 			<narrow-end id="107" />
 			<closed-end id="106" />
 			<thrown-end id="105" />
 		</switch>
-		<switch id="22" type="crossover">
+		<switch id="22" type="crossover" state="closed">
 			<narrow-end id="99" />
 			<narrow-end id="104" />
 			<closed-end id="103" />
 			<closed-end id="101" />
 		</switch>
-		<switch id="23">
+		<switch id="23" state="closed">
 			<narrow-end id="98" />
 			<closed-end id="101" />
 			<thrown-end id="100" />

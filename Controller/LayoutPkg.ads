@@ -120,15 +120,15 @@ PACKAGE LayoutPkg IS
       -- Adds a new switch to CurrentSection's SwitchList
       -- If the switch is not already in the Full SwitchList, it is added
       PROCEDURE AddSwitch (
-            Id    : Positive;
-            State : SwitchStateType);
+            Id    : Positive);
 
       -- Find the Switch with Id
       -- private variable CurrentSwitch points to the switch
       -- set the type of the switch
       PROCEDURE UpdateSwitch (
             Id           : Positive;
-            TypeOfSwitch : ControllerGlobals.SwitchType);
+            TypeOfSwitch : ControllerGlobals.SwitchType;
+            state        : switchStateType);
 
       -- Add a pointer to the sensor with Id = NarrowId to the list of narrow
       --   sensors in CurrentSwitch
