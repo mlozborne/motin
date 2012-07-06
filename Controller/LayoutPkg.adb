@@ -1803,31 +1803,41 @@ PACKAGE BODY LayoutPkg IS
          Result               : Boolean;
          trainId              : trainIdType;
          thereIsReservation   : boolean;
+         found                : boolean;
       BEGIN
-         WHILE SwitchPtr /= NULL LOOP
-            IF SwitchPtr.Switch.Id = SwitchId THEN
-               MoveSwitchPossible(SwitchPtr, Result);
-               IF Result THEN
-                  FindIdOfTrainLoosingReservation(switchPtr, trainId, thereIsReservation);
-                  if thereIsReservation then
-                     SendToTrainQueue(makeLoseReservationMsg(TrainId), TrainId);
-                     -- The train delays when it does a "lose reservation"
-                     -- This causes the next two messages to be delayed until the train stops.
-                     sendToTrainQueue(makeSwReqMsg(SwitchPtr.Switch.Id, State), trainId);
-                  else
-                     IF State = Thrown THEN
-                        SwitchPtr.Switch.State := BeginThrown;
-                     ELSE
-                        SwitchPtr.Switch.State := BeginClosed;
-                     END IF;
-                     SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));
-                     SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, State));
-                  end if;
-               END IF;
-               return;
-            END IF;
+         while switchPtr /= null loop
+            found := true;
+            exit when SwitchPtr.Switch.Id = SwitchId;
+            found := false;
             SwitchPtr := SwitchPtr.Next;
-         END LOOP;
+         end loop;
+         if not found or else
+           switchPtr.switch.state = state or else
+           (switchPtr.switch.state = beginThrown and state = thrown) or else
+           (switchPtr.switch.state = beginClosed and state = closed)        
+         then
+            return;
+         end if;
+         
+         MoveSwitchPossible(SwitchPtr, Result);
+         IF Result THEN
+            FindIdOfTrainLoosingReservation(switchPtr, trainId, thereIsReservation);
+            if thereIsReservation then
+               SendToTrainQueue(makeLoseReservationMsg(TrainId), TrainId);
+               -- The train delays when it does a "lose reservation"
+               -- This causes the next two messages to be delayed until the train stops.
+               sendToTrainQueue(makeSwReqMsg(SwitchPtr.Switch.Id, State), trainId);
+            else
+               IF State = Thrown THEN
+                  SwitchPtr.Switch.State := BeginThrown;
+               ELSE
+                  SwitchPtr.Switch.State := BeginClosed;
+               END IF;
+               SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));
+               SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, State));
+            end if;
+         END IF;
+
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MoveSwitch: " & Exception_Information(Error));
