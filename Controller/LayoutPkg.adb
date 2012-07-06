@@ -1756,6 +1756,7 @@ PACKAGE BODY LayoutPkg IS
          SectionPtr    : SectionNodePtr;
          FrontSensorId : Positive;
          Result        : Boolean;
+         switchPtr     : switchNodePtr;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
             IF TrainPtr.TrainId = TrainId THEN
@@ -1775,6 +1776,15 @@ PACKAGE BODY LayoutPkg IS
                         FrontSensorId := SectionPtr.Section.SensorList.Head.Sensor.Id;
                      END IF;
                   END LOOP;
+                  
+                  switchPtr := SectionPtr.Section.SwitchList.Head;
+                  if switchPtr.switch.state = state or else
+                     (switchPtr.switch.state = beginThrown and state = thrown) or else
+                     (switchPtr.switch.state = beginClosed and state = closed)        
+                  then
+                     return;
+                  end if;
+                                  
                   MoveSwitchPossible(SectionPtr.Section.SwitchList.Head, TrainId, Result);
                   IF Result THEN
                      IF State = Thrown THEN
