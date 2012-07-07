@@ -7,8 +7,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 PACKAGE ControllerGlobals IS
 
-   -- withTrace : boolean := true;
-   -- procedure myPutLine(str : string);
+   lastMessageSentToRailroad : messageType;
+   kEmptyMessage             : messageType;
 
    KNumSwitches : CONSTANT Natural := 26;
    KNumSegments : CONSTANT Natural := 128;

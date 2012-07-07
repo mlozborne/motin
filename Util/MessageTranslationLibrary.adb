@@ -1257,7 +1257,7 @@ package body MessageTranslationLibrary is
                return "OPC_SW_REP switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
             when OPC_LOCO_SPD =>
                splitLocoSpdMsg(msg, trainId, speed);
-               return "OPC_LOCO_SPD trainId/speed " & natural'image(trainId) & " " & natural'image(speed);
+               return "OPC_LOCO_SPD slot/speed " & natural'image(trainId) & " " & natural'image(speed);
             when OPC_LOCO_DIRF =>
                 splitLocoDirfMsg(msg, trainId, direction, light, horn, bell);
                 return "OPC_LOCO_DIRF"
