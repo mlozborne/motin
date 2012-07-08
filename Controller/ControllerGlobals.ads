@@ -7,9 +7,6 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 PACKAGE ControllerGlobals IS
 
-   lastMessageSentToRailroad : messageType;
-   kEmptyMessage             : messageType;
-
    KNumSwitches : CONSTANT Natural := 26;
    KNumSegments : CONSTANT Natural := 128;
    KMaxLenError : CONSTANT Natural := 80;

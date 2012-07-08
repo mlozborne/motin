@@ -15,6 +15,41 @@ with Tracer; use Tracer;
 
 PACKAGE BODY MessageIO IS
 
+	protected body LastMessageManagerType is
+	
+		procedure saveMessage(msg : messageType) is
+		begin
+			lastMessageSentToRailroad := msg;
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION MesIOPkg saveMessage " & Exception_Information(Error));
+            raise;
+		end saveMessage;
+		
+		procedure isThisAnEcho(msg : messageType; echo : out boolean) is
+			msg2  : messageType := lastMessageSentToRailroad;
+		begin
+			lastMessageSentToRailroad := kEmptyMessage;
+			if msg.size /= msg2.size then
+				echo := false;
+				return;
+			 end if;
+			
+			if msg.byteArray(1..msg.size) = msg2.byteArray(1..msg2.size) then
+			   echo := true;
+				return;
+			else
+				echo := false;
+				return;
+			end if;			
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION MesIOPkg isThisAnEcho " & Exception_Information(Error));
+            raise;
+		end isThisAnEcho;
+		
+   end LastMessageManagerType;
+
    CZero : C.Double := C.Double (0);
 
    -------------------------------------------------
@@ -124,7 +159,7 @@ PACKAGE BODY MessageIO IS
             CValue := ClearBuffer(CZero);--clear buffer
             CASE MyArray(1) IS
 			
-               WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
+               WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>  --send to railroad slot
 			   
                   Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
                   MyArray(2) := Unsigned_8(Slot);
@@ -134,12 +169,11 @@ PACKAGE BODY MessageIO IS
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
+				      
+						internalMessage.byteArray := myArray;
+						LastMessageManager.saveMessage(internalMessage);
 				  
-                 internalMessage.byteArray(2) := Unsigned_8(Slot);
-                 makeCheckSumByte(internalMessage);
-                 lastMessageSentToRailroad := InternalMessage;
-				  
-			   WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ =>--send to railroad slot
+			   WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ => --send to railroad slot
 			   
                   SocketList.GetSocket(0, Socket);
                   FOR I IN 1..internalMessage.Size LOOP
@@ -147,7 +181,14 @@ PACKAGE BODY MessageIO IS
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
 				  
-                  lastMessageSentToRailroad := InternalMessage;
+						LastMessageManager.saveMessage(internalMessage);
+						
+						if myArray(1) = OPC_GPON then
+							ignoreMessagesUntilTime := clock + ignoreDurationForPowerOn; 
+						end if;
+						if myArray(1) = OPC_GPOFF then
+							ignoreMessagesUntilTime := clock + ignoreDurationForPowerOff; 
+					   end if;
 			  
             WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
 			   
@@ -202,6 +243,7 @@ PACKAGE BODY MessageIO IS
                   null;
             END CASE;
 
+				internalMessage.byteArray := myArray;
             if myArray(1) /= uzero then
                 messageCount := messageCount + 1;
                 myPutLine("<" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
@@ -218,19 +260,6 @@ PACKAGE BODY MessageIO IS
          END;
       END LOOP;
    END SendMessageTaskType;
-
-	function isEqual(msg1, msg2 : messageType) return boolean is
-	begin
-		if msg1.size /= msg2.size then
-			return false;
-	    end if;
-		
-		if msg1.byteArray(1..msg1.size) /= msg2.byteArray(1..msg2.size) then
-			return false;
-		else
-			return true;
-		end if;			
-	end isEqual;
 		
    ----------------------------------------------------------
    -- loop to Receive messages from sockets
@@ -248,6 +277,7 @@ PACKAGE BODY MessageIO IS
       messageCount    : natural := 0;
       found           : boolean;
 		messagesEqual   : boolean;
+		ignoringMessages: boolean;
 		
    BEGIN
       loop
@@ -287,18 +317,22 @@ PACKAGE BODY MessageIO IS
 								messageCount := messageCount + 1;
 								myPutLine(">" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
 							end if;
+							
+							ignoringMessages := (clock <= ignoreMessagesUntilTime);							
+							if ignoringMessages then
+								myPutLine("       ... ignoring messages during power on/off processing ");
+						   end if;
 					 
 							-- if this message is from the simulator/locobuffer server and 
 							-- identical to the last message sent to the simulator/locobuffer server then ignore it
 							messagesEqual := false;
-							if i = 0 then
-								messagesEqual := isEqual(lastMessageSentToRailroad, internalMessage);
+							if not ignoringMessages and i = 0 then
+								lastMessageManager.isThisAnEcho(internalMessage, messagesEqual);
 								if messagesEqual then
 									myPutLine("       ... message from railroad ignored because equals last message sent to railroad ");
 								end if;
-								lastMessageSentToRailroad := kEmptyMessage;
 							end if;
-							if i /= 0 or (i = 0 and not messagesEqual) then
+							if not ignoringMessages and (i /= 0 or (i = 0 and not messagesEqual)) then
 								CASE MyArray(1) IS
 									WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
 										SlotLookupTable.VirtSlotNumToTrainId(Integer(MyArray(2)), trainId, found);
