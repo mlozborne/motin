@@ -291,14 +291,16 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END PhysSlotNumToTrainId;
 
-      FUNCTION VirtSlotNumToTrainId(VirtSlotNum: SlotType) RETURN TrainIdType IS
+      procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean) is
       BEGIN
+         found := false;
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).VirtSlotNum = VirtSlotNum THEN
-               RETURN I;
+               trainId := i;
+               found := true;
+               RETURN;
             END IF;
          END LOOP;
-         RAISE EntryNotFound;
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager VirtSlotNumToTrainId " & Exception_Information(Error));

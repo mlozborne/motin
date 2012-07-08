@@ -79,7 +79,7 @@ PACKAGE CommandQueueManager IS
       --          as either a physical or virtual address
       -- return virtual slot number otherwise
       
-      FUNCTION VirtSlotNumToTrainId(VirtSlotNum: SlotType) RETURN TrainIdType;
+      procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean);
       FUNCTION IsPhysAddrInTable(PhysAddr: LocoAddressType) RETURN Boolean;
       FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType;
       FUNCTION VirtAddrToTrainId(VirtAddr: LocoAddressType) RETURN TrainIdType;

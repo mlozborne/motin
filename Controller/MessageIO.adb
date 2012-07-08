@@ -135,9 +135,9 @@ PACKAGE BODY MessageIO IS
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
 				  
-				  internalMessage.byteArray(2) := Unsigned_8(Slot);
-				  makeCheckSumByte(internalMessage);
-				  lastMessageSentToRailroad := InternalMessage;
+                 internalMessage.byteArray(2) := Unsigned_8(Slot);
+                 makeCheckSumByte(internalMessage);
+                 lastMessageSentToRailroad := InternalMessage;
 				  
 			   WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ =>--send to railroad slot
 			   
@@ -147,9 +147,9 @@ PACKAGE BODY MessageIO IS
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
 				  
-				  lastMessageSentToRailroad := InternalMessage;
+                  lastMessageSentToRailroad := InternalMessage;
 			  
-               WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
+            WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
 			   
                   Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
                   MyArray(3) := Unsigned_8(Slot);
@@ -205,7 +205,7 @@ PACKAGE BODY MessageIO IS
             if myArray(1) /= uzero then
                 messageCount := messageCount + 1;
                 myPutLine("<" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
-			else
+				else
                 myPutLine("< " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
             end if;			
             myPutLine(" ");
@@ -246,6 +246,9 @@ PACKAGE BODY MessageIO IS
       internalMessage : MessageType;
       TrainId         : TrainIdType;
       messageCount    : natural := 0;
+      found           : boolean;
+		messagesEqual   : boolean;
+		
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
@@ -267,47 +270,63 @@ PACKAGE BODY MessageIO IS
                   IF Size <= 0 THEN
                      null;
                   else
+						
                      FOR J IN 1..Size LOOP
                         MyArray(J) := Unsigned_8(ReadByte(CZero));
                      END LOOP;
 
-                     internalMessage.Size := Natural(Size);
-                     internalMessage.ByteArray := MyArray;
-                     myPutLine(" ");
-                     if myArray(1) = uzero then
-                        myPutLine("> " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
-                     else
-                        messageCount := messageCount + 1;
-                        myPutLine(">" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
-                     end if;
+							-- Echo the message
+							internalMessage.Size := natural(Size);
+							internalMessage.ByteArray := MyArray;
+							myPutLine(" ");
+							if i /= 0 then
+								-- not from simulator/locobuffer server
+								myPutLine("> " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
+							else
+								-- from simulator/locobuffer server
+								messageCount := messageCount + 1;
+								myPutLine(">" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
+							end if;
 					 
-					-- if this message is identical to the last message sent to the simulator/railroad
-                    -- then ignore it
-					if isEqual(lastMessageSentToRailroad, internalMessage) then
-						myPutLine("       ... message from railroad ignored because equals last message sent to railroad ");
-					else
-						lastMessageSentToRailroad := kEmptyMessage;
-						CASE MyArray(1) IS
-							WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
-							   TrainId := SlotLookupTable.VirtSlotNumToTrainId(Integer(MyArray(2)));
-							   internalMessage.ByteArray(2) := Unsigned_8(TrainId);
-							   CommandQueueManager.put(InternalMessage);
-							WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ =>                          -- discard if from railroad/simulator
-							   IF I /= 0 THEN
-								  CommandQueueManager.put(InternalMessage);
-							   END IF;
-							WHEN OPC_LONG_ACK =>                        -- Discard if not from railroad/simulator
-							   IF I = 0 THEN
-								  CommandQueueManager.put(InternalMessage);
-							   END IF;
-							WHEN OPC_SL_RD_DATA =>
-							   CommandQueueManager.put(InternalMessage);
-							WHEN OTHERS =>
-							   CommandQueueManager.put(InternalMessage);
-						END CASE;
-                    end if;
-                  END IF;
-
+							-- if this message is from the simulator/locobuffer server and 
+							-- identical to the last message sent to the simulator/locobuffer server then ignore it
+							messagesEqual := false;
+							if i = 0 then
+								messagesEqual := isEqual(lastMessageSentToRailroad, internalMessage);
+								if messagesEqual then
+									myPutLine("       ... message from railroad ignored because equals last message sent to railroad ");
+								end if;
+								lastMessageSentToRailroad := kEmptyMessage;
+							end if;
+							if i /= 0 or (i = 0 and not messagesEqual) then
+								CASE MyArray(1) IS
+									WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
+										SlotLookupTable.VirtSlotNumToTrainId(Integer(MyArray(2)), trainId, found);
+										if found then
+											internalMessage.ByteArray(2) := Unsigned_8(TrainId);
+											CommandQueueManager.put(InternalMessage);
+										else  
+											myPutLine("       ... message ignored because not using an established virtual slot number ");
+										end if;
+									WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ =>                          -- discard if from railroad/simulator
+										IF I = 0 THEN
+											myPutLine("       ... ignored because from simulator/locobuffer");
+									   else
+										  CommandQueueManager.put(InternalMessage);
+										END IF;
+									WHEN OPC_LONG_ACK =>                        -- Discard if not from railroad/simulator
+										IF I = 0 THEN
+										   CommandQueueManager.put(InternalMessage);
+									   else
+											myPutLine("       ... ignored because not from simulator/locobuffer");
+										END IF;
+									WHEN OPC_SL_RD_DATA =>
+										CommandQueueManager.put(InternalMessage);
+									WHEN OTHERS =>
+										CommandQueueManager.put(InternalMessage);
+								END CASE;
+							end if;
+						end if;
                END IF;
             END LOOP;
             DELAY 0.01; --0.1;                         -- mo 12/17/11   test 4 necessary here
