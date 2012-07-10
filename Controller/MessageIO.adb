@@ -342,7 +342,7 @@ PACKAGE BODY MessageIO IS
 										else  
 											myPutLine("       ... message ignored because not using an established virtual slot number ");
 										end if;
-									WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ =>                          -- discard if from railroad/simulator
+									WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ | OPC_WR_SL_DATA =>                          -- discard if from railroad/simulator
 										IF I = 0 THEN
 											myPutLine("       ... ignored because from simulator/locobuffer");
 									   else
