@@ -881,36 +881,57 @@ PACKAGE BODY LayoutPkg IS
             myPutLine("    train id #" & Positive'Image(trainId));
             RAISE;
       END GetBackSensor;
+		
+		procedure flipSensor(sensorPtr : sensorNodePtr) is 
+		begin	
+			-- SensorPtr.Sensor.StartTime := Clock;
+			if sensorPtr.sensor.state = open then
+				sensorPtr.sensor.state := closed;
+		   else
+				sensorPtr.sensor.state := open;
+			end if;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in flipSensor: " & Exception_Information(Error));
+            myPutLine("    sensor id #" & Positive'Image(SensorPtr.Sensor.Id));
+            RAISE;
+		end flipSensor;
 
       PROCEDURE IdentifyTrain (SensorID : Positive) IS
-         SensorPtr     : SensorNodePtr;
-         FirstSection  : SectionObjPtr;
-         SecondSection : SectionObjPtr;
-         BackId        : Positive;
-			sList			  : naturalListType;
+         SensorPtr        : SensorNodePtr;
+         FirstSection     : SectionObjPtr;
+         SecondSection    : SectionObjPtr;
+         BackId           : Positive;
+			sList			     : naturalListType;
+			oldSensorState   : sensorStateType;
+			newSensorState   : sensorStateType;
       BEGIN
          FindSensor(SensorList, SensorID, SensorPtr);
          
          IF SensorPtr = NULL THEN
+            myPutLine("      -------------: ERROR(maybe) sensor not recognized " & integer'image(sensorId) ); 
             return;
          end if;
-         if not Simulator and Clock - SensorPtr.Sensor.StartTime < 1.0 then
-            return;
-         end if;
-            
+			
+			oldSensorState := sensorPtr.sensor.state;
+			flipSensor(sensorPtr);
+			newSensorState := sensorPtr.sensor.state;
+			
          -- Inform Othrottles that sensor has fired and its new state                 -- mo 1/30/12
-         if sensorPtr.sensor.state = open then
-            SendToOutQueue(makePutSensorStateMsg(SensorId, closed));
-         else
-            SendToOutQueue(makePutSensorStateMsg(SensorId, open));
-         end if;
+         SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
+			
+         -- if not Simulator and Clock - SensorPtr.Sensor.StartTime < 1.0 then
+            -- myPutLine("      -------------: ERROR(maybe) sensor fired too recently " & integer'image(sensorId) ); 
+            -- return;
+         -- end if;
+            
          
          -- Get occupied and reserved sections that contain this sensor
          GetOccResSections(SensorPtr.Sensor.Id, FirstSection, SecondSection);
          IF FirstSection /= NULL AND SecondSection /= NULL THEN
             IF FirstSection.State = Occupied AND SecondSection.State = Occupied THEN  
                -- Sensor at back of train
-               IF SensorPtr.Sensor.State = closed THEN
+               IF oldSensorState = closed THEN
                   -- Sensor now open
                   -- This should never happen
                   myPutLine("      -------------: ERROR seems like back of train leaving sensor " & integer'image(sensorId) ); 
@@ -921,12 +942,14 @@ PACKAGE BODY LayoutPkg IS
                   myPutLine("      -------------: back of train approaching sensor " & integer'image(sensorId) ); 
                   GetBackSensor(FirstSection.TrainId, BackId);
                   IF (FirstSection.SensorList.Head.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Tail.Sensor.Id = BackId)
-                        OR (FirstSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Head.Sensor.Id = BackId) THEN
+                  OR (FirstSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Head.Sensor.Id = BackId) 
+						THEN
                      FirstSection.State := Free;
                      ReleaseBlockings(FirstSection.BlockingList);
                      SendToOutQueue(makePutSectionStateMsg(FirstSection.Id, Free));
                   ELSIF (SecondSection.SensorList.Head.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Tail.Sensor.Id = BackId)
-                        OR (SecondSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Head.Sensor.Id = BackId) THEN
+                  OR (SecondSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Head.Sensor.Id = BackId) 
+						THEN
                      SecondSection.State := Free;
                      ReleaseBlockings(SecondSection.BlockingList);
                      SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
@@ -938,7 +961,6 @@ PACKAGE BODY LayoutPkg IS
                      RETURN;
                   END IF;
                   RemoveLastSensor(FirstSection.TrainId);
-                  SensorPtr.Sensor.State := Closed;
                   SendToTrainQueue(makeBackSensorFiredMsg(FirstSection.TrainId), FirstSection.TrainId);
 
                   declare
@@ -956,13 +978,11 @@ PACKAGE BODY LayoutPkg IS
                -- SendToOutQueue(makePutSensorStateMsg(SensorId, SensorPtr.Sensor.State));             -- mo 1/30/12
             ELSIF FirstSection.State = Reserved OR SecondSection.State = Reserved THEN
                -- Sensor at front of train
-               IF SensorPtr.Sensor.State = open THEN             
+               IF oldSensorState = open THEN             
                   -- Sensor now closed
                   -- First time sensor fired, front of train approaching sensor
                   -- Change state to closed
                   myPutLine("      -------------: front of train approaching sensor " & integer'image(sensorId) ); 
-                  SensorPtr.Sensor.State := Closed;
-                  SensorPtr.Sensor.StartTime := Clock;
                  ELSE            
                   -- Sensor now open
                   -- Second time sensor fired, front of train leaving sensor
@@ -984,7 +1004,6 @@ PACKAGE BODY LayoutPkg IS
                         AddNewSensorToFront(SecondSection.TrainId, SecondSection.SensorList.Head.Sensor);
                      END IF;
                   END IF;
-                  SensorPtr.Sensor.State := Open;
                   SendToTrainQueue(makeFrontSensorFiredMsg(FirstSection.TrainId), FirstSection.TrainId);
 				  
                   declare
@@ -1003,11 +1022,9 @@ PACKAGE BODY LayoutPkg IS
                myPutLine("      -------------: ERROR sensor not at front or back " & integer'image(sensorId) ); 
                SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
             END IF;
-         ELSIF (FirstSection /= NULL OR SecondSection /= NULL) AND SensorPtr.Sensor.State = Closed THEN
+         ELSIF (FirstSection /= NULL OR SecondSection /= NULL) AND oldSensorState = Closed THEN
             -- Back of train leaving sensor 
             myPutLine("      -------------: back of train leaving sensor " & integer'image(sensorId) ); 
-            SensorPtr.Sensor.State := Open;
-            SensorPtr.Sensor.StartTime := Clock;
          ELSE
             -- Error
             myPutLine("    -------------: MYSTERY ERROR sensor not at front or back " & integer'image(sensorId) ); 

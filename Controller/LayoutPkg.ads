@@ -219,8 +219,8 @@ PRIVATE
 
    TYPE SensorObj IS NEW LayoutObj WITH
       RECORD
-         State : SensorStateType := Open;
-         StartTime : Time := Clock;
+         State     : SensorStateType := Open;
+         -- StartTime : Time := Clock;
       END RECORD;
       
    TYPE SensorNode IS
