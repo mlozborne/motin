@@ -556,6 +556,20 @@ package body MessageTranslationLibrary is
          raise;
    end convertBytesToNatural;
 
+	function makePutPowerChangeCompleteMsg	return MessageType is
+   -- <00><opcode>
+		msg    : messageType := nullMessage;
+	begin
+		msg.byteArray(1) := 16#00#;
+		msg.byteArray(2) := putPowerChangeComplete;
+		msg.size := 2;
+		return msg;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makePutPowerChangeCompleteMsg --" & kLFString & Exception_Information (error));
+         raise;
+	end makePutPowerChangeCompleteMsg;
+	
    function makePutTrainStateMsg (slot : slotType; state : trainStateType) return MessageType is
     -- <00><opcode><slot#><train state>
       msg : messageType := nullMessage;
@@ -1297,6 +1311,8 @@ package body MessageTranslationLibrary is
       end if;
 
       case msg.byteArray(2) is
+			when putPowerChangeComplete =>
+				return "putPowerChangeComplete";
          when putTrainState =>
             splitPutTrainStateMsg(msg, slotNum, trainState);
             return "putTrainState: slot/state" & natural'image(slotNum) & " " & trainStateType'image(trainState);

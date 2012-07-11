@@ -10,17 +10,19 @@ PACKAGE MessageIO IS
 	protected type LastMessageManagerType is
 		procedure saveMessage(msg : messageType);
 		procedure isThisAnEcho(msg : messageType; echo : out boolean);
+		function inPowerChangeMode return boolean;
+		procedure enterPowerChangeMode;
+		procedure messageReceived;
 	private
-		lastMessageSentToRailroad : messageType;
-		kEmptyMessage             : messageType;
+		lastMessageSentToRailroad        : messageType;
+		kEmptyMessage                    : messageType;
+		timeStampLastMessageReceived     : time := clock;
+		powerChangeMode                  : boolean := false;
+		powerChangeTimeOut               : duration := 5.0;
 	end LastMessageManagerType;
 	
 	lastMessageManager : LastMessageManagerType;
 	
-	ignoreMessagesUntilTime   : Time := clock;
-	ignoreDurationForPowerOn  : duration := 60.0;
-	ignoreDurationForPowerOff : duration := 10.0;
-
    --continuously waits for throttle connections
    --stores in socketlist
    TASK TYPE ListenForThrottleTaskType IS

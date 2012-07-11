@@ -76,5 +76,6 @@ package MessageTranslationTypes is
    getFirstSwitch         : constant unsigned_8 := unsigned_8(23);
    msgTrainTaskQuit       : constant unsigned_8 := unsigned_8(24);
    msgReinitializeTrain   : constant unsigned_8 := unsigned_8(25);
+	putPowerChangeComplete : constant unsigned_8 := unsigned_8(26);
    
 end MessageTranslationTypes;

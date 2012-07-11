@@ -48,6 +48,25 @@ PACKAGE BODY MessageIO IS
             raise;
 		end isThisAnEcho;
 		
+		function inPowerChangeMode return boolean is
+		begin
+			return powerChangeMode;
+		end inPowerChangeMode;
+		
+		procedure enterPowerChangeMode is 
+		begin
+			powerChangeMode := true;
+		end enterPowerChangeMode;
+		
+		procedure messageReceived is 
+		begin
+			if powerChangeMode and then clock - timeStampLastMessageReceived > powerChangeTimeOut then
+				powerChangeMode := false;
+				CommandQueueManager.put(makePutPowerChangeCompleteMsg);
+			end if;
+			timeStampLastMessageReceived := clock;
+		end messageReceived;
+		
    end LastMessageManagerType;
 
    CZero : C.Double := C.Double (0);
@@ -183,11 +202,8 @@ PACKAGE BODY MessageIO IS
 				  
 						LastMessageManager.saveMessage(internalMessage);
 						
-						if myArray(1) = OPC_GPON then
-							ignoreMessagesUntilTime := clock + ignoreDurationForPowerOn; 
-						end if;
-						if myArray(1) = OPC_GPOFF then
-							ignoreMessagesUntilTime := clock + ignoreDurationForPowerOff; 
+						if myArray(1) = OPC_GPON or myArray(1) = OPC_GPOFF then
+							lastMessageManager.enterPowerChangeMode;
 					   end if;
 			  
             WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
@@ -267,17 +283,17 @@ PACKAGE BODY MessageIO IS
    -- pass message to CommandQueueManager
    ----------------------------------------------------------
    TASK BODY ReceiveMessageTaskType IS
-      Length          : Integer;
-      Socket,
-      CValue          : C.Double;
-      Size            : Integer;
-      MyArray         : ByteArrayType; --array of unsigned_8
-      internalMessage : MessageType;
-      TrainId         : TrainIdType;
-      messageCount    : natural := 0;
-      found           : boolean;
-		messagesEqual   : boolean;
-		ignoringMessages: boolean;
+      Length             : Integer;
+      Socket             : C.Double;
+      CValue             : C.Double;
+      Size               : Integer;
+      MyArray            : ByteArrayType; --array of unsigned_8
+      internalMessage    : MessageType;
+      TrainId            : TrainIdType;
+      messageCount       : natural := 0;
+      found              : boolean;
+		messagesEqual      : boolean;
+		ignoringMessages   : boolean := false;
 		
    BEGIN
       loop
@@ -301,6 +317,8 @@ PACKAGE BODY MessageIO IS
                      null;
                   else
 						
+						   lastMessageManager.messageReceived;
+						
                      FOR J IN 1..Size LOOP
                         MyArray(J) := Unsigned_8(ReadByte(CZero));
                      END LOOP;
@@ -318,7 +336,7 @@ PACKAGE BODY MessageIO IS
 								myPutLine(">" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ... MesIOPkg.RecMesTask");
 							end if;
 							
-							ignoringMessages := (clock <= ignoreMessagesUntilTime);							
+						   ignoringMessages := lastMessageManager.inPowerChangeMode;
 							if ignoringMessages then
 								myPutLine("       ... ignoring messages during power on/off processing ");
 						   end if;

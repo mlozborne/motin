@@ -90,6 +90,7 @@ package MessageTranslationLibrary is
    function makeLoseReservationMsg        (trainId : trainIdType) return MessageType;
    function makePutInitOutcomeMsg         (physicallocoAddress : locoAddressType; physicalSlotNum : slotType;
                                            virtuallocoAddress : locoAddressType; virtualSlotNum : slotType) return MessageType;
+	function makePutPowerChangeCompleteMsg	return MessageType;
    function makePutReadLayoutResponseMsg  (responseFlag : positive; code : natural) return MessageType;
    function makePutRestoreResponseMsg     (x : integer) return MessageType;
    function makePutSaveResponseMsg        (x : integer) return MessageType;
