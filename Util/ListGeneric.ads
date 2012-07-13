@@ -57,6 +57,10 @@ PACKAGE ListGeneric IS
    -- Post:   Last element is removed from list.
    -- Raises: ListEmpty if try to remove from an empty list.
 
+	procedure RemoveElement(L : in out ListType; E : in ElementType);
+	-- Pre:    L is defined.
+	-- Post:   First node containing E is removed from list, if there is one.
+ 
    function MoveFront (L : IN ListType) return listIteratorType;
    -- Pre:    L is defined.
    -- Ret:    If list not empty then returns "pointer" to first node else returns "null".

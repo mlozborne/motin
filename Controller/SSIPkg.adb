@@ -66,14 +66,24 @@ PACKAGE BODY SSIPkg IS
    procedure unregisterAllTrainsAndClearDCS200SlotTable(LayoutPtr : LayoutManagerAccess) is
       physAddr  :  locoAddressType;
    begin
+	   -- Clear slots associated with registered trains.
+      myPutLine("    In SSITask unregisterAllTrainsAndClearDCS200SlotTable: unregister known trains");
       for trainId in 1..kNumTrains loop
          physAddr := slotLookupTable.TrainIdToPhysAddr(trainId);
          if physAddr /= LocoAddressType'first then
            unregisterOneTrainAndClearItsDCS200Slot(PhysAddr, LayoutPtr);
          end if;
-      end loop;
-      myPutLine("    In SSITask unregisterAllTrainsAndClearDCS200SlotTable after removing entry by PhysAddr");
-      slotLookupTable.put;
+      end loop;	
+		
+		-- Clear the slot lookup table. This is a redundant precaution.
+		slotLookupTable.clearTable;
+		
+		-- Clear the DCS200 slot table
+      myPutLine("    In SSITask unregisterAllTrainsAndClearDCS200SlotTable: clear the DCS200 slot table");
+      for i in 1..120 loop
+			sendToOutQueue(makeWriteSlotDataToClearMsg(i));
+		end loop;
+		
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("**************** EXCEPTION SSI pkg in unregisterAllTrainsAndClearDCS200SlotTable: " & Exception_Information(Error));
@@ -128,73 +138,67 @@ PACKAGE BODY SSIPkg IS
                      count := getCount(sList);
                      convertSensorListToArray(sList, sensors);
                      makeEmpty(sList);
-                     if registeringPhysAddr /= 0 or registeringVirtualAddr /= 0 then       -- mo 1/12/12
+							
+							if PhysAddr = kClearAllSlotsAddress then 
+							  myPutLine("    Unregistering all trains and clearing the DCS200 slot table          in SSITask: ");
+								-- stopAllTrains;
+								-- delay WaitTime;
+								unregisterAllTrainsAndClearDCS200SlotTable(LayoutPtr);
+							elsif count = 0 then
+								if  slotLookupTable.IsPhysAddrInTable(PhysAddr) then
+									--stopTrainAndDelay(PhysAddr);
+									unregisterOneTrainAndClearItsDCS200Slot(PhysAddr, LayoutPtr);
+								end if;
+							elsif registeringPhysAddr /= 0 or registeringVirtualAddr /= 0 then       -- mo 1/12/12
                         -- Currently in the middle of initializing a train so ignore this DoLocoInit
                         myPutLine("    Try again when previous doLocoInit completes       in SSITask: ");
                         SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, 123, 0, 123));  
                         
                      else  -- registeringPhysAddr = 0 and registeringVirtualAddr = 0
-                        -- mo 2/8/12 vvvvvvvvvv
-                        if PhysAddr = kClearAllSlotsAddress then 
-                          myPutLine("    Unregistering all trains and clearing the DCS200 slot table          in SSITask: ");
-                           -- stopAllTrains;
-                           -- delay WaitTime;
-                           unregisterAllTrainsAndClearDCS200SlotTable(LayoutPtr);
-                        elsif count = 0 then
-                           if  slotLookupTable.IsPhysAddrInTable(PhysAddr) then
-                              --stopTrainAndDelay(PhysAddr);
-                              unregisterOneTrainAndClearItsDCS200Slot(PhysAddr, LayoutPtr);
-                           end if;
-                        else
-                        -- mo 2/8/12 ^^^^^^^^^^
-                           pCount := positive(count);    
-                           LayoutPtr.AreTrainSensorsLegal(pCount, Sensors.All, Result);
-                           IF not Result THEN                 
-                              myPutLine("    Illegal train sensors                       in SSITask: ");
-                              SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, 121, 0, 121));
-                           ELSE
-                              IF NOT SlotLookupTable.IsPhysAddrInTable(PhysAddr) THEN
-                                 myPutLine("    Creating a new entry in the slotLookupTable                 in SSITask: ");
-                                 SlotLookupTable.RequestTrainId(TrainId);
-                                 VirtAddr := 10 + TrainId;
-                                 SlotLookupTable.CreateEntry(VirtAddr, PhysAddr, TrainId);
-                                 myPutLine("    Processing DoLocoInit after creating new entry      in SSITask ");
-                                 slotLookupTable.put;
-                                 SlotLookupTable.SetTrainSensors(TrainId, Sensors.All);
-                                 
-                                 registeringPhysAddr := PhysAddr;        -- mo 1/12/12
-                                 registeringVirtualAddr := virtAddr;   -- mo 1/12/12
-                                 
-                                 SendToOutQueue(makeLocoAdrMsg(PhysAddr));
-                                 SendToOutQueue(makeLocoAdrMsg(VirtAddr));
-                              ELSE
-                              
-                                 myPutLine("    Reinitializing a train                        in SSITask: ");    
-                                 TrainId := SlotLookupTable.PhysAddrToTrainId(PhysAddr);                              
-                                 PhySlot := SlotLookupTable.TrainIdToPhysSlotNum(TrainId);
-                                 VirtSlot := SlotLookupTable.TrainIdToVirtSlotNum(TrainId);
-                                 VirtAddr := SlotLookupTable.TrainIdToVirtAddr(TrainId);
-                                 SlotLookupTable.SetTrainSensors(TrainId,Sensors.All);
-                                 
-                                 disposeSensorArray(sensors);
-                                 SlotLookupTable.GetTrainSensors(TrainId, Sensors);                      
-                                 LayoutPtr.repositionTrain(TrainId, pCount, Sensors.All, Result);          
-                                 
-                                 IF Result THEN
-                                    SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, PhySlot, VirtAddr, VirtSlot));
-                                    convertSensorArrayToList(Sensors, sList);
-                                    SendToOutQueue(makePutTrainPositionMsg(TrainId, sList));
-                                    makeEmpty(sList);
-                                    CommandQueueManagerPut(makeReinitializeTrainMsg(trainId));
-                                 ELSE
-                                    myPutLine("    Train's position conflicts with another train                  in SSITask: ");
-                                    SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, 124, 0, 124));
-                                 END IF;      
-                                                              
-                               END IF;                          
-                           end if;
-                              
-                         end if;
+								pCount := positive(count);    
+								LayoutPtr.AreTrainSensorsLegal(pCount, Sensors.All, Result);
+								IF not Result THEN                 
+									myPutLine("    Illegal train sensors                       in SSITask: ");
+									SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, 121, 0, 121));
+								ELSE
+									IF NOT SlotLookupTable.IsPhysAddrInTable(PhysAddr) THEN
+										myPutLine("    Creating a new entry in the slotLookupTable                 in SSITask: ");
+										SlotLookupTable.RequestTrainId(TrainId);
+										VirtAddr := 10 + TrainId;
+										SlotLookupTable.CreateEntry(VirtAddr, PhysAddr, TrainId);
+										myPutLine("    Processing DoLocoInit after creating new entry      in SSITask ");
+										slotLookupTable.put;
+										SlotLookupTable.SetTrainSensors(TrainId, Sensors.All);
+										
+										registeringPhysAddr := PhysAddr;        -- mo 1/12/12
+										registeringVirtualAddr := virtAddr;   -- mo 1/12/12
+										
+										SendToOutQueue(makeLocoAdrMsg(PhysAddr));
+										SendToOutQueue(makeLocoAdrMsg(VirtAddr));
+									ELSE
+										myPutLine("    Reinitializing a train                        in SSITask: ");    
+										TrainId := SlotLookupTable.PhysAddrToTrainId(PhysAddr);                              
+										PhySlot := SlotLookupTable.TrainIdToPhysSlotNum(TrainId);
+										VirtSlot := SlotLookupTable.TrainIdToVirtSlotNum(TrainId);
+										VirtAddr := SlotLookupTable.TrainIdToVirtAddr(TrainId);
+										SlotLookupTable.SetTrainSensors(TrainId,Sensors.All);
+										
+										disposeSensorArray(sensors);
+										SlotLookupTable.GetTrainSensors(TrainId, Sensors);                      
+										LayoutPtr.repositionTrain(TrainId, pCount, Sensors.All, Result);          
+										
+										IF Result THEN
+											SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, PhySlot, VirtAddr, VirtSlot));
+											convertSensorArrayToList(Sensors, sList);
+											SendToOutQueue(makePutTrainPositionMsg(TrainId, sList));
+											makeEmpty(sList);
+											CommandQueueManagerPut(makeReinitializeTrainMsg(trainId));
+										ELSE
+											myPutLine("    Train's position conflicts with another train                  in SSITask: ");
+											SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, 124, 0, 124));
+										END IF;      
+									 END IF;                          
+								end if;
                      END IF;
                      disposeSensorArray(sensors);
                   END; -- declare

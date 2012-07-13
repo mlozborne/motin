@@ -30,8 +30,10 @@ PACKAGE BODY CommandQueueManager IS
          WHEN UZero =>
          
             CASE message.ByteArray(2) IS
-            
-               when MsgTrainTaskQuit | MsgReinitializeTrain =>
+				   when putPowerChangeComplete => 
+						myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");
+						CommandQueueManager.OutQueue.putMessage(message);
+                when MsgTrainTaskQuit | MsgReinitializeTrain =>
                   myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to train queue... ");
                   TrainIdQueueList.GetQueue(Integer(message.ByteArray(3)), TrainQueuePtr);
                   TrainQueuePtr.putMessage(Message);                             
@@ -172,8 +174,36 @@ PACKAGE BODY CommandQueueManager IS
                      boolean'image(ent.inuse));
          end loop;
          myPutLine(" ");
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION CommandQueueManager: Put " & Exception_Information(Error));
+            raise;
       end put;
 
+		procedure clearEntry(i : natural) is
+			newEntry  : lookupEntry;
+		begin
+			if lookupTable(I).sensors /= null then
+				disposeSensorArray(LookupTable(I).Sensors); 
+			end if;
+			lookupTable(i) := newEntry;
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION CommandQueueManager: ClearEntry " & Exception_Information(Error));
+            raise;
+		end clearEntry;
+		
+		procedure clearTable is 
+		begin
+			for i in lookupTable'range loop
+				clearEntry(i);
+			end loop;
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION CommandQueueManager: ClearTable " & Exception_Information(Error));
+            raise;
+		end clearTable;
+		
       ----------------------------------------------------------
       -- return index of first empty entry in lookup table
       ---------------------------------------------------------
@@ -200,18 +230,9 @@ PACKAGE BODY CommandQueueManager IS
       procedure removeEntryByPhysAddr(PhysAddr : LocoAddressType) is  
       begin
          FOR I IN LookupTable'RANGE LOOP
-            IF LookupTable(I).InUse = true and lookupTable(I).physTrainAddr = PhysAddr THEN
-               LookupTable(I).VirtTrainAddr := LocoAddressType'first;
-               LookupTable(I).VirtSlotNum := SlotType'first;
-               LookupTable(I).HasVirtSlot :=  False;
-               LookupTable(I).PhysTrainAddr := LocoAddressType'first;
-               LookupTable(I).PhysSlotNum := SlotType'first;
-               LookupTable(I).HasPhySlot := False;
-               LookupTable(I).InUse := False;
-               if lookupTable(I).sensors /= null then
-                  disposeSensorArray(LookupTable(I).Sensors); 
-               end if;
-               return;
+            IF lookupTable(I).physTrainAddr = PhysAddr THEN
+					clearEntry(i);
+					return;
             END IF;
          END LOOP;
       EXCEPTION
@@ -223,16 +244,7 @@ PACKAGE BODY CommandQueueManager IS
       procedure removeEntryByTrainId(trainId : trainIdType) is 
          I : trainIdType := trainId;
       begin
-         LookupTable(I).VirtTrainAddr := LocoAddressType'first;
-         LookupTable(I).VirtSlotNum := SlotType'first;
-         LookupTable(I).HasVirtSlot :=  False;
-         LookupTable(I).PhysTrainAddr := LocoAddressType'first;
-         LookupTable(I).PhysSlotNum := SlotType'first;
-         LookupTable(I).HasPhySlot := False;
-         LookupTable(I).InUse := False;
-         if lookupTable(I).sensors /= null then
-            disposeSensorArray(LookupTable(I).Sensors); 
-         end if;
+         clearEntry(i);
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.removeEntryByTrainId " & Exception_Information(Error));
@@ -276,8 +288,7 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END TrainIdToPhysSlotNum;
 
-      FUNCTION PhysSlotNumToTrainId(PhysSlotNum: SlotType) RETURN
-            TrainIdType IS
+      FUNCTION PhysSlotNumToTrainId(PhysSlotNum: SlotType) RETURN TrainIdType IS
       BEGIN
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).PhysSlotNum = PhysSlotNum THEN
@@ -294,6 +305,9 @@ PACKAGE BODY CommandQueueManager IS
       procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean) is
       BEGIN
          found := false;
+			if virtSlotNum = 0 then	
+				return;
+			end if;
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).VirtSlotNum = VirtSlotNum THEN
                trainId := i;

@@ -207,6 +207,32 @@ PACKAGE BODY ListGeneric IS
 		   put_line("UNPLANNED EXCEPTION in ListGeneric.RemoveEnd --" & kLFString & Exception_Information (error));
          raise;
    END RemoveEnd;
+	
+	procedure RemoveElement(L : in out ListType; E : in ElementType) is
+		ptr : nodePtrType;
+	begin
+		if isEmpty(L) then 
+			return;
+		end if;
+		ptr := L.sentinel.next;
+		while ptr /= L.sentinel loop
+			if ptr.E = E then
+				ptr.prev.next := ptr.next;
+				ptr.next.prev := ptr.prev;
+				dispose(ptr);
+				L.count := L.count - 1;
+				if L.count = 0 then
+					removeSentinel(L);
+				END IF;
+				return;
+			end if;
+			ptr := ptr.next;
+		end loop;
+   exception
+	   when error : others =>
+		   put_line("UNPLANNED EXCEPTION in ListGeneric.RemoveElement --" & kLFString & Exception_Information (error));
+         raise;
+	end RemoveElement;
 
    function MoveFront (L : IN ListType) return listIteratorType is
 		I  : listIteratorType;

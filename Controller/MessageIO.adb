@@ -60,12 +60,18 @@ PACKAGE BODY MessageIO IS
 		
 		procedure messageReceived is 
 		begin
-			if powerChangeMode and then clock - timeStampLastMessageReceived > powerChangeTimeOut then
-				powerChangeMode := false;
-				CommandQueueManager.put(makePutPowerChangeCompleteMsg);
-			end if;
 			timeStampLastMessageReceived := clock;
 		end messageReceived;
+		
+		procedure powerChangeCompletingNow(answer : out boolean) is
+		begin
+			if powerChangeMode and then clock - timeStampLastMessageReceived > powerChangeTimeOut then
+				powerChangeMode := false;
+				answer := true;
+		   else	
+				answer := false;
+			end if;
+		end powerChangeCompletingNow;
 		
    end LastMessageManagerType;
 
@@ -294,6 +300,7 @@ PACKAGE BODY MessageIO IS
       found              : boolean;
 		messagesEqual      : boolean;
 		ignoringMessages   : boolean := false;
+		answer             : boolean;
 		
    BEGIN
       loop
@@ -308,6 +315,11 @@ PACKAGE BODY MessageIO IS
             FOR I IN 0..(Length-1) LOOP
                --read from each socket in socketlist
                SocketList.GetSocket(I, Socket);
+					lastMessageManager.powerChangeCompletingNow(answer);
+					if answer then
+						commandQueueManager.put(makePutPowerChangeCompleteMsg);
+				   end if;
+					
                IF (Integer(Socket) = -1) THEN
                   null;
                else -- read from client

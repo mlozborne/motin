@@ -46,14 +46,14 @@ PACKAGE CommandQueueManager IS
 ----------------------------------------------------------
 
    TYPE LookupEntry IS RECORD
-      VirtTrainAddr: LocoAddressType := LocoAddressType'first;
-      VirtSlotNum: SlotType := slotType'first;
-      HasVirtSlot : Boolean := False;
-      PhysTrainAddr: LocoAddressType := LocoAddressType'first;
-      PhysSlotNum: SlotType := slotType'first;
-      HasPhySlot : Boolean := False;
-      InUse: Boolean := False;
-      Sensors: SensorArrayAccess := null;
+      VirtTrainAddr   : LocoAddressType := LocoAddressType'first;
+      VirtSlotNum     : SlotType := slotType'first;
+      HasVirtSlot     : Boolean := False;
+      PhysTrainAddr   : LocoAddressType := LocoAddressType'first;
+      PhysSlotNum     : SlotType := slotType'first;
+      HasPhySlot      : Boolean := False;
+      InUse           : Boolean := False;
+      Sensors         : SensorArrayAccess := null;
    END RECORD;
 
    TYPE LookUpTableType IS ARRAY (1..KNumTrains) OF LookupEntry;
@@ -63,7 +63,9 @@ PACKAGE CommandQueueManager IS
 
       -- display slotLookupTable
       procedure put;
-   
+  
+      procedure clearEntry(i : natural);
+		procedure clearTable;
       PROCEDURE RequestTrainId(TrainId: OUT TrainIdType);
       procedure removeEntryByPhysAddr(PhysAddr : LocoAddressType); 
       procedure removeEntryByTrainId(trainId : trainIdType); 

@@ -256,7 +256,7 @@ package body RailroadManager is
      end Initialize;
 
       PROCEDURE Put(message : messageType) is
-      -- This shows messages received
+      -- This processes messages received through the TCP/IP connection
          addressReceived            : natural := 0;
          addressIsAlreadyInUse      : boolean := false;
          slotNumberReceived         : natural := 0;
@@ -288,7 +288,7 @@ package body RailroadManager is
 
             when OPC_INPUT_REP =>
 
-			   null;
+					null;
 
             when OPC_SW_REP =>
 
@@ -302,7 +302,7 @@ package body RailroadManager is
 			   
             when OPC_LOCO_ADR =>
 
-			   null;
+					null;
 
             when OPC_SL_RD_DATA =>
 
@@ -354,15 +354,15 @@ package body RailroadManager is
 
             when OPC_LONG_ACK =>
 
-			   null;
+					null;
 
             when OPC_MOVE_SLOTS =>
 
-			   null;
+					null;
 
             when OPC_LOCO_SPD =>
 
-			   null;
+					null;
 
             when OPC_LOCO_DIRF =>
    
@@ -370,7 +370,7 @@ package body RailroadManager is
 
             when OPC_LOCO_SND =>
 
-			   null;
+					null;
 
             when OPC_SW_REQ =>
 
@@ -380,6 +380,10 @@ package body RailroadManager is
 
                -- These are the extended instructions
                case message.byteArray(2) is
+					
+						when putPowerChangeComplete =>
+						
+							objScreenManager.putError("Power change completed");
 
                   when putTrainState =>
 
@@ -409,7 +413,7 @@ package body RailroadManager is
 
                   when putSectionState =>
 				  
-				     null;
+							null;
 
                   when putSwitchState =>
 
@@ -420,8 +424,15 @@ package body RailroadManager is
 
                   when putSensorState =>
 
-				     null;
-
+							-- Tell the screen manager.
+							declare
+								sensorId      : positive;
+								sensorState   : sensorStateType;
+							begin
+								splitPutSensorStateMsg(message, sensorId, sensorState);
+								objScreenManager.putSensor(sensorId, sensorState);
+							end;
+							
                   when putInitOutcome =>
 
                      -- This is assumed to be a response to a prior doLocoInit.
@@ -445,7 +456,7 @@ package body RailroadManager is
 
                   when putReadLayoutResponse =>
 
-				     null;
+							null;
 
                   when putTrainInformation =>
 
@@ -466,13 +477,13 @@ package body RailroadManager is
 
                   when others =>
 
-				     null;
+							null;
 
                   end case;
 
             when others =>
 
-			   null;
+					null;
 
          end case;
       exception
@@ -482,6 +493,7 @@ package body RailroadManager is
       end Put;
 
       procedure sendMessage(command : in out commandType) is
+		-- This process messages to be sent over through the TCP/IP connection
 
          function toggle(flag : OnOffType) return OnOffType is
          begin
@@ -642,7 +654,19 @@ package body RailroadManager is
 
             when InitializeLoco =>
 
+					if getCount(command.sensors) = 1 and then getCurrent(moveFront(command.sensors)) = 0 then
+					   -- if the sensor list contains the single entry 0, then retain the
+						-- current sensor list for the train. Thus the train will be reinitialized using
+						-- it current sensor list. This depends on the train being present in the throttle.
+						location := getIdOfTrainFromPhyAdr(command.n);
+                  IF Location /= 0 THEN
+							if not isEmpty(trains(location).sensors) then
+								copyFromTo(trains(location).sensors, command.sensors);
+							end if;
+						end if;
+					end if;
                message := makeDoLocoInitMsg(Command.N, Command.Sensors);
+					
                IF Command.N = 9999 THEN
                   -- This is a request to remove all trains
                   removeAllTrains;

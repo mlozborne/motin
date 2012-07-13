@@ -13,6 +13,7 @@ PACKAGE MessageIO IS
 		function inPowerChangeMode return boolean;
 		procedure enterPowerChangeMode;
 		procedure messageReceived;
+		procedure powerChangeCompletingNow(answer : out boolean); 
 	private
 		lastMessageSentToRailroad        : messageType;
 		kEmptyMessage                    : messageType;

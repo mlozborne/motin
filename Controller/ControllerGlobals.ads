@@ -42,7 +42,7 @@ PACKAGE ControllerGlobals IS
 
    TYPE SwitchArrayType IS ARRAY (1 .. KNumSwitches) OF SwitchType;
    TYPE U8ArrayType IS ARRAY(Positive RANGE <>) OF Unsigned_8;
-   TYPE SensorArrayType IS ARRAY(Positive RANGE <>) OF Positive;
+   TYPE SensorArrayType IS ARRAY(Positive RANGE <>) OF natural;
    TYPE SensorArrayAccess IS ACCESS SensorArrayType;
    
    PROCEDURE disposeBasicSensorArray IS 

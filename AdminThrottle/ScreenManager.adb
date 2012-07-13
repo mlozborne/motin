@@ -138,6 +138,27 @@ PACKAGE BODY ScreenManager IS
             put_line("UNPLANNED EXCEPTION in ScreenManager.PutMessage --" & kLFString & Exception_Information (error));
             raise;
       END PutMessage;
+		
+		procedure putSensor(sensorId : positive; sensorState : sensorStateType) is
+			iter : listIteratorType;
+			col  : integer := 1;
+		begin
+			if sensorState = open then
+				RemoveElement(closedSensorList, sensorId);
+			else
+				AddFront(closedSensorList, sensorId);
+			end if;
+			myPut(col, kSensorRow, toString80(" ")(1..80));
+			myPut(col, kSensorRow, "Closed sensors:");
+			col := col + 15;
+			iter := moveFront(closedSensorList);
+			while not isNull(iter) loop
+				myPut(col, kSensorRow, integer'image(getCurrent(iter)));
+				col := col + 4;
+				iter := MoveNext(iter);
+			end loop;
+			MoveCursor(3,kPromptRow);
+		end putSensor;
 
       PROCEDURE PutSwitches (str : string) IS
          Str80 : String80;
@@ -166,49 +187,6 @@ PACKAGE BODY ScreenManager IS
             put_line("UNPLANNED EXCEPTION in ScreenManager.PutSwitches --" & kLFString & Exception_Information (error));
             raise;
       END PutSwitches;
-
-      -- PROCEDURE PutSwitches (Switches : SwitchArrayType) IS
-         -- Str80 : String80;
-         -- Chr : Character;
-      -- BEGIN
-         -- Str80 := ToString80(" ");
-         -- FOR I IN 1..9 LOOP
-            -- IF Switches(I) = Thrown THEN Chr := 'T';
-            -- ELSIF Switches(I) = Closed THEN Chr := 'C';
-            -- ELSif switches(i) = beginThrown or switches(i) = beginClosed then Chr := '*';
-            -- elsif switches(i) = Unknown then Chr := '?';
-            -- END IF;
-            -- Str80 (2*I+1) := Chr;
-         -- END LOOP;
-         -- MyPut(3, kSwitchesRow, Str80 (1..20));
-
-         -- Str80 := ToString80(" ");
-         -- FOR I IN 10..19 LOOP
-            -- IF Switches(I) = Thrown THEN Chr := 'T';
-            -- ELSIF Switches(I) = Closed THEN Chr := 'C';
-            -- ELSif switches(i) = beginThrown or switches(i) = beginClosed then Chr := '*';
-            -- elsif switches(i) = Unknown then Chr := '?';
-            -- END IF;
-            -- Str80 (2*(I-10)+1) := Chr;
-         -- END LOOP;
-         -- MyPut(3, kSwitchesRow+1, Str80 (1..20));
-
-         -- Str80 := ToString80(" ");
-         -- FOR I IN 20..26 LOOP
-            -- IF Switches(I) = Thrown THEN Chr := 'T';
-            -- ELSIF Switches(I) = Closed THEN Chr := 'C';
-            -- ELSif switches(i) = beginThrown or switches(i) = beginClosed then Chr := '*';
-            -- elsif switches(i) = Unknown then Chr := '?';
-            -- END IF;
-            -- Str80 (2*(I-20)+1) := Chr;
-         -- END LOOP;
-         -- MyPut(3, kSwitchesRow+2, Str80 (1..20));
-         -- MoveCursor(3,kPromptRow);
-      -- exception
-         -- when error : others =>
-            -- put_line("UNPLANNED EXCEPTION in ScreenManager.PutSwitches --" & kLFString & Exception_Information (error));
-            -- raise;
-      -- END PutSwitches;
 
       PROCEDURE PutError (Error : String) IS
       BEGIN

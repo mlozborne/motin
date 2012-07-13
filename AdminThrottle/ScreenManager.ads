@@ -1,5 +1,5 @@
 WITH NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
-with messageTranslationTypes;
+with messageTranslationTypes; use messageTranslationTypes;
 
 package ScreenManager is
 
@@ -20,7 +20,7 @@ package ScreenManager is
                          horn         : string;
                          mute         : string;
                          sensors      : naturalListType);
-      -- PROCEDURE PutSwitches(Switches : SwitchArrayType);
+		procedure putSensor(sensorId : positive; sensorState : sensorStateType);
       PROCEDURE PutSwitches(str : string);
       PROCEDURE PutError(Error : String);
       PROCEDURE PutPrompt(Prompt : String);
@@ -34,8 +34,10 @@ private
    kSwitchesRow           : constant integer := 12;
    kErrorRow              : constant integer := 22;
    kPromptRow             : constant integer := 23;
-   kExceptionRow          : constant integer := 25;            
+	kSensorRow             : constant integer := 25;
+   kExceptionRow          : constant integer := 26;            
    ExcepRowInc            : integer := 0; -- Add 4 after each use
    kLFString              : string(1..1) := ( 1=> standard.ascii.LF);
    isInControllerMode     : boolean := true;
+	closedSensorList		  : naturalListType;
 end;
