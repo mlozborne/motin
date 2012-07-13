@@ -21,6 +21,7 @@ package ScreenManager is
                          mute         : string;
                          sensors      : naturalListType);
 		procedure putSensor(sensorId : positive; sensorState : sensorStateType);
+		procedure makeEmptyClosedSensorList;
       PROCEDURE PutSwitches(str : string);
       PROCEDURE PutError(Error : String);
       PROCEDURE PutPrompt(Prompt : String);

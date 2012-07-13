@@ -61,7 +61,9 @@ PACKAGE LayoutPkg IS
 
    PROTECTED TYPE LayoutManager IS
 
-      PROCEDURE IdentifyTrain (
+		procedure setAllSensorsOpen;
+		
+		PROCEDURE IdentifyTrain (
             SensorID : Positive);
       PROCEDURE PositionTrain (
             TrainId :        TrainIdType;

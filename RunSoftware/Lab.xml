@@ -657,7 +657,7 @@
 		<switch id="18" state="thrown">
 			<narrow-end id="95" />
 			<closed-end id="92" />
-			<thrown-end id="115" />
+			<thrown-end id="93" />
 		</switch>
 		<switch id="19" state="closed">
 			<narrow-end id="82" />

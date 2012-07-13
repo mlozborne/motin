@@ -1,5 +1,4 @@
-WITH LayoutPkg;
-USE LayoutPkg;
+WITH LayoutPkg; USE LayoutPkg;
 
 PACKAGE SSIPkg IS
    TASK TYPE SSITaskType IS

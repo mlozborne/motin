@@ -165,6 +165,21 @@ PACKAGE BODY LayoutPkg IS
       --------------------------------
       ------- Get/Set Functions ------
       --------------------------------
+				
+		procedure setAllSensorsOpen is 
+			ptr : SensorNodePtr;
+		begin
+			ptr := sensorList.head;
+			while ptr /= null loop
+				ptr.sensor.state := open;
+				ptr := ptr.next;
+			end loop;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in SetAllSensorsOpen: " & Exception_Information(Error));
+            RAISE;
+		end setAllSensorsOpen;
+
       FUNCTION GetSectionList RETURN SectionObjList IS
       BEGIN
          RETURN SectionList;

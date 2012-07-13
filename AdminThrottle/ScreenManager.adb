@@ -158,8 +158,21 @@ PACKAGE BODY ScreenManager IS
 				iter := MoveNext(iter);
 			end loop;
 			MoveCursor(3,kPromptRow);
+      exception
+         when error: others =>
+            put_line("UNPLANNED EXCEPTION in ScreenManager.PutSensor --" & kLFString & Exception_Information (error));
+            raise;
 		end putSensor;
-
+		
+		procedure makeEmptyClosedSensorList is
+		begin
+			makeEmpty(closedSensorList);
+      exception
+         when error: others =>
+            put_line("UNPLANNED EXCEPTION in ScreenManager.makeEmptyClosedSensorList --" & kLFString & Exception_Information (error));
+            raise;
+		end makeEmptyClosedSensorList;
+		
       PROCEDURE PutSwitches (str : string) IS
          Str80 : String80;
          numSw : integer := str'length;

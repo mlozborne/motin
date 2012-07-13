@@ -1,7 +1,6 @@
 WITH TrainPkg, CommandQueueManager, ControllerGlobals, Interfaces, MessageTranslationLibrary;
 WITH Ada.Text_IO, Ada.Exceptions;
-USE TrainPkg, CommandQueueManager, ControllerGlobals, Interfaces,
-   MessageTranslationLibrary;
+USE TrainPkg, CommandQueueManager, ControllerGlobals, Interfaces, MessageTranslationLibrary;
 USE Ada.Text_IO, Ada.Exceptions;
 with MessageTranslationTypes; use messageTranslationTypes;
 with NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
@@ -139,6 +138,8 @@ PACKAGE BODY SSIPkg IS
                      convertSensorListToArray(sList, sensors);
                      makeEmpty(sList);
 							
+							-- Tell LayoutManager to set all sensors to open
+							LayoutPtr.setAllSensorsOpen;
 							if PhysAddr = kClearAllSlotsAddress then 
 							  myPutLine("    Unregistering all trains and clearing the DCS200 slot table          in SSITask: ");
 								-- stopAllTrains;
