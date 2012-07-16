@@ -4,9 +4,14 @@ with MessageTranslationTypes; use messageTranslationTypes;
 
 PACKAGE LayoutPkg IS
 
-   ----------------------------
-   ------- Sensor Types -------
-   ----------------------------
+-- Contents
+--   Declarations of types used by LayoutManager
+--   LayoutManager and LayoutManager object
+--   LayoutTaskType
+--   Definition of types used by LayoutManager
+
+-------------------------------------------------------------
+------- Begin declarations of types used by LayoutManager 
 
    TYPE SensorObj IS PRIVATE;
    TYPE SensorObjPtr IS ACCESS SensorObj;
@@ -14,27 +19,15 @@ PACKAGE LayoutPkg IS
    TYPE SensorNodePtr IS ACCESS SensorNode;
    TYPE SensorObjList IS PRIVATE;
 
-   ----------------------------
-   ------- Switch Types -------
-   ----------------------------
-
    TYPE SwitchObj IS PRIVATE;
    TYPE SwitchObjPtr IS ACCESS SwitchObj;
    TYPE SwitchNode IS PRIVATE;
    TYPE SwitchNodePtr IS ACCESS SwitchNode;
    TYPE SwitchObjList IS PRIVATE;
 
-   ----------------------------
-   ------ Blocking Types ------
-   ----------------------------
-
    TYPE BlockingObj IS PRIVATE;
    TYPE BlockingObjPtr IS ACCESS BlockingObj;
    TYPE BlockingObjList IS PRIVATE;
-
-   ----------------------------
-   ------- Section Types ------
-   ----------------------------
 
    TYPE SectionObj IS PRIVATE;
    TYPE SectionObjPtr IS ACCESS SectionObj;
@@ -42,27 +35,31 @@ PACKAGE LayoutPkg IS
    TYPE SectionNodePtr IS ACCESS SectionNode;
    TYPE SectionObjList IS PRIVATE;
 
-   -------------------------
-   ----- Train Types -------
-   -------------------------
-
    TYPE TrainObj IS PRIVATE;
    TYPE TrainObjPtr IS ACCESS TrainObj;
 
-   -------------------------
    ------- Exceptions ------
-   -------------------------
    InvalidSwitchId   : EXCEPTION;
    InvalidSensorId   : EXCEPTION;
    CurrentSwitchNull : EXCEPTION;
    InvalidSwitchType : EXCEPTION;
    InvalidTrainId    : EXCEPTION;
 
+   ---- End declarations of types used by LayoutManager 
+   ---------------------------------------------------------
+
+
+------------------------------------------------------------------
+-------------------- Begin LayoutManager -------------------------
+------------------------------------------------------------------
 
    PROTECTED TYPE LayoutManager IS
 
-		procedure setAllSensorsOpen;
-		
+      -------------------------------------------------------
+      -- Begin functions to manipulate data structures 	
+      -------------------------------------------------------
+
+		procedure setAllSensorsOpen;		
 		PROCEDURE IdentifyTrain (
             SensorID : Positive);
       PROCEDURE PositionTrain (
@@ -70,11 +67,10 @@ PACKAGE LayoutPkg IS
             Count   :        Positive;
             Sensors :        SensorArrayType;
             Result  :    OUT Boolean);
-
       procedure removeFromTrainList(trainId : TrainIdType);              
       procedure freeAllSectionsOccupiedOrReservedByTrain(
             trainId :        TrainIdType);
-      PROCEDURE RepositionTrain (                    -- mo 1/17/12
+      PROCEDURE RepositionTrain (                  
             TrainId :        TrainIdType;
             Count   :        Positive;
             Sensors :        SensorArrayType;
@@ -101,6 +97,12 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf (
             TrainId : TrainIdType);
 
+		-------------------------------------------------------
+      -- End functions to manipulate data structures 	
+      -------------------------------------------------------
+
+----------------------------------------------------------------------------
+-------------------- Begin build data structures from XML ------------------
 
       -- Creates a new section using private variable CurrentSection
       PROCEDURE NewSection (
@@ -155,7 +157,13 @@ PACKAGE LayoutPkg IS
       PROCEDURE AddBlocking (
             Id : Positive);
 
-      -- For Debugging
+-------------------- End build data structures from XML --------------------
+----------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------
+----------------- Begin debug print data structures ------------------
+
       PROCEDURE Print_Sections (
             Sections    : SectionObjList;
             Indent      : Natural;
@@ -172,47 +180,45 @@ PACKAGE LayoutPkg IS
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
 
+----------------- End debug print data structures ------------------
+--------------------------------------------------------------------
+
+
       --------------------------------
       ------- Get/Set Functions ------
       --------------------------------
-      FUNCTION GetSectionList RETURN SectionObjList;
-      FUNCTION GetSwitchList RETURN SwitchObjList;
-      FUNCTION GetSensorList RETURN SensorObjList;
       FUNCTION GetXMLFilename RETURN Unbounded_String;
       PROCEDURE SetXMLFilename (Filename : Unbounded_String);
 
    PRIVATE
-      -----------------------------
-      ------- Data Members --------
-      -----------------------------
-
-      SectionList : SectionObjList;
-      SensorList  : SensorObjList;
-      SwitchList  : SwitchObjList;
-      TrainList   : TrainObjPtr;
-      XMLFilename : Unbounded_String;
-
+      SectionList    : SectionObjList;
+      SensorList     : SensorObjList;
+      SwitchList     : SwitchObjList;
+      TrainList      : TrainObjPtr;
+      XMLFilename    : Unbounded_String;
       CurrentSection : SectionObjPtr;
-      CurrentSwitch : SwitchObjPtr;
+      CurrentSwitch  : SwitchObjPtr;
    END LayoutManager;
 
    TYPE LayoutManagerAccess IS ACCESS LayoutManager;
+	
+------------------------------------------------------------------
+-------------------- End LayoutManager ---------------------------
+------------------------------------------------------------------
 
-   -- Starts the Parsing of the XML file
-   FUNCTION ParseXML (
-         LayoutPtr : LayoutManagerAccess)
-     RETURN Boolean;
 
-   TASK TYPE LayoutTaskType IS
-      ENTRY SetLayout (
-            L : IN     LayoutManagerAccess);
-   END LayoutTaskType;
+------------------------------------------------------------------
+-------------------- Begin LayoutTaskType ------------------------
+   TASK TYPE LayoutTaskType IS                                  --
+      ENTRY SetLayout (L : IN LayoutManagerAccess);             --
+   END LayoutTaskType;                                          --
+------------------------------------------------------------------
 
 PRIVATE
 
-   -------------------------
-   --------- Types ---------
-   -------------------------
+--------------------------------------------------------------------
+-------- Begin definition of types used by LayoutManager -----------  
+--------------------------------------------------------------------
 
    TYPE LayoutObj IS TAGGED
       RECORD
@@ -232,7 +238,6 @@ PRIVATE
       END RECORD;      
    PROCEDURE disposeBasicSensorNode IS 
       NEW Ada.Unchecked_Deallocation(Object=>SensorNode, Name=>SensorNodePtr);	   
-   procedure disposeSensorNode(ptr : in out sensorNodePtr); 
          
    TYPE SensorObjList IS
       RECORD
@@ -307,9 +312,12 @@ PRIVATE
 
    PROCEDURE disposeBasicTrainObj IS 
       NEW Ada.Unchecked_Deallocation(Object=>TrainObj, Name=>TrainObjPtr);	   
-   procedure disposeTrainObj(ptr : in out TrainObjPtr); 
-   
    
    PROCEDURE Free_Section IS
-   NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);
+		NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);
+
+--------------------------------------------------------------------
+-------- End definition of types used by LayoutManager -------------  
+--------------------------------------------------------------------
+		
 END LayoutPkg;

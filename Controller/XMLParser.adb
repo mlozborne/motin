@@ -5,6 +5,8 @@ with MessageTranslationTypes; use messageTranslationTypes;
 
 PACKAGE BODY XMLParser IS
 
+--vvvvvvvvvvvvvvvvvvvvvvvv Helper functions vvvvvvvvvvvvvvvvvvvvvvvvv
+
    ----------------------------
    ---------- Section ---------
    ----------------------------
@@ -150,6 +152,7 @@ PACKAGE BODY XMLParser IS
          RAISE;
    END Get_Blocking_Values;
 
+--^^^^^^^^^^^^^^^^^^^^^^^^^ Helper functions ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
    --------------------------------
    ------ XML/Ada Procedures ------

@@ -2,6 +2,7 @@ WITH Sax.Readers, Unicode.CES, Sax.Attributes, LayoutPkg;
 USE Sax.Readers, Unicode.CES, Sax.Attributes, LayoutPkg;
 
 PACKAGE XMLParser IS
+
    TYPE String_Access IS ACCESS String;
 
    TYPE Reader IS NEW Sax.Readers.Reader WITH NULL RECORD;
@@ -27,7 +28,8 @@ PACKAGE XMLParser IS
          L : LayoutPkg.LayoutManagerAccess);
 
 PRIVATE
-   LayoutPtr : LayoutPkg.LayoutManagerAccess;
-   SectionList : Boolean := False;
-   SwitchList : Boolean := False;
+   LayoutPtr    : LayoutPkg.LayoutManagerAccess;
+   SectionList  : Boolean := False;
+   SwitchList   : Boolean := False;
+	
 END XMLParser;

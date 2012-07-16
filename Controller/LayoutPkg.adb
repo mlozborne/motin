@@ -180,21 +180,6 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
 		end setAllSensorsOpen;
 
-      FUNCTION GetSectionList RETURN SectionObjList IS
-      BEGIN
-         RETURN SectionList;
-      END GetSectionList;
-
-      FUNCTION GetSwitchList RETURN SwitchObjList IS
-      BEGIN
-         RETURN SwitchList;
-      END GetSwitchList;
-
-      FUNCTION GetSensorList RETURN SensorObjList IS
-      BEGIN
-         RETURN SensorList;
-      END GetSensorList;
-
       FUNCTION GetXMLFilename RETURN Unbounded_String IS
       BEGIN
          RETURN XMLFilename;
