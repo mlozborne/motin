@@ -5,14 +5,19 @@ with MessageTranslationTypes; use messageTranslationTypes;
 PACKAGE LayoutPkg IS
 
 -- Contents
---   Declarations of types used by LayoutManager
---   LayoutManager and LayoutManager object
---   LayoutTaskType
---   Definition of types used by LayoutManager
+--   1. Declarations of types used by LayoutManagerPkg
+--   2. LayoutManager and LayoutManager object
+--      a. Functionss to manipulate data structures
+--      b. Build data structures from XML
+--      c. Debug print data structures
+--      d. Get/Set Functions
+--      e. Data structures
+--      f. Helper functions
+--   3. LayoutTaskType
+--   4. Definition of types used by LayoutManagerPkg
 
--------------------------------------------------------------
-------- Begin declarations of types used by LayoutManager 
-
+	------------------------ 1 ----------------------------------
+	------- Begin declarations of types used by LayoutManagerPkg 
    TYPE SensorObj IS PRIVATE;
    TYPE SensorObjPtr IS ACCESS SensorObj;
    TYPE SensorNode IS PRIVATE;
@@ -37,6 +42,8 @@ PACKAGE LayoutPkg IS
 
    TYPE TrainObj IS PRIVATE;
    TYPE TrainObjPtr IS ACCESS TrainObj;
+	
+	PROCEDURE SendToOutQueue(Cmd : MessageType);
 
    ------- Exceptions ------
    InvalidSwitchId   : EXCEPTION;
@@ -44,66 +51,47 @@ PACKAGE LayoutPkg IS
    CurrentSwitchNull : EXCEPTION;
    InvalidSwitchType : EXCEPTION;
    InvalidTrainId    : EXCEPTION;
-
    ---- End declarations of types used by LayoutManager 
-   ---------------------------------------------------------
+   ------------------------- 1 --------------------------------
 
 
-------------------------------------------------------------------
--------------------- Begin LayoutManager -------------------------
-------------------------------------------------------------------
-
+	-------------------------- 2 -------------------------------------
+	-------------------- Begin LayoutManager -------------------------
    PROTECTED TYPE LayoutManager IS
 
-      -------------------------------------------------------
+      ----------------------- 2a ----------------------------
       -- Begin functions to manipulate data structures 	
-      -------------------------------------------------------
-
-		procedure setAllSensorsOpen;		
-		PROCEDURE IdentifyTrain (
-            SensorID : Positive);
-      PROCEDURE PositionTrain (
-            TrainId :        TrainIdType;
-            Count   :        Positive;
-            Sensors :        SensorArrayType;
-            Result  :    OUT Boolean);
-      procedure removeFromTrainList(trainId : TrainIdType);              
-      procedure freeAllSectionsOccupiedOrReservedByTrain(
-            trainId :        TrainIdType);
-      PROCEDURE RepositionTrain (                  
-            TrainId :        TrainIdType;
-            Count   :        Positive;
-            Sensors :        SensorArrayType;
-            Result  :    OUT Boolean);
-      PROCEDURE AreTrainSensorsLegal (
-            Count   :        positive;
-            Sensors :        SensorArrayType;
-            Legal   :    OUT Boolean);
-      PROCEDURE MakeReservation (
-            TrainId :        TrainIdType;
-            Result  :    OUT Boolean);
-      PROCEDURE ReleaseReservation (
-            TrainId : TrainIdType);
-      PROCEDURE MoveNextSwitch (
-            TrainId : TrainIdType;
-            State   : SwitchStateType);
-      PROCEDURE MoveSwitch (
-            SwitchId : Positive;
-            State    : SwitchStateType);
-      PROCEDURE SwitchFinishedMoving (
-            SwitchId : Positive;
-            State    : SwitchStateType);
+      PROCEDURE AreTrainSensorsLegal (Count   :        positive;
+												  Sensors :        SensorArrayType;
+												  Legal   :    OUT Boolean);
+      PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
+      procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
-      PROCEDURE ChangeDirectionOf (
-            TrainId : TrainIdType);
-
-		-------------------------------------------------------
+		PROCEDURE IdentifyTrain       (SensorID : Positive);
+      PROCEDURE MakeReservation      (TrainId :        TrainIdType;
+                                      Result  :    OUT Boolean);
+      PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
+                                      State   : SwitchStateType);
+      PROCEDURE MoveSwitch           (SwitchId : Positive;
+                                      State    : SwitchStateType);
+      PROCEDURE PositionTrain       (TrainId :        TrainIdType;
+                                     Count   :        Positive;
+                                      Sensors :        SensorArrayType;
+                                      Result  :    OUT Boolean);
+      PROCEDURE ReleaseReservation   (TrainId : TrainIdType);
+      procedure removeFromTrainList  (trainId : TrainIdType);              
+      PROCEDURE RepositionTrain      (TrainId :        TrainIdType;
+                                      Count   :        Positive;
+                                      Sensors :        SensorArrayType;
+                                      Result  :    OUT Boolean);
+		procedure setAllSensorsOpen;		
+      PROCEDURE SwitchFinishedMoving (SwitchId : Positive;
+                                      State    : SwitchStateType);
       -- End functions to manipulate data structures 	
-      -------------------------------------------------------
+      ------------------------ 2a -------------------------------
 
-----------------------------------------------------------------------------
--------------------- Begin build data structures from XML ------------------
-
+		------------------------------- 2b -----------------------------------------
+		-------------------- Begin build data structures from XML ------------------
       -- Creates a new section using private variable CurrentSection
       PROCEDURE NewSection (
             Id : Positive);
@@ -156,14 +144,12 @@ PACKAGE LayoutPkg IS
       -- Adds Id to CurrentSection's BlockingList
       PROCEDURE AddBlocking (
             Id : Positive);
+		-------------------- End build data structures from XML --------------------
+		------------------------------ 2b ------------------------------------------
 
--------------------- End build data structures from XML --------------------
-----------------------------------------------------------------------------
 
-
-----------------------------------------------------------------------
------------------ Begin debug print data structures ------------------
-
+		------------------------------- 2c ----------------------------------
+		----------------- Begin debug print data structures -----------------
       PROCEDURE Print_Sections (
             Sections    : SectionObjList;
             Indent      : Natural;
@@ -179,18 +165,20 @@ PACKAGE LayoutPkg IS
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
+		----------------- End debug print data structures ------------------
+		---------------------------- 2c ------------------------------------
 
------------------ End debug print data structures ------------------
---------------------------------------------------------------------
 
-
-      --------------------------------
-      ------- Get/Set Functions ------
-      --------------------------------
+      -------------- 2d --------------------
+      ------- Begin Get/Set Functions ------      
       FUNCTION GetXMLFilename RETURN Unbounded_String;
       PROCEDURE SetXMLFilename (Filename : Unbounded_String);
+      ------- End Get/Set Functions---------  
+		---------------- 2d ------------------
 
    PRIVATE
+		--------------------------- 2e --------------------------------------
+		-------------------- Begin data structures ------------------------- 
       SectionList    : SectionObjList;
       SensorList     : SensorObjList;
       SwitchList     : SwitchObjList;
@@ -198,28 +186,96 @@ PACKAGE LayoutPkg IS
       XMLFilename    : Unbounded_String;
       CurrentSection : SectionObjPtr;
       CurrentSwitch  : SwitchObjPtr;
-   END LayoutManager;
+		-------------------- End data structures ------------------------- 
+		-------------------------- 2e ------------------------------------
 
-   TYPE LayoutManagerAccess IS ACCESS LayoutManager;
-	
-------------------------------------------------------------------
--------------------- End LayoutManager ---------------------------
-------------------------------------------------------------------
+		
+		--------------------------- 2f --------------------------------------
+		-------------------- Begin helper function ------------------------- 
+		
+		procedure disposeSensorNode(ptr : in out sensorNodePtr);
+		
+		-- Used everywhere 
+      PROCEDURE SendToTrainQueue(Cmd : MessageType; Id : Positive);
+      PROCEDURE SendToAllTrainQueues(Cmd : MessageType);
+		
+		-- IdentifyTrain, ReleaseReservation, RepositionTrain
+		 PROCEDURE ReleaseBlockings(BlockingList : BlockingObjList);
+
+		-- IdentifyTrain helpers
+      PROCEDURE AddNewSensorToFront(TrainId : TrainIdType; Sensor : SensorObjPtr);
+      FUNCTION  GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess; 
+		procedure getSectionsContainingSensor(SensorID : Positive;
+                                  FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
+      PROCEDURE GetOccResSections(SensorID : Positive;
+                                  FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
+      PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
+      PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
+		procedure flipSensor(sensorPtr : sensorNodePtr); 
+		
+      -- PositionTrain and build data structures from XML
+      PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive;SensorPtr :OUT SensorNodePtr);
+		
+		-- PositionTrain and MakeReservation helpers
+      FUNCTION  IsSectionUseable(SectionPtr : SectionObjPtr) RETURN Boolean;
+		
+      -- PositionTrain and AreTrainSensorsLegal helpers
+      PROCEDURE FindSection(FirstId : Positive; SecondId : Positive;
+                            SectionPtr : OUT SectionNodePtr);
+									 
+		-- MakeReservation and PositionTrain helpers
+      PROCEDURE BlockSections (BlockingList : BlockingObjList);
+		
+		-- PositionTrain helpers 
+      FUNCTION  AllFree(SectList : SectionObjList) RETURN Boolean;
+      PROCEDURE FindAllSections(OutSectList : OUT SectionObjList; Sensors : SensorArrayType);
+      PROCEDURE PlaceTrainInSections(SectList : SectionObjList; TrainId : TrainIdType);
+      PROCEDURE GetSensor(SensorId : Positive; Sensor : OUT SensorObjPtr); 
+      function  isNewTrain(TrainId : TrainIdType) return boolean;
+		procedure makeEmptySensorObjList(sol : in out sensorObjList);
+		procedure updateTrainSensors(TrainId : TrainIdType; Sensors : SensorArrayType);
+		PROCEDURE AddNewTrain(TrainId : TrainIdType; Sensors : SensorArrayType);
+		
+		-- AreTrainSensorsLegal helpers
+      FUNCTION IsIn(Sections : SectionObjList; Id: Positive) return boolean;
+		
+		-- MakeReservation helpers
+      PROCEDURE GetFreeSection(SectList : SectionObjList; OutSectPtr : OUT SectionObjPtr);
+      PROCEDURE GetTrainSensorList(TrainId : TrainIdType; Sensors : OUT SensorObjList);	
+		
+      -- MoveSwitch and MoveNextSwitch helpers	
+      PROCEDURE GetSections(SwitchPtr  : SwitchObjPtr;
+                            ThrownList : OUT SectionObjList; ClosedList : OUT SectionObjList); 
+      PROCEDURE GetSection(SectionPtr : OUT SectionNodePtr; 
+		                     FrontSensorId : Positive; BackSensorId  :  Positive);
+      PROCEDURE SendLoseReservationMessages(SwitchPtr : SwitchNodePtr);
+      PROCEDURE FindIdOfTrainLoosingReservation(SwitchPtr : SwitchNodePtr; 
+		                                          trainId : out TrainIdType; 
+																thereIsReservation : out boolean);		
+		PROCEDURE MoveSwitchPossible(SwitchPtr : SwitchNodePtr; Result : OUT Boolean);
+      PROCEDURE MoveSwitchPossible(SwitchPtr : SwitchNodePtr; TrainId : TrainIdType; Result : OUT Boolean); 
+		-------------------- End helper function   -------------------------  
+		-------------------------- 2f --------------------------------------
+		
+	END LayoutManager;
+
+   TYPE LayoutManagerAccess IS ACCESS LayoutManager;	
+	-------------------- End LayoutManager ---------------------------
+	--------------------------- 2 ------------------------------------
 
 
-------------------------------------------------------------------
--------------------- Begin LayoutTaskType ------------------------
-   TASK TYPE LayoutTaskType IS                                  --
-      ENTRY SetLayout (L : IN LayoutManagerAccess);             --
-   END LayoutTaskType;                                          --
-------------------------------------------------------------------
+	-------------------------- 3 -------------------------------------
+	-------------------- Begin LayoutTaskType ------------------------
+   TASK TYPE LayoutTaskType IS                                    --
+      ENTRY SetLayout (L : IN LayoutManagerAccess);               --
+   END LayoutTaskType;                                            --
+	-------------------- End LayoutTaskType --------------------------
+	---------------------------- 3 -----------------------------------
 
 PRIVATE
 
---------------------------------------------------------------------
--------- Begin definition of types used by LayoutManager -----------  
---------------------------------------------------------------------
-
+	---------------------------- 4 -------------------------------------
+	-------- Begin definition of types used by LayoutManagerPkg --------  
    TYPE LayoutObj IS TAGGED
       RECORD
          Id : Positive;
@@ -244,7 +300,6 @@ PRIVATE
          Head : SensorNodePtr;
          Tail : SensorNodePtr;
       END RECORD;
-   procedure makeEmptySensorObjList(sol : in out sensorObjList);
       
    TYPE SwitchObj IS NEW LayoutObj WITH
       RECORD
@@ -278,7 +333,7 @@ PRIVATE
 
    TYPE SectionObj IS NEW LayoutObj WITH
       RECORD
-         State           : SectionStateType        := Free;
+         State           : SectionStateType    := Free;
          IsUseable       : Boolean             := True;
          SensorList      : SensorObjList;
          SwitchList      : SwitchObjList;
@@ -314,10 +369,9 @@ PRIVATE
       NEW Ada.Unchecked_Deallocation(Object=>TrainObj, Name=>TrainObjPtr);	   
    
    PROCEDURE Free_Section IS
-		NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);
+		NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);		
+	-------- End definition of types used by LayoutManager -------------  
+	--------------------------- 4 --------------------------------------
+		   
 
---------------------------------------------------------------------
--------- End definition of types used by LayoutManager -------------  
---------------------------------------------------------------------
-		
 END LayoutPkg;
