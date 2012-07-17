@@ -1,0 +1,21 @@
+REQUEST THROW SWITCH 1
+14:34:16.062: [B0 00 10 5F]  Requesting Switch at LT1 () to Thrown (output On).
+14:34:16.171: [B0 00 00 4F]  Requesting Switch at LT1 () to Thrown (output Off).
+CONFIRMATION
+14:34:17.218: [B1 00 60 2E]  Turnout LT1 ()  Switch input is Thrown (input on).
+
+REQUEST STATUS OF SWITCH 1
+14:34:18.750: [BC 00 20 63]  Request status of switch LT1 ().
+STATUS OF SWITCH 1
+14:34:18.765: [B4 3C 50 27]  LONG_ACK: Command station response to switch state request 0x50 (Thrown).
+
+REQUEST CLOSE SWITCH 1
+14:34:22.609: [B0 00 30 7F]  Requesting Switch at LT1 () to Closed (output On).
+14:34:22.718: [B0 00 20 6F]  Requesting Switch at LT1 () to Closed (output Off).
+CONFIRMATION
+14:34:23.890: [B1 00 70 3E]  Turnout LT1 ()  Switch input is Closed (input off).
+
+REQUEST STATUS OF SWITCH 1
+14:34:25.171: [BC 00 20 63]  Request status of switch LT1 ().
+STATUS OF SWITCH 1
+14:34:25.187: [B4 3C 30 47]  LONG_ACK: Command station response to switch state request 0x30 (Closed).

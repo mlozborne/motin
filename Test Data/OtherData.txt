@@ -1,0 +1,26 @@
+lab train timing for one full circuit
+Speed          EC        E6C
+100%          :56        :56
+ 75%         1:18       1:22
+ 50%         1:56       2:06
+ 25%         4:28
+ 
+Length of train 
+              EC        E6C            
+lab        13.5"      49.0"
+sim			           1.5"
+sim/lab               0.031 
+lab/sim              32.667
+
+Dimensions of table      
+               d        w       w/d
+lab         158"     217"      1.37
+sim           7"       9"      1.29
+sim/lab    0.044    0.041
+lab/sim   22.571   24.111
+
+Stopping distance in lab
+Speed       gradual     abrupt
+100%          46"        8"
+75%                      4"
+50%           15"        2"
