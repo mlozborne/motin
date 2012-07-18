@@ -167,7 +167,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END GetSwitchStates;
 		
-      PROCEDURE IdentifyTrain (SensorID : Positive) IS
+      PROCEDURE OldIdentifyTrain (SensorID : Positive) IS
          SensorPtr            : SensorNodePtr;     -- ptr to sensor that fired
 			NextSensorPtr        : SensorObjPtr;
          FirstSection         : SectionObjPtr;
@@ -347,9 +347,9 @@ PACKAGE BODY LayoutPkg IS
             put_line("**************** EXCEPTION Layout pkg in IdentifyTrain: " & Exception_Information(Error));
             myPutLine("    sensor id #" & Positive'Image(sensorId));
             RAISE;
-      END IdentifyTrain;
+      END OldIdentifyTrain;
 
-      PROCEDURE OldIdentifyTrain (SensorID : Positive) IS
+      PROCEDURE IdentifyTrain (SensorID : Positive) IS
          SensorPtr        : SensorNodePtr;
          FirstSection     : SectionObjPtr;
          SecondSection    : SectionObjPtr;
@@ -486,7 +486,7 @@ PACKAGE BODY LayoutPkg IS
             put_line("**************** EXCEPTION Layout pkg in IdentifyTrain: " & Exception_Information(Error));
             myPutLine("    sensor id #" & Positive'Image(sensorId));
             RAISE;
-      END OldIdentifyTrain;
+      END IdentifyTrain;
 
       PROCEDURE MakeReservation (
             TrainId :        TrainIdType;
@@ -2303,10 +2303,10 @@ PACKAGE BODY LayoutPkg IS
                      -- Sensor fired
                      DECLARE
                         SensorId  : Positive;
-                        isHigh : Boolean;
+                        isHigh    : Boolean;
                      BEGIN
                         splitInputRepMsg(Cmd, SensorId, isHigh);
-                        if not isHigh then          -- mo 1/16/12
+                        if isHigh then          -- mo 1/16/12
                            null;
                         else                        
                            LayoutPtr.IdentifyTrain(SensorId);               -- mo 1/20/12                          
