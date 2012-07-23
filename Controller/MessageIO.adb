@@ -106,7 +106,7 @@ PACKAGE BODY MessageIO IS
             AcceptSocket := TcpAccept(Sockid => ListenSocket, Mode => C.Double (1));    -- 1 here causes nonblocking on ReceiveMessage
             EXIT WHEN Integer(AcceptSocket) > 0;
             put_line("MessageIO pkg in ListenForThrottleTask: error in listening for OThrottle");
-            --DELAY 1.0;                 -- test 6                        
+            DELAY 1.0;   -- only need to listen occassionally for throttle connections                     
          END LOOP;
          put_line("MessageIO pkg in ListenForThrottleTask: new OThrottle at socket " & C.Double'Image(AcceptSocket));
          SocketList.AddSocket(AcceptSocket);--add to socketlist
@@ -174,7 +174,7 @@ PACKAGE BODY MessageIO IS
       loop
          SocketList.GetSocket(0, Socket);
          exit when integer(socket) > 0;
-         delay 1.0;
+         delay 1.0;  -- no point in checking for connection to locobuffer/simulator too frequently
       end loop;
       
       LOOP
@@ -201,11 +201,13 @@ PACKAGE BODY MessageIO IS
 						splitSwStateMsg(internalMessage, turnoutId);
 						turnoutIdQueue.putId(turnoutId);
 										
-						-- The LocoBuffer has a 96 byte message buffer.
-						-- Consequently, if messages are sent to it too rapidly then
-						-- the buffer will overflow. Therefore we slow down sending this message type 
-						-- in case the LocoBufferServer is running.
-				      delay 0.25;
+						-- When the layout manager is processing the XML layout file, it puts
+						-- a group of these instructions on the output queue in rapid succession.
+						-- If these instructions are sent by TCP/IP to the locobuffer in rapid
+						-- rapid succession is there any chance some will be lost before then
+						-- locobuffer processes them? Probably not, but if so, we can put in a delay
+						-- here.
+				      -- delay 0.25;   -- to avoid overwhelming the locobuffer
 				
 					WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>  --send to railroad slot
 			   
@@ -297,8 +299,6 @@ PACKAGE BODY MessageIO IS
             end if;			
             myPutLine(" ");
 			
-            --DELAY 0.01; --0.1;            test 5  necessary here                                  -- mo 12/17/11
-			
          EXCEPTION
             WHEN Error : OTHERS =>
                put_line("**************** EXCEPTION in MessageIO: SendMessageTaskType ( " & Exception_Information(Error) & " )");
@@ -332,7 +332,7 @@ PACKAGE BODY MessageIO IS
       loop
          SocketList.GetSocket(0, Socket);
          exit when integer(socket) > 0;
-         delay 1.0;
+         delay 1.0;  -- no point in checking for connection to locobuffer/simulator too frequently
       end loop;
 
       LOOP
@@ -398,8 +398,12 @@ PACKAGE BODY MessageIO IS
 											if responseToOpcode /= OPC_SW_STATE then
 												CommandQueueManager.put(InternalMessage);
 											else
-												turnoutIdQueue.getId(switchId); 
-												CommandQueueManager.put(makeSwRepMsg(switchId, switchState));
+												if turnoutIdQueue.isEmpty then
+													myPutLine("       !!! IGNORED, VERY BAD, couldn't find matching OP_SW_STATE message !!!");
+												else	
+													turnoutIdQueue.getId(switchId); 
+													CommandQueueManager.put(makeSwRepMsg(switchId, switchState));
+												end if;
 											end if;
 										end if;
 									WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
@@ -410,7 +414,7 @@ PACKAGE BODY MessageIO IS
 										else  
 											myPutLine("       ... message ignored because not using an established virtual slot number ");
 										end if;
-									WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ | OPC_WR_SL_DATA =>                          -- discard if from railroad/simulator
+									WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_SW_REQ | OPC_WR_SL_DATA | OPC_SW_STATE =>                          -- discard if from railroad/simulator
 										IF I = 0 THEN
 											myPutLine("       ... ignored because from simulator/locobuffer");
 									   else
@@ -425,7 +429,7 @@ PACKAGE BODY MessageIO IS
 						end if;
                END IF;
             END LOOP;
-            DELAY 0.01; --0.1;                         -- mo 12/17/11   test 4 necessary here
+            DELAY 0.01; -- no point in checking for incoming messages too frequently
          EXCEPTION
             WHEN Error : OTHERS =>
                put_line("**************** EXCEPTION in MessageIO: ReceiveMessageTask ( " & Exception_Information(Error) & " )");
@@ -449,7 +453,7 @@ PACKAGE BODY MessageIO IS
             raise;
       END putId;
 
-      procedure GetId(id : OUT switchIdType) IS
+      entry GetId(id : OUT switchIdType) when count > 0 IS
       BEGIN
          TurnoutIdQueuePkg.Dequeue(Queue, id);
          count := count - 1;

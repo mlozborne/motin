@@ -21,14 +21,14 @@ package ScreenManager is
                          mute         : string;
                          sensors      : naturalListType);
 		procedure putSensor(sensorId : positive; sensorState : sensorStateType);
-		procedure makeEmptyClosedSensorList;
       PROCEDURE PutSwitches(str : string);
       PROCEDURE PutError(Error : String);
       PROCEDURE PutPrompt(Prompt : String);
       -- procedure PutException(str : string);
    END ScreenManagerType;
    
-   objScreenManager : screenManagerType;
+   objScreenManager          : screenManagerType;
+	objClosedSensorList		  : naturalListPkg.ProtectedListType;
    
 private
    kMessageRow            : constant integer := 8;
@@ -40,5 +40,4 @@ private
    ExcepRowInc            : integer := 0; -- Add 4 after each use
    kLFString              : string(1..1) := ( 1=> standard.ascii.LF);
    isInControllerMode     : boolean := true;
-	closedSensorList		  : naturalListType;
 end;

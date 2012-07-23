@@ -4,17 +4,38 @@ with ada.text_io; use ada.text_io;
 GENERIC
 
    TYPE ElementType IS PRIVATE;
-   -- WITH procedure put (file : file_type; E : ElementType);
+   WITH function toString (E : ElementType) return string;
 
 PACKAGE ListGeneric IS
 
    TYPE ListType         IS PRIVATE;
 	type listIteratorType is private;
+	
+	protected type ProtectedListType is
+	   -- No exception thrown
+		function toString return string;
+		procedure makeEmpty;
+		function isEmpty return boolean;
+		procedure addFront(e : elementType);
+		procedure addEnd(e : elementType);
+		procedure removeFront; 
+		procedure removeEnd;
+		procedure removeElement(e : elementType);
+		function getCount return natural;
+		procedure getFront(e : out elementType; found : out boolean);
+		procedure getEnd(e : out elementType; found : out boolean);
+	private
+		list : ListType;
+	end ProtectedListType;
 
    ListEmpty              : EXCEPTION;
    NoCurrentPosition      : EXCEPTION;
    ListContainsOneElement : exception;
-
+	
+	function toString(L : listType)	return string;
+	-- pre:   L is defined.
+	-- post:  L is a string representation of the list
+	
    PROCEDURE MakeEmpty (L : IN OUT ListType);
    -- Pre:    L is defined.
    -- Post:   L is empty.

@@ -1,5 +1,6 @@
 WITH Unchecked_Deallocation;
 with ada.exceptions; use ada.exceptions;
+with ada.strings.unbounded; use ada.strings.unbounded;
 
 PACKAGE BODY ListGeneric IS
 
@@ -30,6 +31,35 @@ PACKAGE BODY ListGeneric IS
       L.Sentinel := Null;
       L.count := 0;
 	end removeSentinel;
+
+	function toString(L : listType) return string is
+		iter : listIteratorType;
+		str  : unbounded_string;
+	begin
+		if isEmpty(L) then
+			return "";
+		else
+			iter := moveFront(L);
+			while not isNull(iter) loop
+				str := str & toString(getCurrent(iter));
+				iter := moveNext(iter);
+			end loop;
+			return to_String(str);
+		end if;
+	end;
+	
+   -- procedure put (file : in out file_type; L : in out listType) is
+   -- begin
+     -- moveFront(L);
+     -- while hasPosition(L) loop
+        -- put(file, getCurrent(L));
+        -- moveNext(L);
+     -- end loop;
+   -- exception
+	   -- when error : others =>
+		   -- put_line("UNPLANNED EXCEPTION in ListGeneric.put --" & kLFString & Exception_Information (error));
+         -- raise;
+   -- end put;
 
    PROCEDURE MakeEmpty (L : IN OUT ListType) IS
 		curPos, p	: nodePtrType;
@@ -384,17 +414,80 @@ PACKAGE BODY ListGeneric IS
          raise;
    end GetNextToEnd;
 
-   -- procedure put (file : in out file_type; L : in out listType) is
-   -- begin
-     -- moveFront(L);
-     -- while hasPosition(L) loop
-        -- put(file, getCurrent(L));
-        -- moveNext(L);
-     -- end loop;
-   -- exception
-	   -- when error : others =>
-		   -- put_line("UNPLANNED EXCEPTION in ListGeneric.put --" & kLFString & Exception_Information (error));
-         -- raise;
-   -- end put;
-
-END;
+	protected body ProtectedListType is
+	
+		function toString return string is
+		begin	
+			return toString(list);
+		end;
+	
+		procedure makeEmpty is
+		begin
+			makeEmpty(list);
+		end;
+		
+		function isEmpty return boolean is
+		begin	
+			return isEmpty(list);
+		end;
+		
+		procedure addFront(e : elementType) is
+		begin
+			addFront(list, e);
+		end;
+		
+		procedure addEnd(e : elementType) is
+		begin
+			addEnd(list, e);
+		end;
+		
+		procedure removeFront is
+		begin
+			if isEmpty(list) then	
+				return;
+			else
+				removeFront(list);
+			end if;
+		end;
+		
+		procedure removeEnd is
+		begin	
+			if isEmpty(list) then	
+				return;
+			else	
+				removeEnd(list);
+			end if;
+		end;
+		
+		procedure removeElement(e : elementType) is
+		begin
+			removeElement(list, e);
+		end;
+		
+		function getCount return natural is
+		begin
+			return getCount(list);
+		end;
+		
+		procedure getFront(e : out elementType; found : out boolean) is
+		begin
+			if isEmpty(list) then
+				found := false;
+			else
+				found := true;
+				e := getFront(list);
+			end if;
+		end;
+		
+		procedure getEnd(e : out elementType; found : out boolean) is
+		begin
+			if isEmpty(list) then
+				found := false;
+			else
+				found := true;
+				e := getEnd(list);
+			end if;
+		end;				
+				
+	end ProtectedListType;
+END ListGeneric;

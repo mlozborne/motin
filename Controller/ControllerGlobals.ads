@@ -14,8 +14,8 @@ PACKAGE ControllerGlobals IS
    kSpeedAbruptStop : constant natural := 1;      -- mo 1/9/12   0/1 = gradual/abrupt stopping
    kSpeedSlowStop   : constant natural := 1;      -- mo 1/9/12   0/1 = gradual/abrupt stopping
 
-   WaitTime : CONSTANT duration := 1.0;                     -- mo 12/29/11
-   kTrainStopDelay : constant duration := 1.5;
+   WaitTime               : CONSTANT duration := 1.0;                     -- mo 12/29/11
+   kTrainStopDelay 		  : constant duration := 1.5;
    kFirstVirtAddress      : constant natural := 11;     -- mo 1/15/12
    kLastVirtAddress       : constant natural := 99;     -- mo 1/15/12
    kFirstPhysAddress      : constant natural := 101;    -- mo 1/15/12

@@ -93,9 +93,6 @@ PACKAGE BODY TrainPkg IS
 
       LOOP
          BEGIN
-            -- IF false THEN   
-               -- DELAY 0.01; -- Wait so that other tasks have a chance to run     test 3              
-            -- else
                Queue.GetMessage(Cmd);
                myPutLine("        ........... " & toEnglish(cmd) & "  received in TrainTask" & TrainIdType'Image(TrainId));
                CASE Cmd.ByteArray(1) IS
@@ -121,7 +118,7 @@ PACKAGE BODY TrainPkg IS
                               end if;
                               
                               SendToOutQueue(makePutTrainStateMsg(TrainId, State));
-                              delay WaitTime;                                    -- mo 12/29/11
+                              delay WaitTime;    -- during BeginHalted-Halted transition
                               State := Halted;                                   -- mo 12/29/11;
                               myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
                               LayoutPtr.ReleaseReservation(TrainId);             -- mo 12/29/11
@@ -202,7 +199,7 @@ PACKAGE BODY TrainPkg IS
                                  SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedSlowStop));        -- mo 1/9/12
                                  State := BeginChangeDirection;
                                  SendToOutQueue(makePutTrainStateMsg(TrainId, State));
-                                 delay WaitTime;
+                                 delay WaitTime;   -- during change direction transition
                                  myPutLine("        .........call LayoutPtr.ChangeDirection(TrainId) in TrainPkg"); 
                                  LayoutPtr.ChangeDirectionOf(TrainId);
                                  SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, Horn, Bell));  -- mo 12/29/11
@@ -304,7 +301,7 @@ PACKAGE BODY TrainPkg IS
                                           State := BeginWaiting;
                                           SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedSlowStop));
                                           SendToOutQueue(makePutTrainStateMsg(TrainId, State));
-                                          delay waitTime;                                    -- mo 12/29/11
+                                          delay waitTime;   --  during BeginWaiting-Waiting transition
                                           State := Waiting;                                  -- mo 12/29/11
                                           myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
                                           LayoutPtr.ReleaseReservation(TrainId);             -- mo 12/29/11
@@ -330,7 +327,7 @@ PACKAGE BODY TrainPkg IS
                                  State := BeginWaiting;
                                  SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedSlowStop));        -- mo 1/9/12
                                  SendToOutQueue(makePutTrainStateMsg(TrainId, State));
-                                 delay waitTime;                                    -- mo 12/29/11
+                                 delay waitTime;     -- during BeginWaiting-Waiting transition
                                  State := Waiting;                                  -- mo 12/29/11
                                  myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
                                  LayoutPtr.ReleaseReservation(TrainId);             -- mo 12/29/11

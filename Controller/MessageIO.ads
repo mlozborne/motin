@@ -52,7 +52,7 @@ PACKAGE MessageIO IS
 	
    PROTECTED TYPE TurnoutIdQueueType IS                                       -- mo 12/22/11    
       procedure putId(id : IN switchIdType);
-      procedure GetId(id : OUT switchIdType);
+      entry GetId(id : OUT switchIdType);
       function IsEmpty return boolean;
    PRIVATE
       Queue: TurnoutIdQueuePkg.Queue;

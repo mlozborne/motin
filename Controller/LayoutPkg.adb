@@ -19,7 +19,6 @@ PACKAGE BODY LayoutPkg IS
    BEGIN
       myPutLine("      " & toEnglish(cmd) & "       LayoutPkg to out queue");
       CommandQueueManager.OutQueue.putMessage(Cmd);      
-      --delay 0.001;        -- mo 12/20/11            test 2
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("**************** EXCEPTION Layout pkg in SendToOutQueue: " & Exception_Information(Error));
@@ -2287,10 +2286,6 @@ PACKAGE BODY LayoutPkg IS
 
       LOOP
          BEGIN
-            -- Get Messages from the LayoutQueue
-            -- IF false THEN    
-               -- DELAY 0.01; -- Wait so that other tasks have a chance to run    test 1
-            -- else
                CommandQueueManager.LayoutQueue.GetMessage(Cmd);
                myPutLine("      " & toEnglish(cmd) & "       received by LayoutTask");
                CASE Cmd.ByteArray(1) IS

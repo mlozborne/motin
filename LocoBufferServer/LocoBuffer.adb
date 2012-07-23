@@ -42,7 +42,7 @@ PACKAGE BODY LocoBuffer IS
                END IF;
             END LOOP;
             put_line("LocoBuffer pkg in ListenForClientTask: accepted client connection");
-            DELAY 0.1; --  ???
+            DELAY 1.0; -- no point in listening too frequently for clients 
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg: ListenForLocoBufferClientsTaskType " & Exception_Information(Error));
@@ -98,7 +98,6 @@ PACKAGE BODY LocoBuffer IS
                          MyArray(Size) := makeChecksumByte(MyArray, Size);
                          FOR K IN 1..Size LOOP
                             WriteData(MyArray(K));
-                            --delay 0.01; -- ???
                          END LOOP;
                          
                          messageCount := messageCount + 1;
@@ -113,7 +112,7 @@ PACKAGE BODY LocoBuffer IS
                   end if;
                END IF;
             END LOOP;
-            DELAY 0.001; -- ??? 
+            DELAY 0.001; -- locobuffer has limited write baud rate, mustn't overwhelm it
          EXCEPTION
             WHEN Error: OTHERS=>
                put_line("**************** EXCEPTION in LocoBuffer pkg: WriteLocoBufferStringTaskType " & Exception_Information(Error));
@@ -194,7 +193,8 @@ PACKAGE BODY LocoBuffer IS
 			   end if;
 				   
             END IF;
-            DELAY 0.001; -- ??? 
+            DELAY 0.001; -- locobuffer has limited read baud rate and loconet not going to generate 
+                         -- more than 1000 message/sec				
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));

@@ -57,9 +57,6 @@ PACKAGE BODY CommandQueueManager IS
 
    PROCEDURE Get (message : OUT MessageType) IS
    BEGIN
-      -- WHILE OutQueue.IsEmpty LOOP                      
-         -- DELAY 0.01; --0.1;                          -- test 8  
-      -- END LOOP;
       OutQueue.GetMessage(Message);
    EXCEPTION
       WHEN error: OTHERS=>

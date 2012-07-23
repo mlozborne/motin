@@ -1345,7 +1345,7 @@ package body MessageTranslationLibrary is
 					if responseTo = OPC_LOCO_ADR then
 						return "OPC_LONG_ACK to OPC_LOCO_ADR: insufficient slots";
 					elsif responseTo = OPC_SW_STATE then	
-						return "OPC_LONG_ACK to OPC_SW_STATE: state = switchStateType'image(switchState)";
+						return "OPC_LONG_ACK to OPC_SW_STATE: state = " & switchStateType'image(switchState);
 					else
 						return "OPC_LONG_ACK to unexpected op " & unsigned_8'image(responseTo);
 					end if;

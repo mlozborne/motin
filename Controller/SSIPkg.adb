@@ -36,7 +36,7 @@ PACKAGE BODY SSIPkg IS
       
       -- Tell the train task to quit
       CommandQueueManagerPut(makeTrainTaskQuitMsg(trainId));
-      delay 0.1;
+      delay 0.1;   -- need to wait while train task quits before freeing sections
       
       -- Free all sections occupied or reserved by train
       LayoutPtr.freeAllSectionsOccupiedOrReservedByTrain(trainId);
@@ -89,16 +89,6 @@ PACKAGE BODY SSIPkg IS
          raise;
    end unregisterAllTrainsAndClearDCS200SlotTable;
    
-   procedure stopTrainAndDelay(PhysAddr : LocoAddressType) is 
-      trainId : trainIdType;
-   begin
-      trainId := slotLookupTable.physAddrToTrainId(PhysAddr);
-      SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedAbruptStop));
-      myPutLine("       ********* Start train stop delay");
-      delay kTrainStopDelay;
-      myPutLine("       ********* End train stop delay");
-   end stopTrainAndDelay;
-   
    TASK BODY SSITaskType IS
       Cmd       : MessageType;
       LayoutPtr : LayoutManagerAccess;
@@ -113,9 +103,6 @@ PACKAGE BODY SSIPkg IS
 
       LOOP
          BEGIN
-            -- IF  false THEN    
-               -- DELAY 0.01;      -- test 7                            
-            -- else
                SSIQueue.GetMessage(Cmd);
                myPutLine("    " & toEnglish(cmd) & "....... received by SSITask");
                
@@ -141,13 +128,10 @@ PACKAGE BODY SSIPkg IS
 							-- Tell LayoutManager to set all sensors to open
 							LayoutPtr.setAllSensorsOpen;
 							if PhysAddr = kClearAllSlotsAddress then 
-							  myPutLine("    Unregistering all trains and clearing the DCS200 slot table          in SSITask: ");
-								-- stopAllTrains;
-								-- delay WaitTime;
+							   myPutLine("    Unregistering all trains and clearing the DCS200 slot table          in SSITask: ");
 								unregisterAllTrainsAndClearDCS200SlotTable(LayoutPtr);
 							elsif count = 0 then
 								if  slotLookupTable.IsPhysAddrInTable(PhysAddr) then
-									--stopTrainAndDelay(PhysAddr);
 									unregisterOneTrainAndClearItsDCS200Slot(PhysAddr, LayoutPtr);
 								end if;
 							elsif registeringPhysAddr /= 0 or registeringVirtualAddr /= 0 then       -- mo 1/12/12

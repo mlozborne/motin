@@ -19,6 +19,11 @@ package body naturalListTypePkg is
 		   put_line("************ EXCEPTION in globals.put -- " &  Exception_Information (error));
          raise;
    end put;
+	
+	function toString(e : natural) return string is
+	begin	
+		return natural'image(e);
+	end;
    
 end naturalListTypePkg;
    

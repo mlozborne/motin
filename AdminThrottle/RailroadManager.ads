@@ -51,9 +51,7 @@ PACKAGE RailroadManager IS
       fileName   : fileNameType := (others => ' ');
       fnInUse    : natural := 0;
       sensors    : naturalListType;
-   end record;
-
-   
+   end record;   
    
    PROTECTED TYPE RailroadManagerType IS
       procedure initialize;
