@@ -587,7 +587,7 @@
 			<closed-end id="34" />
 			<thrown-end id="33" />
 		</switch>
-		<switch id="5" state="closed">
+		<switch id="5" state="thrown">
 			<narrow-end id="28" />
 			<closed-end id="27" />
 			<thrown-end id="26" />
@@ -597,7 +597,7 @@
 			<closed-end id="28" />
 			<thrown-end id="31" />
 		</switch>
-		<switch id="7" state="closed">
+		<switch id="7" state="thrown">
 			<narrow-end id="12" />
 			<closed-end id="10" />
 			<thrown-end id="11" />
@@ -607,7 +607,7 @@
 			<closed-end id="10" />
 			<thrown-end id="9" />
 		</switch>
-		<switch id="9" type="crossover" state="closed">
+		<switch id="9" type="crossover" state="thrown">
 			<narrow-end id="44" />
 			<narrow-end id="25" />
 			<closed-end id="47" />
@@ -633,7 +633,7 @@
 			<closed-end id="80" />
 			<thrown-end id="77" />
 		</switch>
-		<switch id="14" state="closed">
+		<switch id="14" state="thrown">
 			<narrow-end id="57" />
 			<closed-end id="70" />
 			<thrown-end id="71" />
@@ -649,7 +649,7 @@
 			<closed-end id="78" />
 			<thrown-end id="77" />
 		</switch>
-		<switch id="17" state="closed">
+		<switch id="17" state="thrown">
 			<narrow-end id="94" />
 			<closed-end id="74" />
 			<thrown-end id="73" />
@@ -669,7 +669,7 @@
 			<closed-end id="114" />
 			<thrown-end id="113" />
 		</switch>
-		<switch id="21" state="closed">
+		<switch id="21" state="thrown">
 			<narrow-end id="107" />
 			<closed-end id="106" />
 			<thrown-end id="105" />
@@ -680,7 +680,7 @@
 			<closed-end id="103" />
 			<closed-end id="101" />
 		</switch>
-		<switch id="23" state="closed">
+		<switch id="23" state="thrown">
 			<narrow-end id="98" />
 			<closed-end id="101" />
 			<thrown-end id="100" />
