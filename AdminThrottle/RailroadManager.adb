@@ -22,9 +22,9 @@ package body RailroadManager is
                   str(i) := 'T';
                when beginThrown => 
                   str(i) := 't';
-			   when beginClosed =>
+					when beginClosed =>
                   str(i) := 'c';
-               when unknown =>
+               when unknown | read =>
                   str(i) := '?';
             end case;
          end loop;

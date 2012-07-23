@@ -1015,22 +1015,17 @@ PACKAGE BODY LayoutPkg IS
                   SectionPtr := SectionPtr.Next;
                END LOOP;
             END IF;
-            
-            -- The LocoBuffer has a 96 byte message buffer.
-            -- Consequently, if messages are sent to it too rapidly then
-            -- the buffer will overflow.
-            -- Therefore we slow down sending messages when the LocoBufferServer is 
-            -- running.
-            if not simulator then
-               delay 0.5;
-            end if;
-            
-            SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));
-            if  SwitchPtr.Switch.State = Closed then
-               SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, BeginClosed));
-            else
-               SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, BeginThrown));
-            end if;
+                       
+				if SwitchPtr.Switch.State = Read then
+					SendToOutQueue(makeSwStateMsg(SwitchPtr.Switch.Id));
+				else
+					SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));
+					if  SwitchPtr.Switch.State = Closed then
+						SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, BeginClosed));
+					else
+						SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, BeginThrown));
+					end if;
+				end if;
             ClosedSectionList.Head := NULL;
             ClosedSectionList.Tail := NULL;
             ThrownSectionList.Head := NULL;

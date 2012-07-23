@@ -50,12 +50,6 @@ PACKAGE BODY LocoBuffer IS
       END LOOP;
    END ListenForLocoBufferClientsTaskType;
 
-   ---------------------------------------------------------------
-   --  read arrays of bytes from each client in socket list
-   --  filter out messages that are not LocoNet messages
-   --  send to LocoBuffer one byte at a time
-   ---------------------------------------------------------------
-
    FUNCTION makeChecksumByte (
          ByteArray : ByteArrayType;
          Size      : Integer) RETURN Unsigned_8 IS
@@ -72,6 +66,12 @@ PACKAGE BODY LocoBuffer IS
          RAISE;
    END makeChecksumByte;
    
+   ---------------------------------------------------------------
+   --  read arrays of bytes from each client in socket list
+   --  filter out messages that are not LocoNet messages
+   --  send to LocoBuffer one byte at a time
+   ---------------------------------------------------------------
+
    TASK BODY WriteLocoBufferStringTaskType IS
       Size         : Integer;
       MyArray      : ByteArrayType;

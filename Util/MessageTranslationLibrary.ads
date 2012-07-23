@@ -26,11 +26,13 @@ package MessageTranslationLibrary is
                                              light : out onOffType; horn : out onOffType; bell : out onOffType);
    procedure splitLocoSndMsg                (message : messageType; slot : out slotType; F5, F6, mute : out onOffType);
    procedure splitLocoSpdMsg                (message : messageType; slot : out slotType; speed : out speedType);
+	procedure splitLongAck                   (message : messageType; responseToOpcode : out unsigned_8; state : out SwitchStateType);
    procedure splitMoveSlots                 (message : messageType; slot : out slotType);
    procedure splitSlRdDataMsg               (message : messageType; locoAddress : out locoAddressType;
                                              isAddressAlreadyInUse : out boolean; slot : out slotType);
    procedure splitSwRepMsg                  (message : messageType; switch : out switchIdType; direction : out SwitchStateType);
    procedure splitSwReqMsg                  (message : messageType; switch : out switchIdType; direction : out SwitchStateType); 
+   procedure splitSwStateMsg                (message : messageType; switch : out switchIdType);
    procedure splitWriteSlotDataToClearMsg   (msg : in messageType; slotId : out slotType);
                                       --------------------------------------
    procedure splitBackSensorFiredMsg        (msg : in MessageType; TrainId : OUT TrainIdType);
@@ -62,7 +64,7 @@ package MessageTranslationLibrary is
                                                                                  
    -------------------------------------------------------------------------------------------
    procedure makeChecksumByte            (message : in out messageType);
-   FUNCTION makeChecksumByte             (ByteArray: ByteArrayType; Size : Integer) RETURN Unsigned_8;
+   FUNCTION  makeChecksumByte            (ByteArray: ByteArrayType; Size : Integer) RETURN Unsigned_8;
 
    
    FUNCTION makeInputRepMsg               (Sensor : Positive; IsHigh : Boolean) RETURN MessageType;
@@ -77,6 +79,7 @@ package MessageTranslationLibrary is
    function makeSlRdDataMsg               (slot : slotType; address : locoAddressType) return MessageType; 
    FUNCTION makeSwRepMsg                  (Switch : switchIdType; State  : SwitchStateType) RETURN MessageType;
    function makeSwReqMsg                  (Switch : switchIdType; direction : SwitchStateType) return MessageType;
+   function makeSwStateMsg                (Switch : switchIdType) return MessageType;
    function makeWriteSlotDataToClearMsg   (slotId : slotType) return MessageType;
                                       --------------------------------------   
    function makeBackSensorFiredMsg        (trainId : trainIdType) return MessageType;

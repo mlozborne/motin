@@ -14,7 +14,7 @@ PACKAGE BODY CommandQueueManager IS
    BEGIN
       --sort into correct list
       CASE message.ByteArray(1) IS
-         when OPC_GPON | OPC_GPOFF =>
+         when OPC_GPON | OPC_GPOFF | OPC_SW_STATE =>
             myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");
             CommandQueueManager.OutQueue.putMessage(message);
          when OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
@@ -27,8 +27,7 @@ PACKAGE BODY CommandQueueManager IS
          when OPC_LOCO_ADR | OPC_SL_RD_DATA | OPC_LONG_ACK =>
             myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to SSI queue... ");
             SSIQueue.putMessage(Message);
-         WHEN UZero =>
-         
+         WHEN UZero =>         
             CASE message.ByteArray(2) IS
 				   when putPowerChangeComplete => 
 						myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");

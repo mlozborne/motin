@@ -10,9 +10,9 @@ PACKAGE GenericQueue IS
    TYPE Queue IS LIMITED PRIVATE;                          
    QueueEmpty: EXCEPTION;                                  
 
-      procedure Enqueue (Q: IN OUT Queue; E: IN QueueElement);  
-      procedure Dequeue (Q: IN OUT Queue; E: OUT QueueElement);   
-      function IsEmpty (Q: IN Queue) return boolean;
+      procedure Enqueue  (Q: IN OUT Queue; E: IN QueueElement);  
+      procedure Dequeue  (Q: IN OUT Queue; E: OUT QueueElement);   
+      function IsEmpty   (Q: IN Queue) return boolean;
       procedure makeEmpty(Q: in out queue);      
 
 PRIVATE

@@ -207,6 +207,15 @@ package body MessageTranslationLibrary is
          put_line("**************** EXCEPTION in MessageTranslationLibrary.splitSwReqMsg --" & kLFString & Exception_Information (error));
          raise;
    end splitSwReqMsg;
+	
+   procedure splitSwStateMsg(message : messageType; switch : out switchIdType) is
+	begin
+		switch := 1 + natural(message.byteArray(2)) + 128 * (natural(message.byteArray(3) and 16#0F#));
+   exception
+      when error: others =>
+         put_line("**************** EXCEPTION in MessageTranslationLibrary.splitSwStateMsg --" & kLFString & Exception_Information (error));
+         raise;
+	end splitSwStateMsg;
 
    procedure splitSlRdDataMsg(message : messageType; locoAddress : out locoAddressType;
                               isAddressAlreadyInUse : out boolean; slot : out slotType) is
@@ -291,6 +300,21 @@ package body MessageTranslationLibrary is
          RAISE;
    END SplitLocoAdrMsg;
 
+	procedure splitLongAck(message : messageType; responseToOpcode : out unsigned_8; state : out SwitchStateType) is
+	begin
+		responseToOpcode := message.byteArray(2) or 16#80#;
+		if responseToOpcode = OPC_SW_STATE then
+			if message.byteArray(3) = 16#30# then
+				state := closed;
+			else	
+				state := thrown;
+			end if;
+		end if;
+   EXCEPTION
+      WHEN error: OTHERS =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitLongAck --" & kLFString & Exception_Information (error));
+         RAISE;
+	end splitLongAck;
 
    ------------------------------------------------------------------------------
    ------------------------------------------------------------------------------
@@ -404,7 +428,7 @@ package body MessageTranslationLibrary is
       CASE State IS
          WHEN Closed | BeginClosed =>
             Cmd.ByteArray(3) := 16#20# OR Cmd.ByteArray(3);
-         WHEN Thrown | BeginThrown | unknown =>
+         WHEN Thrown | BeginThrown | unknown | read =>
             NULL;
       END CASE;
       makeChecksumByte(Cmd);
@@ -501,6 +525,21 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeSwReqMsg --" & kLFString & Exception_Information (error));
          raise;
    end makeSwReqMsg;
+
+   function makeSwStateMsg(Switch : switchIdType) return MessageType is
+		message : messageType;
+	begin
+      message.byteArray(1) := OPC_SW_STATE;
+      message.byteArray(2) := unsigned_8(switch - 1);          --        -1
+		message.byteArray(3) := 16#20#;
+      message.size := 4;
+      makeChecksumByte(message);
+      return message;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeSwStateMsg --" & kLFString & Exception_Information (error));
+         raise;
+	end makeSwStateMsg;
 
    procedure makeChecksumByte(message : in out messageType) is
       lngth : natural := message.size;
@@ -1256,6 +1295,7 @@ package body MessageTranslationLibrary is
       light, bell, horn, mute, F5, F6   : onOffType;
       isHi                              : boolean;
       inUse                             : boolean;
+		responseTo								 : unsigned_8;
    begin
       if msg.byteArray(1) /= 16#00# then
          case msg.byteArray(1) is
@@ -1269,7 +1309,13 @@ package body MessageTranslationLibrary is
             when OPC_SW_REP =>
                splitSwRepMsg(msg, switchId, switchState);
                return "OPC_SW_REP switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
-            when OPC_LOCO_SPD =>
+            when OPC_SW_REQ =>
+               splitSwReqMsg(msg, switchId, switchState); 
+               return "OPC_SW_REQ switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
+				when OPC_SW_STATE =>
+					splitSwStateMsg(msg, switchId);
+					return "OPC_SW_STATE switch" & natural'image(switchId);
+				when OPC_LOCO_SPD =>
                splitLocoSpdMsg(msg, trainId, speed);
                return "OPC_LOCO_SPD slot/speed " & natural'image(trainId) & " " & natural'image(speed);
             when OPC_LOCO_DIRF =>
@@ -1288,9 +1334,6 @@ package body MessageTranslationLibrary is
                        & " F5 " & onOffType'image(F5) 
                        & " F6 " & onOffType'image(F6) 
                        & " mute " & onOffType'image(mute);                                             
-            when OPC_SW_REQ =>
-               splitSwReqMsg(msg, switchId, switchState); 
-               return "OPC_SW_REQ switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
             when OPC_LOCO_ADR =>
                splitLocoAdrMsg(msg, locoAdd);
                return "OPC_LOCO_ADR request slot data for loco " & natural'image(locoAdd);
@@ -1298,7 +1341,14 @@ package body MessageTranslationLibrary is
                splitSlRdDataMsg(msg, locoAdd, inUse, slotNum);
                return "OPC_SL_RD_DATA loco/inUse/slotNum " & natural'image(locoAdd) & " " & boolean'image(inUse) & " " & natural'image(slotNum);
             when OPC_LONG_ACK =>
-               return "OPC_LONG_ACK long acknowledge ";
+				   splitLongAck(msg, responseTo, switchState);
+					if responseTo = OPC_LOCO_ADR then
+						return "OPC_LONG_ACK to OPC_LOCO_ADR: insufficient slots";
+					elsif responseTo = OPC_SW_STATE then	
+						return "OPC_LONG_ACK to OPC_SW_STATE: state = switchStateType'image(switchState)";
+					else
+						return "OPC_LONG_ACK to unexpected op " & unsigned_8'image(responseTo);
+					end if;
             when OPC_MOVE_SLOTS =>
                splitMoveSlots(msg, slotNum);
                return "OPC_MOVE_SLOTS for slot " & natural'image(slotNum);

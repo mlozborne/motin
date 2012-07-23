@@ -169,6 +169,7 @@ PACKAGE BODY MessageIO IS
       Size,
       SocketListLen   : Integer;
       messageCount    : natural := 0;
+		turnoutId       : switchIdType;
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
@@ -184,7 +185,29 @@ PACKAGE BODY MessageIO IS
             CValue := ClearBuffer(CZero);--clear buffer
             CASE MyArray(1) IS
 			
-               WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>  --send to railroad slot
+					when OPC_SW_STATE =>
+				
+						-- Send a message to request the state of a turnout
+                  SocketList.GetSocket(0, Socket);
+                  FOR I IN 1..internalMessage.Size LOOP
+                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
+                  END LOOP;
+                  Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
+				  
+						LastMessageManager.saveMessage(internalMessage);
+						
+						-- Save the id of the turnout in a queue so that it can be matched
+						-- to the correct Long Ack which will be reporting the state of the turnout
+						splitSwStateMsg(internalMessage, turnoutId);
+						turnoutIdQueue.putId(turnoutId);
+										
+						-- The LocoBuffer has a 96 byte message buffer.
+						-- Consequently, if messages are sent to it too rapidly then
+						-- the buffer will overflow. Therefore we slow down sending this message type 
+						-- in case the LocoBufferServer is running.
+				      delay 0.25;
+				
+					WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>  --send to railroad slot
 			   
                   Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
                   MyArray(2) := Unsigned_8(Slot);
@@ -198,7 +221,7 @@ PACKAGE BODY MessageIO IS
 						internalMessage.byteArray := myArray;
 						LastMessageManager.saveMessage(internalMessage);
 				  
-			   WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ => --send to railroad slot
+					WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ => --send to railroad slot
 			   
                   SocketList.GetSocket(0, Socket);
                   FOR I IN 1..internalMessage.Size LOOP
@@ -212,7 +235,7 @@ PACKAGE BODY MessageIO IS
 							lastMessageManager.enterPowerChangeMode;
 					   end if;
 			  
-            WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
+					WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
 			   
                   Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
                   MyArray(3) := Unsigned_8(Slot);
@@ -228,7 +251,7 @@ PACKAGE BODY MessageIO IS
                      END IF;
                   END LOOP;
 				  
-               WHEN OPC_LONG_ACK | OPC_SW_REP =>    --send to all throttles, not railroad
+					WHEN OPC_LONG_ACK | OPC_SW_REP =>    --send to all throttles, not railroad
 			   
                   FOR I IN 1..internalMessage.Size LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
@@ -301,6 +324,9 @@ PACKAGE BODY MessageIO IS
 		messagesEqual      : boolean;
 		ignoringMessages   : boolean := false;
 		answer             : boolean;
+		switchId    		 : switchIdType;
+		responseToOpcode	 : unsigned_8;
+		switchState			 : switchStateType;
 		
    BEGIN
       loop
@@ -364,6 +390,18 @@ PACKAGE BODY MessageIO IS
 							end if;
 							if not ignoringMessages and (i /= 0 or (i = 0 and not messagesEqual)) then
 								CASE MyArray(1) IS
+									WHEN OPC_LONG_ACK =>       -- Discard if not from railroad/simulator
+										if I /= 0 then
+											myPutLine("       ... ignored because not from simulator/locobuffer");
+										else
+											splitLongAck(internalMessage, responseToOpcode, switchState);
+											if responseToOpcode /= OPC_SW_STATE then
+												CommandQueueManager.put(InternalMessage);
+											else
+												turnoutIdQueue.getId(switchId); 
+												CommandQueueManager.put(makeSwRepMsg(switchId, switchState));
+											end if;
+										end if;
 									WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
 										SlotLookupTable.VirtSlotNumToTrainId(Integer(MyArray(2)), trainId, found);
 										if found then
@@ -377,12 +415,6 @@ PACKAGE BODY MessageIO IS
 											myPutLine("       ... ignored because from simulator/locobuffer");
 									   else
 										  CommandQueueManager.put(InternalMessage);
-										END IF;
-									WHEN OPC_LONG_ACK =>                        -- Discard if not from railroad/simulator
-										IF I = 0 THEN
-										   CommandQueueManager.put(InternalMessage);
-									   else
-											myPutLine("       ... ignored because not from simulator/locobuffer");
 										END IF;
 									WHEN OPC_SL_RD_DATA =>
 										CommandQueueManager.put(InternalMessage);
@@ -400,6 +432,44 @@ PACKAGE BODY MessageIO IS
          END;
       END LOOP;
    END ReceiveMessageTaskType;
+	
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+	
+   PROTECTED BODY TurnoutIdQueueType IS                                     
+
+      procedure putId(id : IN switchIdType) IS
+      BEGIN
+         TurnoutIdQueuePkg.Enqueue(Queue, id);
+         count := count + 1;
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION MessageIO putId " & Exception_Information(Error));
+            raise;
+      END putId;
+
+      procedure GetId(id : OUT switchIdType) IS
+      BEGIN
+         TurnoutIdQueuePkg.Dequeue(Queue, id);
+         count := count - 1;
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION MessageIO GetId " & Exception_Information(Error));
+            raise;
+      END GetId;
+
+      function IsEmpty return boolean IS
+      BEGIN
+         return TurnoutIdQueuePkg.IsEmpty(Queue);
+      EXCEPTION
+         WHEN error: OTHERS =>
+            put_line("**************** EXCEPTION MessageIO IsEmpty " & Exception_Information(Error));
+            raise;
+      END IsEmpty;
+
+   END TurnoutIdQueueType;
+
 
 END MessageIO;
 

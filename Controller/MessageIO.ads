@@ -2,6 +2,7 @@
 --4/7/2011
 with MessageTranslationTypes; use MessageTranslationTypes;
 WITH Ada.Calendar; USE Ada.Calendar;
+WITH GenericQueue;
 
 PACKAGE MessageIO IS
 
@@ -45,7 +46,21 @@ PACKAGE MessageIO IS
    --put message into in queue
    TASK TYPE ReceiveMessageTaskType IS
    END ReceiveMessageTaskType;
-
-
+	
+	
+   PACKAGE TurnoutIdQueuePkg IS NEW GenericQueue(QueueElement=> switchIdType); 
+	
+   PROTECTED TYPE TurnoutIdQueueType IS                                       -- mo 12/22/11    
+      procedure putId(id : IN switchIdType);
+      procedure GetId(id : OUT switchIdType);
+      function IsEmpty return boolean;
+   PRIVATE
+      Queue: TurnoutIdQueuePkg.Queue;
+      count : integer := 0;           
+   END TurnoutIdQueueType;
+	
+	turnoutIdQueue : TurnoutIdQueueType;
+	
+	
 END MessageIO;
 

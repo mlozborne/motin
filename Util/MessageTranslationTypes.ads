@@ -23,7 +23,10 @@ package MessageTranslationTypes is
    type  sensorStateType  is (open, closed);
    type  sectionStateType is (free, reserved, occupied, blocked);
    type  trainStateType   is (moving, waiting, halted, error, beginChangeDirection, beginWaiting, beginHalted);
-   type  switchStateType  is (Closed, Thrown, BeginClosed, BeginThrown, Unknown);
+   type  switchStateType  is (Closed, Thrown, BeginClosed, BeginThrown, Read, Unknown);
+										-- "Read" is a tempory type that indicates the controller must
+										-- ask the turnout for its current state. This is used while 
+										-- reading the XML layout file.
 
    -- Messages
    KMaxLenMsg       : constant Integer := 128; -- = kMaxLenFileName + 3, from RailroadManager.ads
@@ -41,8 +44,10 @@ package MessageTranslationTypes is
    OPC_LOCO_SND   : constant unsigned_8 := 16#A2#; -- set mute and unmute sound
    OPC_SW_REQ     : constant unsigned_8 := 16#B0#; -- move a turnout
    OPC_SW_REP     : constant unsigned_8 := 16#B1#; -- report turnout now open/thrown
+	OPC_SW_STATE   : constant unsigned_8 := 16#BC#; -- request state of a turnout
    OPC_INPUT_REP  : constant unsigned_8 := 16#B2#; -- report sensor fired
-   OPC_LONG_ACK   : constant unsigned_8 := 16#B4#; -- insufficient slots
+   OPC_LONG_ACK   : constant unsigned_8 := 16#B4#; -- if 2nd byte = 3F, then insufficient slots
+	                                                -- if 2nd byte = 3C, then turnout state
    OPC_MOVE_SLOTS : constant unsigned_8 := 16#BA#; -- set a slot to in-use	
    OPC_LOCO_ADR   : constant unsigned_8 := 16#BF#; -- request for slot data
    OPC_SL_RD_DATA : constant unsigned_8 := 16#E7#; -- slot data response
