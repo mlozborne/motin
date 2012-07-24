@@ -1,9 +1,12 @@
+lab: length of outside circuit?????????
+
 lab train timing for one full circuit
-Speed          EC        E6C
-100%          :56        :56
- 75%         1:18       1:22
- 50%         1:56       2:06
+Speed          EC  inch/sec       E6C  inch/sec    
+100%          :56    ???          :56    ???
+ 75%         1:18                1:22
+ 50%         1:56                2:06
  25%         4:28
+ where EC = engine + car and E6C = engine + 6car   (caboose is a car)
  
 Length of train 
               EC        E6C            
@@ -19,8 +22,12 @@ sim           7"       9"      1.29
 sim/lab    0.044    0.041
 lab/sim   22.571   24.111
 
-Stopping distance in lab
-Speed       gradual     abrupt
-100%          46"        8"
-75%                      4"
-50%           15"        2"
+Stopping distance and time in lab
+Speed       gradual     abrupt    time
+100%          46"        8"       ???         use this time in TrainTask for BW, BH, BD
+75%                      4"       ???
+50%           15"        2"       ???
+
+Times as measured in JMRI LocoNet message display window
+Move turnout
+
