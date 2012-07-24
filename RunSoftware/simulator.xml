@@ -1,27 +1,27 @@
 <railroad>                       <!-- xml for simulator layout -->
 	<section-list>
 		<section id="996">         <!-- dummy section at end of siding -->
-			<sensor id="251" />
+			<sensor id="2" />
 			<sensor id="996" />
 		</section>
 		<section id="997">         <!-- dummy section at end of siding -->
-			<sensor id="252" />
+			<sensor id="4" />
 			<sensor id="997" />
 		</section>
 		<section id="998">         <!-- dummy section at end of siding -->
-			<sensor id="253" />
+			<sensor id="6" />
 			<sensor id="998" />
 		</section>
 		<section id="999">         <!-- dummy section at end of siding -->
-			<sensor id="254" />
+			<sensor id="8" />
 			<sensor id="999" />
 		</section>
 		<section id="1">
-			<sensor id="251" />
-			<sensor id="255" />
+			<sensor id="2" />
+			<sensor id="1" />
 		</section>
 		<section id="2">
-			<sensor id="255" />
+			<sensor id="1" />
 			<sensor id="241" />
 			<switch id="18" />
 			<blocking id="4" />
@@ -29,11 +29,11 @@
 			<blocking id="8" />
 		</section>
 		<section id="3">
-			<sensor id="252" />
-			<sensor id="256" />
+			<sensor id="4" />
+			<sensor id="3" />
 		</section>
 		<section id="4">
-			<sensor id="256" />
+			<sensor id="3" />
 			<sensor id="241" />
 			<switch id="18" />
 			<switch id="19" />
@@ -42,11 +42,11 @@
 			<blocking id="8" />
 		</section>
 		<section id="5">
-			<sensor id="253" />
-			<sensor id="257" />
+			<sensor id="6" />
+			<sensor id="5" />
 		</section>
 		<section id="6">
-			<sensor id="257" />
+			<sensor id="5" />
 			<sensor id="241" />
 			<switch id="18" />
 			<switch id="19" />
@@ -56,11 +56,11 @@
 			<blocking id="8" />
 		</section>
 		<section id="7">
-			<sensor id="254" />
-			<sensor id="258" />
+			<sensor id="8" />
+			<sensor id="7" />
 		</section>
 		<section id="8">
-			<sensor id="258" />
+			<sensor id="7" />
 			<sensor id="241" />
 			<switch id="18" />
 			<switch id="19" />
@@ -647,21 +647,21 @@
 		</switch>
 		<switch id="18" state="closed">
 			<narrow-end id="241" />
-			<closed-end id="256" />
-			<closed-end id="257" />
-			<closed-end id="258" />
-			<thrown-end id="255" />
+			<closed-end id="3" />
+			<closed-end id="5" />
+			<closed-end id="7" />
+			<thrown-end id="1" />
 		</switch>
 		<switch id="19" state="closed">
 			<narrow-end id="241" />
-			<closed-end id="257" />
-			<closed-end id="258" />
-			<thrown-end id="256" />
+			<closed-end id="5" />
+			<closed-end id="7" />
+			<thrown-end id="3" />
 		</switch>
 		<switch id="20" state="closed">
 			<narrow-end id="241" />
-			<closed-end id="258" />
-			<thrown-end id="257" />
+			<closed-end id="7" />
+			<thrown-end id="5" />
 		</switch>
 		<switch id="21" state="read">
 			<narrow-end id="242" />

@@ -405,6 +405,7 @@ PACKAGE BODY LayoutPkg IS
                      SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
                   ELSE
                      -- Error: sensor id does not match sensor at back of train
+							-- xxx should accept this, adjust back of train, and free multiple sections
                      myPutLine("      -------------: ERROR SensorId " & Positive'image(sensorId) & 
                               " does not match BackId " & Positive'Image(BackId));
                      SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
