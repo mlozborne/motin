@@ -53,6 +53,15 @@ PACKAGE BODY TrainPkg IS
          put_line("**************** EXCEPTION in TrainPkg:SetLayout" );
          raise;
    END SetLayout;
+	
+	function adjustedSpeed(direction : directionType; speed : speedType) return speedType is
+	begin	
+		if direction = backward and then speed > kMaxSpeedReverse then	
+			return kMaxSpeedReverse;
+		else
+			return speed;
+		end if;
+	end adjustedSpeed;
 
    TASK BODY TrainTask IS
       State     : TrainStateType;
@@ -138,7 +147,7 @@ PACKAGE BODY TrainPkg IS
                                  myPutLine("        .........call LayoutPtr.MakeReservation(TrainId, Result) in TrainPkg"); 
                                  LayoutPtr.MakeReservation(TrainId, Result);
                                  IF Result THEN
-                                    SendToOutQueue(makeLocoSpdMsg(TrainId, Speed));
+                                    SendToOutQueue(makeLocoSpdMsg(TrainId, adjustedSpeed(direction, speed)));
                                     State := Moving;
                                     SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                  ELSE
@@ -149,12 +158,12 @@ PACKAGE BODY TrainPkg IS
                                  END IF;
                               END;
                            WHEN Moving =>
-                              SendToOutQueue(makeLocoSpdMsg(TrainId, Speed));
+                              SendToOutQueue(makeLocoSpdMsg(TrainId, adjustedSpeed(direction, speed)));
                            WHEN OTHERS => -- B
                               myPutLine("        ............. not moving/halted so no action" & "    in TrainTask" & TrainIdType'Image(TrainId));
                         END CASE;
                      END IF;
-                     SendToOutQueue(makePutTrainInformationMsg(TrainId, Speed, Direction, Light, Bell, Horn, Mute));          -- mo 1/9/12
+                     SendToOutQueue(makePutTrainInformationMsg(TrainId, adjustedSpeed(direction, speed), Direction, Light, Bell, Horn, Mute));          -- mo 1/9/12
                   WHEN OPC_LOCO_DIRF =>
                      -- Set the Direction, Light, Bell, and/or horn
                      DECLARE
@@ -192,7 +201,7 @@ PACKAGE BODY TrainPkg IS
                                     IF Result THEN
                                        State := Moving;
                                        SendToOutQueue(makePutTrainStateMsg(TrainId, State));
-                                       SendToOutQueue(makeLocoSpdMsg(TrainId, Speed));
+                                       SendToOutQueue(makeLocoSpdMsg(TrainId, adjustedSpeed(direction, speed)));
                                     END IF;
                                  END;
                               WHEN Moving  =>                                                  -- mo 12/29/11
@@ -211,7 +220,7 @@ PACKAGE BODY TrainPkg IS
                                        LayoutPtr.MakeReservation(TrainId, Result);
                                        IF Result THEN
                                           State := Moving;
-                                          SendToOutQueue(makeLocoSpdMsg(TrainId, Speed));
+                                          SendToOutQueue(makeLocoSpdMsg(TrainId, adjustedSpeed(direction, speed)));
                                           SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                        ELSE
                                           State := Waiting;
@@ -232,7 +241,7 @@ PACKAGE BODY TrainPkg IS
                         IF SendDirfMsg THEN
                            SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, Horn, Bell));
                         END IF;
-                        SendToOutQueue(makePutTrainInformationMsg(TrainId, Speed, Direction, Light, Bell, Horn, Mute));
+                        SendToOutQueue(makePutTrainInformationMsg(TrainId, adjustedSpeed(direction, speed), Direction, Light, Bell, Horn, Mute));
                      END;
                   WHEN OPC_LOCO_SND =>
                      -- Set the Sound (and other things)
@@ -261,7 +270,7 @@ PACKAGE BODY TrainPkg IS
                         END IF;
                         IF SendMsg THEN 
                            SendToOutQueue(makeLocoSndMsg(TrainId, Mute));
-                           SendToOutQueue(makePutTrainInformationMsg(TrainId, Speed, Direction, Light, Bell, Horn, Mute));
+                           SendToOutQueue(makePutTrainInformationMsg(TrainId, adjustedSpeed(direction, speed), Direction, Light, Bell, Horn, Mute));
                         END IF;
                      END;
                   when OPC_SW_REQ =>
@@ -343,7 +352,7 @@ PACKAGE BODY TrainPkg IS
                                        LayoutPtr.MakeReservation(TrainId, Result);
                                        IF Result THEN
                                           State := Moving;
-                                          SendToOutQueue(makeLocoSpdMsg(TrainId, Speed));
+                                          SendToOutQueue(makeLocoSpdMsg(TrainId, adjustedSpeed(direction, speed)));
                                           SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                        END IF;
                                     END;

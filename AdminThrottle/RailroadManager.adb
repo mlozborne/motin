@@ -655,6 +655,7 @@ package body RailroadManager is
             when InitializeLoco =>
 
 					objClosedSensorList.makeEmpty;
+					objScreenManager.putClosedSensorList;
 					if getCount(command.sensors) = 1 and then getCurrent(moveFront(command.sensors)) = 0 then
 					   -- if the sensor list contains the single entry 0, then retain the
 						-- current sensor list for the train. Thus the train will be reinitialized using

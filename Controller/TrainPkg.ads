@@ -26,7 +26,8 @@ PACKAGE TrainPkg IS
    PACKAGE Lists IS NEW GenericList(ElementType => TrainTaskAccess);
 
 PRIVATE
-   LayoutPtr     : LayoutManagerAccess;
-   TrainTaskList : Lists.List;
+   kMaxSpeedReverse : speedType := 50;
+   LayoutPtr        : LayoutManagerAccess;
+   TrainTaskList    : Lists.List;
 END TrainPkg;
 

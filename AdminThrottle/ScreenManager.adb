@@ -140,30 +140,32 @@ PACKAGE BODY ScreenManager IS
       END PutMessage;
 		
 		procedure putSensor(sensorId : positive; sensorState : sensorStateType) is
-			iter : listIteratorType;
-			col  : integer := 1;
 		begin
 			if sensorState = open then
 				objClosedSensorList.RemoveElement(sensorId);
 			else
 				objClosedSensorList.AddFront(sensorId);
 			end if;
-			myPut(col, kSensorRow, toString80(" ")(1..80));
-			myPut(col, kSensorRow, "Closed sensors:");
-			col := col + 15;
-			myPut(col, kSensorRow, objClosedSensorList.toString);
-			-- iter := moveFront(closedSensorList);
-			-- while not isNull(iter) loop
-				-- myPut(col, kSensorRow, integer'image(getCurrent(iter)));
-				-- col := col + 4;
-				-- iter := MoveNext(iter);
-			-- end loop;
-			MoveCursor(3,kPromptRow);
+			putClosedSensorList;
       exception
          when error: others =>
             put_line("UNPLANNED EXCEPTION in ScreenManager.PutSensor --" & kLFString & Exception_Information (error));
             raise;
 		end putSensor;
+		
+		procedure putClosedSensorList is
+			col  : integer := 1;
+		begin
+			myPut(col, kSensorRow, toString80(" ")(1..80));
+			myPut(col, kSensorRow, "Closed sensors:");
+			col := col + 15;
+			myPut(col, kSensorRow, objClosedSensorList.toString);
+			MoveCursor(3,kPromptRow);
+      exception
+         when error: others =>
+            put_line("UNPLANNED EXCEPTION in ScreenManager.putClosedSensorList --" & kLFString & Exception_Information (error));
+            raise;
+		end putClosedSensorList;
 		
       PROCEDURE PutSwitches (str : string) IS
          Str80 : String80;
