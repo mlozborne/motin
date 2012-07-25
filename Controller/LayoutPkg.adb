@@ -166,7 +166,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END GetSwitchStates;
 		
-      PROCEDURE OldIdentifyTrain (SensorID : Positive) IS
+      PROCEDURE V2IdentifyTrain (SensorID : Positive) IS
          SensorPtr            : SensorNodePtr;     -- ptr to sensor that fired
 			NextSensorPtr        : SensorObjPtr;
          FirstSection         : SectionObjPtr;
@@ -346,7 +346,7 @@ PACKAGE BODY LayoutPkg IS
             put_line("**************** EXCEPTION Layout pkg in IdentifyTrain: " & Exception_Information(Error));
             myPutLine("    sensor id #" & Positive'Image(sensorId));
             RAISE;
-      END OldIdentifyTrain;
+      END V2IdentifyTrain;
 
       PROCEDURE IdentifyTrain (SensorID : Positive) IS
          SensorPtr        : SensorNodePtr;
@@ -405,7 +405,7 @@ PACKAGE BODY LayoutPkg IS
                      SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
                   ELSE
                      -- Error: sensor id does not match sensor at back of train
-							-- xxx should accept this, adjust back of train, and free multiple sections
+							-- should accept this, adjust back of train, and free multiple sections
                      myPutLine("      -------------: ERROR SensorId " & Positive'image(sensorId) & 
                               " does not match BackId " & Positive'Image(BackId));
                      SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
@@ -434,7 +434,7 @@ PACKAGE BODY LayoutPkg IS
                   -- First time sensor fired, front of train approaching sensor
                   -- Change state to closed
                   myPutLine("      -------------: front of train approaching sensor " & integer'image(sensorId) ); 
-                 ELSE            
+               ELSE            
                   -- Sensor now open
                   -- Second time sensor fired, front of train leaving sensor
                   myPutLine("      -------------: front of train leaving sensor " & integer'image(sensorId) ); 
