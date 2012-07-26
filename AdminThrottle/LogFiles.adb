@@ -132,5 +132,17 @@ package body LogFiles is
          put_line("UNPLANNED EXCEPTION in LogFiles.putLineAdminLog --" & 
                    kLFString & Exception_Information (error));
    end putLineAdminLog;
+	
+--------------------------------------------------------------------------
+
+	function  adminLoggingOn return boolean is
+	begin	
+		return withAdminLog;
+   exception
+      when error : others =>
+         put_line("UNPLANNED EXCEPTION in LogFiles.adminLoggingOn --" & 
+                   kLFString & Exception_Information (error));
+		   return false;
+	end adminLoggingOn; 
    
 end LogFiles;

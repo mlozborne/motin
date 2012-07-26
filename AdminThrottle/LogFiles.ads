@@ -13,6 +13,7 @@ package LogFiles is
    procedure openAdminLog;
    procedure closeAdminLog;
    procedure putLineAdminLog(str : string);
+	function  adminLoggingOn return boolean;
 
 private  
    withAdminLog            : boolean := true;

@@ -13,7 +13,7 @@ package MessageTranslationTypes is
    SUBTYPE SpeedType       IS Integer RANGE 0..kMaxSpeed;
 
    KNumTrains              : CONSTANT Natural := 4;
-   SUBTYPE TrainIdType     IS natural RANGE 1..KNumTrains;
+   SUBTYPE TrainIdType     IS natural RANGE 0..KNumTrains;
 	
    kMaxNumSwitches         : constant natural := 65000;
    subtype switchIdType    is natural range 1..kMaxNumSwitches;

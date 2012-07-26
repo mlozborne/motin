@@ -645,20 +645,20 @@
 			<closed-end id="242" />
 			<thrown-end id="241" />
 		</switch>
-		<switch id="18" state="closed">
+		<switch id="18" state="read">
 			<narrow-end id="241" />
 			<closed-end id="3" />
 			<closed-end id="5" />
 			<closed-end id="7" />
 			<thrown-end id="1" />
 		</switch>
-		<switch id="19" state="closed">
+		<switch id="19" state="read">
 			<narrow-end id="241" />
 			<closed-end id="5" />
 			<closed-end id="7" />
 			<thrown-end id="3" />
 		</switch>
-		<switch id="20" state="closed">
+		<switch id="20" state="read">
 			<narrow-end id="241" />
 			<closed-end id="7" />
 			<thrown-end id="5" />

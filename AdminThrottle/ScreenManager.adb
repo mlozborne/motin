@@ -47,8 +47,10 @@ PACKAGE BODY ScreenManager IS
          
          MyPut(1,1,"Train PhyAdr/Slot VirAdr/Slot State Speed Dir Light Bell Horn Mute Location");
          MyPut(1,2,"----- ----------- ----------- ----- ----- --- ----- ---- ---- ---- --------");
-
-         MyPut(1,8,"Last msg received: ");
+			
+			if adminLoggingOn then
+				MyPut(1,8,"Last msg received: ");
+			end if;
 
          MyPut(1,10,"SWTICHES");
          MyPut(1,11,"  0 1 2 3 4 5 6 7 8 9");
@@ -95,7 +97,7 @@ PACKAGE BODY ScreenManager IS
 			iter : listIteratorType;
       BEGIN
          IF phyAdr = 0 THEN
-            MyPut(2, I+2, ToString80(" "));
+            MyPut(2, I+2, ToString80(" ") & ToString80(" ")(1..18));
             myput (67, i+2, "                      ");
          else
             MyPut(2, I+2,
@@ -128,6 +130,9 @@ PACKAGE BODY ScreenManager IS
       
       PROCEDURE PutMessage (str1 : string; str2 : String) IS
       begin
+			if not adminLoggingOn then
+				return;
+			end if;
          MyPut(20, kMessageRow, toString80(str2)(1..60));
          MyPut(18, kMessageRow+1, toString80(str1)(1..61));
          MoveCursor(3,kPromptRow);
@@ -141,6 +146,9 @@ PACKAGE BODY ScreenManager IS
 		
 		procedure putSensor(sensorId : positive; sensorState : sensorStateType) is
 		begin
+			if not adminLoggingOn then
+				return;
+			end if;
 			if sensorState = open then
 				objClosedSensorList.RemoveElement(sensorId);
 			else
@@ -156,6 +164,9 @@ PACKAGE BODY ScreenManager IS
 		procedure putClosedSensorList is
 			col  : integer := 1;
 		begin
+			if not adminLoggingOn then
+				return;
+			end if;
 			myPut(col, kSensorRow, toString80(" ")(1..80));
 			myPut(col, kSensorRow, "Closed sensors:");
 			col := col + 15;

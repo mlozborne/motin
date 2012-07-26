@@ -1,6 +1,7 @@
 WITH Ada.Unchecked_Deallocation, Ada.Strings.Unbounded, Ada.Text_IO, ControllerGlobals, CommandQueueManager, Ada.Calendar;
 USE Ada.Strings.Unbounded, Ada.Text_IO, ControllerGlobals, CommandQueueManager, Ada.Calendar;
 with MessageTranslationTypes; use messageTranslationTypes;
+with NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
 
 PACKAGE LayoutPkg IS
 
@@ -67,7 +68,9 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
-		PROCEDURE IdentifyTrain       (SensorID : Positive);
+		PROCEDURE IdentifyTrainV1      (SensorID : Positive);  -- section oriented, original, assumes no sensor errors
+		PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
+		PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
       PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
@@ -203,13 +206,15 @@ PACKAGE LayoutPkg IS
 		 PROCEDURE ReleaseBlockings(BlockingList : BlockingObjList);
 
 		-- IdentifyTrain helpers
+		function  getTrainsSensorNumbers(trainId : trainIdType) return naturalListType; 
       PROCEDURE AddNewSensorToFront(TrainId : TrainIdType; Sensor : SensorObjPtr);
       FUNCTION  GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess; 
-		procedure getSectionsContainingSensor(SensorID : Positive;
+		procedure getUnbockedUsableSectionsContainingSensor(SensorID : Positive;
                                   FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
       PROCEDURE GetOccResSections(SensorID : Positive;
                                   FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
       PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
+      function  GetBackSensor(TrainId : TrainIdType) return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
 		
@@ -341,7 +346,7 @@ PRIVATE
          PrevSectionList : SectionObjList;
          BlockingList    : BlockingObjList;
          BlockCount      : Natural             := 0;
-         TrainId         : TrainIdType;
+         TrainId         : TrainIdType := 0;
       END RECORD;
       
    TYPE SectionNode IS
