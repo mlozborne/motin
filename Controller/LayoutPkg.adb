@@ -432,6 +432,7 @@ PACKAGE BODY LayoutPkg IS
 			sList			     : naturalListType;
 			oldSensorState   : sensorStateType;
 			newSensorState   : sensorStateType;
+			trainId			  : trainIdType;
       BEGIN
          FindSensor(SensorList, SensorID, SensorPtr);
          
@@ -463,16 +464,16 @@ PACKAGE BODY LayoutPkg IS
                   myPutLine("      -------------: ERROR seems like back of train leaving sensor " & integer'image(sensorId) ); 
                   SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
                else 
+						-- Both sections contain the same train id
+						trainId := firstSection.trainId;
                   -- Sensor now closed
                   -- First time the sensor fired, back of train approaching sensor
                   myPutLine("      -------------: back of train approaching sensor " & integer'image(sensorId) ); 
-                  GetBackSensor(FirstSection.TrainId, BackId);
+                  GetBackSensor(TrainId, BackId);
                   IF (FirstSection.SensorList.Head.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Tail.Sensor.Id = BackId)
                   OR (FirstSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Head.Sensor.Id = BackId) 
 						THEN
                      FirstSection.State := Free;
-							RemoveLastSensor(FirstSection.TrainId);
-							SendToTrainQueue(makeBackSensorFiredMsg(FirstSection.TrainId), FirstSection.TrainId);
                      ReleaseBlockings(FirstSection.BlockingList);
                      SendToOutQueue(makePutSectionStateMsg(FirstSection.Id, Free));
                      firstSection.trainId := 0;
@@ -480,8 +481,6 @@ PACKAGE BODY LayoutPkg IS
                   OR (SecondSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Head.Sensor.Id = BackId) 
 						THEN
                      SecondSection.State := Free;
-							RemoveLastSensor(SecondSection.TrainId);
-							SendToTrainQueue(makeBackSensorFiredMsg(SecondSection.TrainId), SecondSection.TrainId);
                      ReleaseBlockings(SecondSection.BlockingList);
                      SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
                      secondSection.trainId := 0;
@@ -493,13 +492,15 @@ PACKAGE BODY LayoutPkg IS
                      SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
                      RETURN;
                   END IF;
+						RemoveLastSensor(TrainId);
+						SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
 
                   declare
                      sensorsPtr : sensorArrayAccess;
                   begin
-                     sensorsPtr := GetSensors(FirstSection.TrainId);
+                     sensorsPtr := GetSensors(TrainId);
                      convertSensorArrayToList(sensorsPtr, sList); 
-                     SendToOutQueue(makePutTrainPositionMsg(FirstSection.TrainId, sList)); 
+                     SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
                      makeEmpty(sList);
                      disposeSensorArray(sensorsPtr);
                   end;
