@@ -422,6 +422,18 @@ PACKAGE BODY MessageIO IS
 										END IF;
 									WHEN OPC_SL_RD_DATA =>
 										CommandQueueManager.put(InternalMessage);
+									WHEN OPC_INPUT_REP =>
+										declare
+											sensor  : positive;
+											isHi    : boolean;
+										begin
+											splitInputRepMsg(internalMessage, sensor, isHi);
+											if isHi then
+												myPutLine("       ... ignored because input hi");
+											else
+												CommandQueueManager.put(InternalMessage);
+											end if;
+										end;
 									WHEN OTHERS =>
 										CommandQueueManager.put(InternalMessage);
 								END CASE;

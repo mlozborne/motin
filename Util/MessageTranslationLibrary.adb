@@ -1305,7 +1305,11 @@ package body MessageTranslationLibrary is
                return "OPC_GPOFF power off ";
             when OPC_INPUT_REP =>
                splitInputRepMsg(msg, sensorId, isHi);
-               return "OPC_INPUT_REP sensor/isHi " & natural'image(sensorId) & " " & boolean'image(isHi);
+					if isHi then
+						return "OPC_INPUT_REP sensor hi" & natural'image(sensorId);
+					else
+						return "OPC_INPUT_REP sensor lo" & natural'image(sensorId);
+					end if;
             when OPC_SW_REP =>
                splitSwRepMsg(msg, switchId, switchState);
                return "OPC_SW_REP switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
