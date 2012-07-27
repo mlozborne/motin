@@ -170,6 +170,9 @@ PACKAGE BODY MessageIO IS
       SocketListLen   : Integer;
       messageCount    : natural := 0;
 		turnoutId       : switchIdType;
+		firstByte   	 : unsigned_8;
+		secondByte      : unsigned_8;
+		msgSize         : integer;
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
@@ -180,16 +183,57 @@ PACKAGE BODY MessageIO IS
       LOOP
          BEGIN
             CommandQueueManager.Get(InternalMessage);
-            MyArray := internalMessage.ByteArray;
-                        
-            CValue := ClearBuffer(CZero);--clear buffer
-            CASE MyArray(1) IS
+				
+            -- Simplify code by using the shorter names "MyArray" and "msgSize"
+				MyArray := internalMessage.ByteArray;
+				msgSize := internalMessage.size;
+				
+				-- Change train ids to slot numbers
+				firstByte := MyArray(1);
+				secondBytpe := MyArray(2);
+				case firstByte is
+					when OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
+						Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
+						MyArray(2) := Unsigned_8(Slot);
+						MyArray(msgSize) := makeChecksumByte(MyArray, msgSize); 					
+					when OPC_SL_RD_DATA =>
+						Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
+						MyArray(3) := Unsigned_8(Slot);
+						MyArray(msgSize) := makeChecksumByte(MyArray, msgSize);  
+					when UZERO =>
+						case secondByte is
+							when PutTrainState | PutTrainPosition | PutTrainInformation =>
+                        Slot := SlotLookupTable.TrainIdToVirtSlotNum( Integer(MyArray(3)));
+                        MyArray(3) := Unsigned_8(Slot);					
+							when Others =>
+								null;
+						end case;
+					when OTHERS =>
+						null;
+				end case;
+         
+			   -- Save changes to myArray
+				internalMessage.byteArray := myArray;
+				
+				-- Echo the message
+            if firstByte /= uzero then
+                messageCount := messageCount + 1;
+                myPutLine("<" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
+				else
+                myPutLine("< " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
+            end if;			
+            myPutLine(" ");
 			
+            -- Clear the message output buffer
+				CValue := ClearBuffer(CZero);--clear buffer
+				
+				-- Send the messages
+            CASE MyArray(1) IS			
 					when OPC_SW_STATE =>
 				
 						-- Send a message to request the state of a turnout
                   SocketList.GetSocket(0, Socket);
-                  FOR I IN 1..internalMessage.Size LOOP
+                  FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
@@ -207,26 +251,26 @@ PACKAGE BODY MessageIO IS
 						-- rapid succession is there any chance some will be lost before then
 						-- locobuffer processes them? Probably not, but if so, we can put in a delay
 						-- here.
-				      -- delay 0.25;   -- to avoid overwhelming the locobuffer
+				      delay 1.0;   -- to avoid overwhelming the locobuffer
 				
 					WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>  --send to railroad slot
 			   
-                  Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
-                  MyArray(2) := Unsigned_8(Slot);
-                  MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size);  -- mo 1/7/12
+                  -- Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
+                  -- MyArray(2) := Unsigned_8(Slot);
+                  -- MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size);  -- mo 1/7/12
                   SocketList.GetSocket(0, Socket);
-                  FOR I IN 1..internalMessage.Size LOOP
+                  FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
 				      
-						internalMessage.byteArray := myArray;
+						-- internalMessage.byteArray := myArray;
 						LastMessageManager.saveMessage(internalMessage);
 				  
 					WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ => --send to railroad slot
 			   
                   SocketList.GetSocket(0, Socket);
-                  FOR I IN 1..internalMessage.Size LOOP
+                  FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
@@ -239,10 +283,10 @@ PACKAGE BODY MessageIO IS
 			  
 					WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
 			   
-                  Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
-                  MyArray(3) := Unsigned_8(Slot);
-                  MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size);  -- mo 1/7/12
-                  FOR I IN 1..internalMessage.Size LOOP
+                  -- Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
+                  -- MyArray(3) := Unsigned_8(Slot);
+                  -- MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size);  -- mo 1/7/12
+                  FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   SocketList.GetSocketListLength(SocketListLen);
@@ -255,7 +299,7 @@ PACKAGE BODY MessageIO IS
 				  
 					WHEN OPC_LONG_ACK | OPC_SW_REP =>    --send to all throttles, not railroad
 			   
-                  FOR I IN 1..internalMessage.Size LOOP
+                  FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   SocketList.GetSocketListLength(SocketListLen);
@@ -268,15 +312,15 @@ PACKAGE BODY MessageIO IS
 				  
                WHEN UZero =>--extended messages
 			   
-                  CASE MyArray(2) IS
-                     WHEN PutTrainState | PutTrainPosition | PutTrainInformation =>
-                        Slot := SlotLookupTable.TrainIdToVirtSlotNum( Integer(MyArray(3)));
-                        MyArray(3) := Unsigned_8(Slot);					
-                     WHEN OTHERS =>
-                        NULL;
-                  END CASE;
+                  -- CASE MyArray(2) IS
+                     -- WHEN PutTrainState | PutTrainPosition | PutTrainInformation =>
+                        -- Slot := SlotLookupTable.TrainIdToVirtSlotNum( Integer(MyArray(3)));
+                        -- MyArray(3) := Unsigned_8(Slot);					
+                     -- WHEN OTHERS =>
+                        -- NULL;
+                  -- END CASE;
                   --send all extended messages to OThrottles
-                  FOR I IN 1..internalMessage.Size LOOP
+                  FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
                   SocketList.GetSocketListLength(SocketListLen);
@@ -289,15 +333,6 @@ PACKAGE BODY MessageIO IS
                WHEN OTHERS=>
                   null;
             END CASE;
-
-				internalMessage.byteArray := myArray;
-            if myArray(1) /= uzero then
-                messageCount := messageCount + 1;
-                myPutLine("<" & natural'image(messageCount) & " " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
-				else
-                myPutLine("< " & toEnglish(internalMessage) & " ...MesIOPkg.SendMesTask to outside");      
-            end if;			
-            myPutLine(" ");
 			
          EXCEPTION
             WHEN Error : OTHERS =>
