@@ -190,7 +190,7 @@ PACKAGE BODY MessageIO IS
 				
 				-- Change train ids to slot numbers
 				firstByte := MyArray(1);
-				secondBytpe := MyArray(2);
+				secondByte := MyArray(2);
 				case firstByte is
 					when OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>
 						Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
@@ -228,36 +228,14 @@ PACKAGE BODY MessageIO IS
 				CValue := ClearBuffer(CZero);--clear buffer
 				
 				-- Send the messages
-            CASE MyArray(1) IS			
-					when OPC_SW_STATE =>
-				
-						-- Send a message to request the state of a turnout
-                  SocketList.GetSocket(0, Socket);
-                  FOR I IN 1..msgSize LOOP
-                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
-                  END LOOP;
-                  Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
-				  
-						LastMessageManager.saveMessage(internalMessage);
-						
-						-- Save the id of the turnout in a queue so that it can be matched
-						-- to the correct Long Ack which will be reporting the state of the turnout
-						splitSwStateMsg(internalMessage, turnoutId);
-						turnoutIdQueue.putId(turnoutId);
-										
-						-- When the layout manager is processing the XML layout file, it puts
-						-- a group of these instructions on the output queue in rapid succession.
-						-- If these instructions are sent by TCP/IP to the locobuffer in rapid
-						-- rapid succession is there any chance some will be lost before then
-						-- locobuffer processes them? Probably not, but if so, we can put in a delay
-						-- here.
-				      delay 1.0;   -- to avoid overwhelming the locobuffer
-				
-					WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND =>  --send to railroad slot
+            CASE firstByte IS			
+					WHEN OPC_LOCO_SPD | OPC_LOCO_DIRF | OPC_LOCO_SND | OPC_SW_STATE |
+                    OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | 
+						  OPC_GPOFF | OPC_SW_REQ =>                                               -- send to railroad 
 			   
                   -- Slot := SlotLookupTable.TrainIdToPhysSlotNum(Integer(MyArray(2)));
                   -- MyArray(2) := Unsigned_8(Slot);
-                  -- MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size);  -- mo 1/7/12
+                  -- MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size); 
                   SocketList.GetSocket(0, Socket);
                   FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
@@ -266,26 +244,30 @@ PACKAGE BODY MessageIO IS
 				      
 						-- internalMessage.byteArray := myArray;
 						LastMessageManager.saveMessage(internalMessage);
-				  
-					WHEN OPC_LOCO_ADR | OPC_MOVE_SLOTS | OPC_WR_SL_DATA | OPC_GPON | OPC_GPOFF | OPC_SW_REQ => --send to railroad slot
-			   
-                  SocketList.GetSocket(0, Socket);
-                  FOR I IN 1..msgSize LOOP
-                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
-                  END LOOP;
-                  Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
-				  
-						LastMessageManager.saveMessage(internalMessage);
 						
+						-- Extra processing for OPC_SW_STATE
+						if firstByte = OPC_SW_STATE then
+							-- Save the id of the turnout in a queue so that it can be matched
+							-- to the correct Long Ack which will be reporting the state of the turnout
+							splitSwStateMsg(internalMessage, turnoutId);
+							turnoutIdQueue.putId(turnoutId);
+											
+							-- When the layout manager is processing the XML layout file, it puts
+							-- a group of these instructions on the output queue in rapid succession.
+							-- If these instructions are sent by TCP/IP to the locobuffer in rapid
+							-- rapid succession is there any chance some will be lost before then
+							-- locobuffer processes them? Probably not, but if so, we can put in a delay
+							-- here.
+							delay 0.5;   -- to avoid overwhelming the locobuffer
+						end if;
+				  
+						-- Extra processing for power on and off instructions
 						if myArray(1) = OPC_GPON or myArray(1) = OPC_GPOFF then
 							lastMessageManager.enterPowerChangeMode;
-					   end if;
+					   end if;												
 			  
-					WHEN OPC_SL_RD_DATA =>             --send to all throttles, not railroad
+					WHEN OPC_SL_RD_DATA | OPC_LONG_ACK | OPC_SW_REP =>             --send to all othrottles, not railroad
 			   
-                  -- Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
-                  -- MyArray(3) := Unsigned_8(Slot);
-                  -- MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size);  -- mo 1/7/12
                   FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;
@@ -296,30 +278,10 @@ PACKAGE BODY MessageIO IS
                         Size := Integer(SendMessage(Socket, New_String(""),CZero, CZero));
                      END IF;
                   END LOOP;
+
 				  
-					WHEN OPC_LONG_ACK | OPC_SW_REP =>    --send to all throttles, not railroad
+               WHEN UZero =>   --extended messages send to all othrottles
 			   
-                  FOR I IN 1..msgSize LOOP
-                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
-                  END LOOP;
-                  SocketList.GetSocketListLength(SocketListLen);
-                  FOR I IN 1..(SocketListLen-1) LOOP
-                     SocketList.GetSocket(I, Socket);
-                     IF Integer(Socket) > 0 THEN
-                        Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
-                     END IF;
-                  END LOOP;
-				  
-               WHEN UZero =>--extended messages
-			   
-                  -- CASE MyArray(2) IS
-                     -- WHEN PutTrainState | PutTrainPosition | PutTrainInformation =>
-                        -- Slot := SlotLookupTable.TrainIdToVirtSlotNum( Integer(MyArray(3)));
-                        -- MyArray(3) := Unsigned_8(Slot);					
-                     -- WHEN OTHERS =>
-                        -- NULL;
-                  -- END CASE;
-                  --send all extended messages to OThrottles
                   FOR I IN 1..msgSize LOOP
                      CValue := WriteByte(C.Double(MyArray(I)), CZero);
                   END LOOP;

@@ -564,123 +564,123 @@
         </section>
 	</section-list>
 	<switch-list>
-		<switch id="1" state="read">
+		<switch id="1" state="thrown">
 			<narrow-end id="33" />
 			<closed-end id="8" />
 			<thrown-end id="7" />
 		</switch>
-		<switch id="2" state="read">
+		<switch id="2" state="thrown">
 			<narrow-end id="33" />
 			<closed-end id="7" />
 			<closed-end id="8" />
 			<thrown-end id="6" />
 		</switch>
-		<switch id="3" state="read">
+		<switch id="3" state="thrown">
 			<narrow-end id="33" />
 			<closed-end id="6" />
 			<closed-end id="7" />
 			<closed-end id="8" />
 			<thrown-end id="5" />
 		</switch>
-		<switch id="4" state="read">
+		<switch id="4" state="thrown">
 			<narrow-end id="35" />
 			<closed-end id="34" />
 			<thrown-end id="33" />
 		</switch>
-		<switch id="5" state="read">
+		<switch id="5" state="thrown">
 			<narrow-end id="28" />
 			<closed-end id="27" />
 			<thrown-end id="26" />
 		</switch>
-		<switch id="6" state="read">
+		<switch id="6" state="closed">
 			<narrow-end id="19" />
 			<closed-end id="28" />
 			<thrown-end id="31" />
 		</switch>
-		<switch id="7" state="read">
+		<switch id="7" state="thrown">
 			<narrow-end id="12" />
 			<closed-end id="10" />
 			<thrown-end id="11" />
 		</switch>
-		<switch id="8" state="read">
+		<switch id="8" state="thrown">
 			<narrow-end id="34" />
 			<closed-end id="10" />
 			<thrown-end id="9" />
 		</switch>
-		<switch id="9" type="crossover" state="read">
+		<switch id="9" type="crossover" state="thrown">
 			<narrow-end id="44" />
 			<narrow-end id="25" />
 			<closed-end id="47" />
 			<closed-end id="45" />
 		</switch>
-		<switch id="10" state="read">
+		<switch id="10" state="closed">
 			<narrow-end id="55" />
 			<closed-end id="53" />
 			<thrown-end id="52" />
 		</switch>
-		<switch id="11" state="read">
+		<switch id="11" state="closed">
 			<narrow-end id="54" />
 			<closed-end id="50" />
 			<thrown-end id="51" />
 		</switch>
-		<switch id="12" state="read">
+		<switch id="12" state="thrown">
 			<narrow-end id="59" />
 			<closed-end id="61" />
 			<thrown-end id="62" />
 		</switch>
-		<switch id="13" state="read">
+		<switch id="13" state="thrown">
 			<narrow-end id="59" />
 			<closed-end id="80" />
 			<thrown-end id="77" />
 		</switch>
-		<switch id="14" state="read">
+		<switch id="14" state="thrown">
 			<narrow-end id="57" />
 			<closed-end id="70" />
 			<thrown-end id="71" />
 		</switch>
-		<switch id="15" type="crossover" state="read">
+		<switch id="15" type="crossover" state="closed">
 			<narrow-end id="87" />
 			<narrow-end id="72" />
 			<closed-end id="65" />
 			<closed-end id="88" />
 		</switch>
-		<switch id="16" state="read">
+		<switch id="16" state="thrown">
 			<narrow-end id="95" />
 			<closed-end id="78" />
 			<thrown-end id="77" />
 		</switch>
-		<switch id="17" state="read">
+		<switch id="17" state="thrown">
 			<narrow-end id="94" />
 			<closed-end id="74" />
 			<thrown-end id="73" />
 		</switch>
-		<switch id="18" state="read">
+		<switch id="18" state="closed">
 			<narrow-end id="95" />
 			<closed-end id="92" />
 			<thrown-end id="93" />
 		</switch>
-		<switch id="19" state="read">
+		<switch id="19" state="closed">
 			<narrow-end id="82" />
 			<closed-end id="85" />
 			<thrown-end id="86" />
 		</switch>
-		<switch id="20" state="read">
+		<switch id="20" state="closed">
 			<narrow-end id="116" />
 			<closed-end id="114" />
 			<thrown-end id="113" />
 		</switch>
-		<switch id="21" state="read">
+		<switch id="21" state="thrown">
 			<narrow-end id="107" />
 			<closed-end id="106" />
 			<thrown-end id="105" />
 		</switch>
-		<switch id="22" type="crossover" state="read">
+		<switch id="22" type="crossover" state="closed">
 			<narrow-end id="99" />
 			<narrow-end id="104" />
 			<closed-end id="103" />
 			<closed-end id="101" />
 		</switch>
-		<switch id="23" state="read">
+		<switch id="23" state="thrown">
 			<narrow-end id="98" />
 			<closed-end id="101" />
 			<thrown-end id="100" />
