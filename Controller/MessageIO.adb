@@ -258,7 +258,9 @@ PACKAGE BODY MessageIO IS
 							-- rapid succession is there any chance some will be lost before then
 							-- locobuffer processes them? Probably not, but if so, we can put in a delay
 							-- here.
-							delay 0.5;   -- to avoid overwhelming the locobuffer
+							if not simulator then
+								delay 3.0;   -- to avoid overwhelming the locobuffer
+							end if;
 						end if;
 				  
 						-- Extra processing for power on and off instructions
