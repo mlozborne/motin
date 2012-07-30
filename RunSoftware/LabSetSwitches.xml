@@ -582,7 +582,7 @@
 			<closed-end id="8" />
 			<thrown-end id="5" />
 		</switch>
-		<switch id="4" state="thrown">
+		<switch id="4" state="closed">
 			<narrow-end id="35" />
 			<closed-end id="34" />
 			<thrown-end id="33" />

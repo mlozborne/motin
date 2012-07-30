@@ -487,6 +487,7 @@ PACKAGE BODY LayoutPkg IS
                   ELSE
                      -- Error: sensor id does not match sensor at back of train
 							-- should accept this, adjust back of train, and free multiple sections
+							-- BUT haven't done this yet.
                      myPutLine("      -------------: ERROR SensorId " & Positive'image(sensorId) & 
                               " does not match BackId " & Positive'Image(BackId));
                      SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
@@ -494,6 +495,18 @@ PACKAGE BODY LayoutPkg IS
                   END IF;
 						RemoveLastSensor(TrainId);
 						SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+						
+						-- ******
+						-- ******
+						-- ******
+						-- Reopen the sensor because when the sensor misfires, it would be left in a closed state.
+						-- Inform Othrottles that sensor is now open         
+                  -- A side effect of this is if the sensor doesn't misfire, then as the back of the train
+						-- leaves the sensor, the sensor will be closed again. BAD!!! BUT this is fixed below.
+						-- See the next occurence of the string "-- ******"
+						-- flipSensor(sensorPtr);
+						-- newSensorState := sensorPtr.sensor.state;						
+						-- SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
 
                   declare
                      sensorsPtr : sensorArrayAccess;
@@ -555,8 +568,17 @@ PACKAGE BODY LayoutPkg IS
                SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
             END IF;
          ELSIF (FirstSection /= NULL OR SecondSection /= NULL) AND oldSensorState = Closed THEN
+         -- ELSIF (FirstSection /= NULL OR SecondSection /= NULL) and oldSensorState = Open THEN
             -- Back of train leaving sensor 
             myPutLine("      -------------: back of train leaving sensor " & integer'image(sensorId) ); 
+				
+				-- ******
+				-- ******
+				-- ******
+				-- flipSensor(sensorPtr);
+				-- newSensorState := sensorPtr.sensor.state;						
+				-- SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
+
          ELSE
             -- Error
             myPutLine("    -------------: MYSTERY ERROR sensor not at front or back " & integer'image(sensorId) ); 
