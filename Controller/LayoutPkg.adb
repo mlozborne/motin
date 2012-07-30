@@ -445,7 +445,7 @@ PACKAGE BODY LayoutPkg IS
 			flipSensor(sensorPtr);
 			newSensorState := sensorPtr.sensor.state;
 			
-         -- Inform Othrottles that sensor has fired and its new state                 -- mo 1/30/12
+         -- Inform Othrottles that sensor has fired and its new state                 
          SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
 			
          -- if not Simulator and Clock - SensorPtr.Sensor.StartTime < 1.0 then
@@ -453,75 +453,118 @@ PACKAGE BODY LayoutPkg IS
             -- return;
          -- end if;
                      
-         -- Get occupied and reserved sections that contain this sensor
          GetOccResSections(SensorPtr.Sensor.Id, FirstSection, SecondSection);
-         IF FirstSection /= NULL AND SecondSection /= NULL THEN
+			if firstSection = occupied then trainId = firstSection.trainId;
+			else if secondSection = occupied then trainId = secondSection.trainId;
+			else if firstSection = reserved then trainId = firstSection.trainId;
+			else if secondSection = reserved then trainId = secondSection.trainId;
+            -- Case 1: both section ptrs are null
+            --   Ignore it and return;	
+				-- Case 2: exactly one section ptr is null
+				--   Normal: sensor closed-open, back of train leaving sensor, return
+				--   Abnormal: sensor open-closed, probably front of train has fired sensor at front of reserved section. TO DO <<<<<<<<<<<<<<<<<<
+				-- Case 3: both sections are occupied
+				--	Case 4: one section occupied, the other reserved 
+				
+         IF FirstSection == NULL AND SecondSection == NULL THEN
+			
+            -- Case 1: both section ptrs are null
+            myPutLine("    -------------: MYSTERY SENSOR FIRING not close to any trains: ignore it " & integer'image(sensorId) );
+            return;				
+				
+         ELSIF (FirstSection /= NULL OR SecondSection /= NULL) THEN
+			
+				if oldSensorState = closed then
+					-- Case 2 normal
+					myPutLine("      -------------: back of train leaving sensor " & integer'image(sensorId) ); 
+					return;
+				else
+					-- Case 2 abnormal 
+					myPutLine("      -------------: ERROR undiagnosed sensor firing, probably front of reserved section " & integer'image(sensorId) );
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);					
+					return;
+				end if;
+				
+         else IF FirstSection /= NULL AND SecondSection /= NULL THEN
+					
             IF FirstSection.State = Occupied AND SecondSection.State = Occupied THEN  
-               -- Sensor at back of train
+				
+					-- Case 1: sensor open-closed
+					--   Normal: Sensor sn-1 goes open-closed. (sn-1 = next to last sensor at back of train)
+					--   Abnormal: Back magnet failed to fire previous sensor. It could be sn-2, sn-3, etc. Shrink back of train.
+					-- Case 2: sensor closed-open
+					--   Normal: This doesn't happen.
+					--   Abnormal: Front magnet failed to fire. This could be perceived as sensor sn-1, sn-2, sn-3, etc.
+					--                 Flip sensor. 
+					--                 If sensor = sn-1, process normally from here, else shrink back of train.
+					--             Front of train has now run into the reserved section without the LayoutManager knowing it.
+					--                 Extend front of train, occupy reserved section, and try to get a reservation
+										
                IF oldSensorState = closed THEN
-                  -- Sensor now open
-                  -- This should never happen
-                  myPutLine("      -------------: ERROR seems like back of train leaving sensor " & integer'image(sensorId) ); 
-                  SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+						-- Case 2, abnormal
+						--   Extend front of train                        TO DO <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+						--   Flip the sensor and continue
+						oldSensorState := open;
+						flipSensor(sensorPtr);
+						newSensorState := sensorPtr.sensor.state;						
+                  myPutLine("      -------------: ERROR: seems like back of train approaching closed sensor " & integer'image(sensorId) ); 
+						sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+						return;
                else 
-						-- Both sections contain the same train id
-						trainId := firstSection.trainId;
-                  -- Sensor now closed
-                  -- First time the sensor fired, back of train approaching sensor
-                  myPutLine("      -------------: back of train approaching sensor " & integer'image(sensorId) ); 
-                  GetBackSensor(TrainId, BackId);
-                  IF (FirstSection.SensorList.Head.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Tail.Sensor.Id = BackId)
-                  OR (FirstSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Head.Sensor.Id = BackId) 
-						THEN
-                     FirstSection.State := Free;
-                     ReleaseBlockings(FirstSection.BlockingList);
-                     SendToOutQueue(makePutSectionStateMsg(FirstSection.Id, Free));
-                     firstSection.trainId := 0;
-                  ELSIF (SecondSection.SensorList.Head.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Tail.Sensor.Id = BackId)
-                  OR (SecondSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Head.Sensor.Id = BackId) 
-						THEN
-                     SecondSection.State := Free;
-                     ReleaseBlockings(SecondSection.BlockingList);
-                     SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
-                     secondSection.trainId := 0;
-                  ELSE
-                     -- Error: sensor id does not match sensor at back of train
-							-- should accept this, adjust back of train, and free multiple sections
-							-- BUT haven't done this yet.
-                     myPutLine("      -------------: ERROR SensorId " & Positive'image(sensorId) & 
-                              " does not match BackId " & Positive'Image(BackId));
-                     SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-                     RETURN;
-                  END IF;
-						RemoveLastSensor(TrainId);
-						SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+						-- Case 1: But we don't know if normal or abnormal
+                  -- But back of train approaching sensor
+                  myPutLine("      -------------: back of train approaching open sensor " & integer'image(sensorId) ); 
+					end if;
+					
+					-- Get sn = BackId
+					GetBackSensor(TrainId, BackId);    
+					
+					IF (FirstSection.SensorList.Head.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Tail.Sensor.Id = BackId)
+					OR (FirstSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Head.Sensor.Id = BackId) 
+					THEN     -- sn-1 has fired (Case 1 normal or Case 2 abnormal)
+						FirstSection.State := Free;
+						ReleaseBlockings(FirstSection.BlockingList);
+						SendToOutQueue(makePutSectionStateMsg(FirstSection.Id, Free));
+						firstSection.trainId := 0;
+					ELSIF (SecondSection.SensorList.Head.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Tail.Sensor.Id = BackId)
+					OR (SecondSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Head.Sensor.Id = BackId) 
+					THEN      -- sn-1 has fired (Case 1 normal or Case 2 abnormal)
+						SecondSection.State := Free;
+						ReleaseBlockings(SecondSection.BlockingList);
+						SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
+						secondSection.trainId := 0;
+					ELSE
+						-- sn-2, sn-3, etc has fired (Case 1 abnormal or Case 2 abnormal)
+						-- Shrink back of train                                  TO DO <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+						myPutLine("      -------------: ERROR SensorId " & Positive'image(sensorId) & 
+									" sn-2, sn-3,etc fired " & Positive'Image(BackId));
+						sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+						RETURN;
+					END IF;
+					
+					-- sn-1 has fired (Case 1 normal or Case 2 abnormal)
+					RemoveLastSensor(TrainId);
+					SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+					
+					declare
+						sensorsPtr : sensorArrayAccess;
+					begin
+						sensorsPtr := GetSensors(TrainId);
+						convertSensorArrayToList(sensorsPtr, sList); 
+						SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
+						makeEmpty(sList);
+						disposeSensorArray(sensorsPtr);
+					end;				  
+					SendToAllTrainQueues(makeTryToMoveAgainMsg);
 						
-						-- ******
-						-- ******
-						-- ******
-						-- Reopen the sensor because when the sensor misfires, it would be left in a closed state.
-						-- Inform Othrottles that sensor is now open         
-                  -- A side effect of this is if the sensor doesn't misfire, then as the back of the train
-						-- leaves the sensor, the sensor will be closed again. BAD!!! BUT this is fixed below.
-						-- See the next occurence of the string "-- ******"
-						-- flipSensor(sensorPtr);
-						-- newSensorState := sensorPtr.sensor.state;						
-						-- SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
-
-                  declare
-                     sensorsPtr : sensorArrayAccess;
-                  begin
-                     sensorsPtr := GetSensors(TrainId);
-                     convertSensorArrayToList(sensorsPtr, sList); 
-                     SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
-                     makeEmpty(sList);
-                     disposeSensorArray(sensorsPtr);
-                  end;
-				  
-                  SendToAllTrainQueues(makeTryToMoveAgainMsg);
-               END IF;
-               -- SendToOutQueue(makePutSensorStateMsg(SensorId, SensorPtr.Sensor.State));             -- mo 1/30/12
             ELSIF FirstSection.State = Reserved OR SecondSection.State = Reserved THEN
+				
+					-- Case 1: open-closed
+					--   Normal: Front magnet approaching sensor. Do nothing.
+					--   Abnormal: This doesn't happen.
+					-- Case 2: closed-open
+					--   Normal: Front magnet leaving sensor
+					--   Abnormal: This doesn't happen
                -- Sensor at front of train
                IF oldSensorState = open THEN             
                   -- Sensor now closed
@@ -562,27 +605,8 @@ PACKAGE BODY LayoutPkg IS
                   end;
 				  
                END IF;
-            ELSE
-               -- Error: sensor not at front or back of any train
-               myPutLine("      -------------: ERROR sensor not at front or back " & integer'image(sensorId) ); 
-               SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-            END IF;
-         ELSIF (FirstSection /= NULL OR SecondSection /= NULL) AND oldSensorState = Closed THEN
-         -- ELSIF (FirstSection /= NULL OR SecondSection /= NULL) and oldSensorState = Open THEN
-            -- Back of train leaving sensor 
-            myPutLine("      -------------: back of train leaving sensor " & integer'image(sensorId) ); 
+             END IF;
 				
-				-- ******
-				-- ******
-				-- ******
-				-- flipSensor(sensorPtr);
-				-- newSensorState := sensorPtr.sensor.state;						
-				-- SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
-
-         ELSE
-            -- Error
-            myPutLine("    -------------: MYSTERY ERROR sensor not at front or back " & integer'image(sensorId) ); 
-            SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>

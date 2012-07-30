@@ -213,6 +213,13 @@ PACKAGE LayoutPkg IS
                                   FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
       PROCEDURE GetOccResSections(SensorID : Positive;
                                   FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
+			-- pre none
+			-- post 
+			--  case 1: both sections occupied/reserved with same trainId
+			--          then both pointers /= null
+			--  case 2: both sections occupied/reserved with different trainId's
+			--          then 
+			--  case 2: one section occupied reserved, other reserved
       PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
       function  GetBackSensor(TrainId : TrainIdType) return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
