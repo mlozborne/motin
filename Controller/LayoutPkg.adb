@@ -424,15 +424,20 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END IdentifyTrainV2;
 
+		----------------------------------------------------------------------
+		----------------------------------------------------------------------
+		----------------------------------------------------------------------
+
       PROCEDURE IdentifyTrainV1 (SensorID : Positive) IS
          SensorPtr        : SensorNodePtr;
-         FirstSection     : SectionObjPtr;
-         SecondSection    : SectionObjPtr;
+         section1         : SectionObjPtr;
+         section2         : SectionObjPtr;
          BackId           : Positive;
 			sList			     : naturalListType;
 			oldSensorState   : sensorStateType;
 			newSensorState   : sensorStateType;
 			trainId			  : trainIdType;
+			searchOutcome    : natural;
       BEGIN
          FindSensor(SensorList, SensorID, SensorPtr);
          
@@ -453,11 +458,38 @@ PACKAGE BODY LayoutPkg IS
             -- return;
          -- end if;
                      
-         GetOccResSections(SensorPtr.Sensor.Id, FirstSection, SecondSection);
-			if firstSection = occupied then trainId = firstSection.trainId;
-			else if secondSection = occupied then trainId = secondSection.trainId;
-			else if firstSection = reserved then trainId = firstSection.trainId;
-			else if secondSection = reserved then trainId = secondSection.trainId;
+         GetOccResSections(SensorPtr.Sensor.Id, section1, section2, searchOutcome);
+			trainId := 0;
+			if section1.state = occupied or section1.state = reserved then 
+				trainId := section1.trainId;
+			end if;
+			
+			--  case 1: neither section occupied/reserved         null       /  null
+			--          ACTION: 
+			--          ignore and return
+			--  case 2: only one section occupied/reserved        not null   /  null
+			--          ACTION: 
+			--          if setion1 occupied and sensor = sn and closed-->open then
+         --            ignore and return
+         --          elsif section1 occupied and sensor = sn and open-->closed then
+         --            unexpected outcome, set sensor open, ignore, return	
+			--				elsif section1 = reserved then
+			--            MISFIRE extend front of train and repair sensors
+			--          end if
+			--  case 3: both sections occupied/reserved but with 
+			--          different trainId's                       not null   /  null
+			--          ACTION
+			--          if setion 1 occupied and sensor = sn and closed-->open then
+         --            ignore and return
+         --          elsif section 1 occupied and sensor = sn and open-->closed then
+         --            unexpected outcome, set sensor open, ignore, return	
+         --          elsif section1 = reserved and section2 = reserved			
+			--  case 4: both sections occupied/reserved with      SECTION 1  /  SECTION 2
+			--          same trainId                              not null   /  not null
+			--          ACTION
+			--          ...
+			
+
             -- Case 1: both section ptrs are null
             --   Ignore it and return;	
 				-- Case 2: exactly one section ptr is null
@@ -466,13 +498,13 @@ PACKAGE BODY LayoutPkg IS
 				-- Case 3: both sections are occupied
 				--	Case 4: one section occupied, the other reserved 
 				
-         IF FirstSection == NULL AND SecondSection == NULL THEN
+         IF section1 == NULL AND section2 == NULL THEN
 			
             -- Case 1: both section ptrs are null
             myPutLine("    -------------: MYSTERY SENSOR FIRING not close to any trains: ignore it " & integer'image(sensorId) );
             return;				
 				
-         ELSIF (FirstSection /= NULL OR SecondSection /= NULL) THEN
+         ELSIF (section1 /= NULL OR section2 /= NULL) THEN
 			
 				if oldSensorState = closed then
 					-- Case 2 normal
@@ -485,9 +517,9 @@ PACKAGE BODY LayoutPkg IS
 					return;
 				end if;
 				
-         else IF FirstSection /= NULL AND SecondSection /= NULL THEN
+         else IF section1 /= NULL AND section2 /= NULL THEN
 					
-            IF FirstSection.State = Occupied AND SecondSection.State = Occupied THEN  
+            IF section1.State = Occupied AND section2.State = Occupied THEN  
 				
 					-- Case 1: sensor open-closed
 					--   Normal: Sensor sn-1 goes open-closed. (sn-1 = next to last sensor at back of train)
@@ -519,20 +551,20 @@ PACKAGE BODY LayoutPkg IS
 					-- Get sn = BackId
 					GetBackSensor(TrainId, BackId);    
 					
-					IF (FirstSection.SensorList.Head.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Tail.Sensor.Id = BackId)
-					OR (FirstSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND FirstSection.SensorList.Head.Sensor.Id = BackId) 
+					IF (section1.SensorList.Head.Sensor = SensorPtr.Sensor AND section1.SensorList.Tail.Sensor.Id = BackId)
+					OR (section1.SensorList.Tail.Sensor = SensorPtr.Sensor AND section1.SensorList.Head.Sensor.Id = BackId) 
 					THEN     -- sn-1 has fired (Case 1 normal or Case 2 abnormal)
-						FirstSection.State := Free;
-						ReleaseBlockings(FirstSection.BlockingList);
-						SendToOutQueue(makePutSectionStateMsg(FirstSection.Id, Free));
-						firstSection.trainId := 0;
-					ELSIF (SecondSection.SensorList.Head.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Tail.Sensor.Id = BackId)
-					OR (SecondSection.SensorList.Tail.Sensor = SensorPtr.Sensor AND SecondSection.SensorList.Head.Sensor.Id = BackId) 
+						section1.State := Free;
+						ReleaseBlockings(section1.BlockingList);
+						SendToOutQueue(makePutSectionStateMsg(section1.Id, Free));
+						section1.trainId := 0;
+					ELSIF (section2.SensorList.Head.Sensor = SensorPtr.Sensor AND section2.SensorList.Tail.Sensor.Id = BackId)
+					OR (section2.SensorList.Tail.Sensor = SensorPtr.Sensor AND section2.SensorList.Head.Sensor.Id = BackId) 
 					THEN      -- sn-1 has fired (Case 1 normal or Case 2 abnormal)
-						SecondSection.State := Free;
-						ReleaseBlockings(SecondSection.BlockingList);
-						SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Free));
-						secondSection.trainId := 0;
+						section2.State := Free;
+						ReleaseBlockings(section2.BlockingList);
+						SendToOutQueue(makePutSectionStateMsg(section2.Id, Free));
+						section2.trainId := 0;
 					ELSE
 						-- sn-2, sn-3, etc has fired (Case 1 abnormal or Case 2 abnormal)
 						-- Shrink back of train                                  TO DO <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -557,7 +589,7 @@ PACKAGE BODY LayoutPkg IS
 					end;				  
 					SendToAllTrainQueues(makeTryToMoveAgainMsg);
 						
-            ELSIF FirstSection.State = Reserved OR SecondSection.State = Reserved THEN
+            ELSIF section1.State = Reserved OR section2.State = Reserved THEN
 				
 					-- Case 1: open-closed
 					--   Normal: Front magnet approaching sensor. Do nothing.
@@ -575,31 +607,31 @@ PACKAGE BODY LayoutPkg IS
                   -- Sensor now open
                   -- Second time sensor fired, front of train leaving sensor
                   myPutLine("      -------------: front of train leaving sensor " & integer'image(sensorId) ); 
-                  IF FirstSection.State = Reserved THEN
-                     FirstSection.State := Occupied;
-                     SendToOutQueue(makePutSectionStateMsg(FirstSection.Id, Occupied));
-                     IF FirstSection.SensorList.Head.Sensor.Id = SensorPtr.Sensor.Id THEN
-                        AddNewSensorToFront(FirstSection.TrainId, FirstSection.SensorList.Tail.Sensor);
+                  IF section1.State = Reserved THEN
+                     section1.State := Occupied;
+                     SendToOutQueue(makePutSectionStateMsg(section1.Id, Occupied));
+                     IF section1.SensorList.Head.Sensor.Id = SensorPtr.Sensor.Id THEN
+                        AddNewSensorToFront(section1.TrainId, section1.SensorList.Tail.Sensor);
                      ELSE
-                        AddNewSensorToFront(FirstSection.TrainId, FirstSection.SensorList.Head.Sensor);
+                        AddNewSensorToFront(section1.TrainId, section1.SensorList.Head.Sensor);
                      END IF;
                   ELSE
-                     SecondSection.State := Occupied;
-                     SendToOutQueue(makePutSectionStateMsg(SecondSection.Id, Occupied));
-                     IF SecondSection.SensorList.Head.Sensor.Id = SensorPtr.Sensor.Id THEN
-                        AddNewSensorToFront(SecondSection.TrainId, SecondSection.SensorList.Tail.Sensor);
+                     section2.State := Occupied;
+                     SendToOutQueue(makePutSectionStateMsg(section2.Id, Occupied));
+                     IF section2.SensorList.Head.Sensor.Id = SensorPtr.Sensor.Id THEN
+                        AddNewSensorToFront(section2.TrainId, section2.SensorList.Tail.Sensor);
                      ELSE
-                        AddNewSensorToFront(SecondSection.TrainId, SecondSection.SensorList.Head.Sensor);
+                        AddNewSensorToFront(section2.TrainId, section2.SensorList.Head.Sensor);
                      END IF;
                   END IF;
-                  SendToTrainQueue(makeFrontSensorFiredMsg(FirstSection.TrainId), FirstSection.TrainId);
+                  SendToTrainQueue(makeFrontSensorFiredMsg(section1.TrainId), section1.TrainId);
 				  
                   declare
                      sensorsPtr : sensorArrayAccess;
                   begin
-                     sensorsPtr := GetSensors(FirstSection.TrainId);
+                     sensorsPtr := GetSensors(section1.TrainId);
                      convertSensorArrayToList(sensorsPtr, sList); 
-                     SendToOutQueue(makePutTrainPositionMsg(FirstSection.TrainId, sList)); 
+                     SendToOutQueue(makePutTrainPositionMsg(section1.TrainId, sList)); 
                      makeEmpty(sList);
                      disposeSensorArray(sensorsPtr);
                   end;
@@ -614,6 +646,10 @@ PACKAGE BODY LayoutPkg IS
             myPutLine("    sensor id #" & Positive'Image(sensorId));
             RAISE;
       END IdentifyTrainV1;
+		
+		----------------------------------------------------------------------
+		----------------------------------------------------------------------
+		----------------------------------------------------------------------
 
       PROCEDURE MakeReservation (
             TrainId :        TrainIdType;
@@ -1711,7 +1747,8 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE GetOccResSections (
             SensorID      :        Positive;
             FirstSection  :    OUT SectionObjPtr;
-            SecondSection :    OUT SectionObjPtr) IS
+            SecondSection :    OUT SectionObjPtr;
+				searchOutcome :    out natural) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          FirstSection := NULL;
@@ -1725,11 +1762,20 @@ PACKAGE BODY LayoutPkg IS
                   FirstSection := SectionPtr.Section;
                ELSIF FirstSection.TrainId = SectionPtr.Section.TrainId THEN
                   SecondSection := SectionPtr.Section;
+						searchOutcome := 4;
                   RETURN;
                END IF;
             END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
+			if firstSection = null and secondSection = null then
+				searchOutcome := 1;
+			elsif (firstSection /= null and secondSection /= null) and then
+			      (firstSection.trainId /= secondSection.trainId) then
+				searchOutcome := 3;
+			else 
+				searchOutcome := 2;
+			end if;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetOccResSections: " & Exception_Information(Error));
