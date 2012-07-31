@@ -470,11 +470,15 @@ PACKAGE BODY LayoutPkg IS
 			--  case 2: only one section occupied/reserved        not null   /  null
 			--          ACTION: 
 			--          if setion1 occupied and sensor = sn and closed-->open then
+			--            back magnet is leaving the sensor
          --            ignore and return
          --          elsif section1 occupied and sensor = sn and open-->closed then
-         --            unexpected outcome, set sensor open, ignore, return	
+         --            unexpected outcome, set sensor open, ignore, return	(?)
 			--				elsif section1 = reserved then
-			--            MISFIRE extend front of train and repair sensors
+			--            sensor = sf
+			--            MISFIRE front magnet failed to fire s1 twice (?)
+			--            extend front of train and repair sensor s1
+			--				  section1 reserved-->occupied    xxxxxxxxxxxxxxxxxxxxxxxxx
 			--          end if
 			--  case 3: both sections occupied/reserved but with 
 			--          different trainId's                       not null   /  null
