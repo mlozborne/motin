@@ -222,8 +222,10 @@ PACKAGE LayoutPkg IS
 			--  case 2: only one section occupied/reserved        not null   /  null
 			--  case 3: both sections occupied/reserved but with 
 			--          different trainId's                       not null   /  null
-			--  case 4: both sections occupied/reserved with      
-			--          same trainId                              not null   /  not null
+			--  case 4: both sections occupied with same trainId     
+			--                                                    not null   /  not null
+			--  case 5: one section occupied, one reserved        not null   /  not null
+			--          with same train id
       PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
       function  GetBackSensor(TrainId : TrainIdType) return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);

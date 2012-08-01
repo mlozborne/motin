@@ -424,9 +424,9 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END IdentifyTrainV2;
 
-		----------------------------------------------------------------------
-		----------------------------------------------------------------------
-		----------------------------------------------------------------------
+		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
       PROCEDURE IdentifyTrainV1 (SensorID : Positive) IS
          SensorPtr        : SensorNodePtr;
@@ -466,34 +466,59 @@ PACKAGE BODY LayoutPkg IS
 			
 			--  case 1: neither section occupied/reserved         null       /  null
 			--          ACTION: 
+			--          random firing
 			--          ignore and return
 			--  case 2: only one section occupied/reserved        not null   /  null
 			--          ACTION: 
-			--          if setion1 occupied and sensor = sn and closed-->open then
+			--          if section1 occupied and sensor = sn and closed-->open then
+			--            NORMAL
 			--            back magnet is leaving the sensor
          --            ignore and return
          --          elsif section1 occupied and sensor = sn and open-->closed then
-         --            unexpected outcome, set sensor open, ignore, return	(?)
+         --            unexpected outcome, open sensor, ignore, return	(?)
+			--          elsif section1 occupied and sensor = s1
+			--            this should never happen but if it does
+			--				  error stop train
 			--				elsif section1 = reserved then
 			--            sensor = sf
-			--            MISFIRE front magnet failed to fire s1 twice (?)
+			--            MISFIRE: front magnet fired s1 0 or 1 times (?)
 			--            extend front of train and repair sensor s1
-			--				  section1 reserved-->occupied    xxxxxxxxxxxxxxxxxxxxxxxxx
+			--				  section1 reserved-->occupied
+			--            get next section
+			--				  if next section free then
+			--				     try to reserve next
+			--            else next section is blocked
+			--               error stop train
+			--            end if
 			--          end if
 			--  case 3: both sections occupied/reserved but with 
 			--          different trainId's                       not null   /  null
 			--          ACTION
-			--          if setion 1 occupied and sensor = sn and closed-->open then
+			--          if sensor = sn for either train and closed-->open then
+			--            NORMAL
+			--            rear magnet is leaving the sensor
          --            ignore and return
-         --          elsif section 1 occupied and sensor = sn and open-->closed then
-         --            unexpected outcome, set sensor open, ignore, return	
-         --          elsif section1 = reserved and section2 = reserved			
-			--  case 4: both sections occupied/reserved with      SECTION 1  /  SECTION 2
+         --          elsif sensor = sn for either train  and open-->closed then
+         --            unexpected outcome, open sensor, ignore, return	
+         --          else 
+			--				  error stop both trains
+			--          elsif
+			--  case 4: both sections occupied with      
 			--          same trainId                              not null   /  not null
 			--          ACTION
-			--          ...
-			
-
+			--          if sensor = sn-1 then
+			--				  rear magnet approaching sensor
+			--            if open-->closed then
+			--              NORMAL
+			--            else closed-->open
+         --              unexpected outcome, close sensor 
+         --              treat normally from here			
+			--          elsif sensor = sn-2, sn-3, etc then
+			--            rear magnet failed to fire sn-1, sn-2, etc
+			--            if open-->closed then
+			--              shrink back of train
+			--            else closed-->open
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
             -- Case 1: both section ptrs are null
             --   Ignore it and return;	
 				-- Case 2: exactly one section ptr is null
@@ -651,9 +676,9 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END IdentifyTrainV1;
 		
-		----------------------------------------------------------------------
-		----------------------------------------------------------------------
-		----------------------------------------------------------------------
+		--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       PROCEDURE MakeReservation (
             TrainId :        TrainIdType;
@@ -1766,7 +1791,11 @@ PACKAGE BODY LayoutPkg IS
                   FirstSection := SectionPtr.Section;
                ELSIF FirstSection.TrainId = SectionPtr.Section.TrainId THEN
                   SecondSection := SectionPtr.Section;
-						searchOutcome := 4;
+						if firstSection.state = occupied and secondSection.state = occupied then
+							searchOutcome := 4;
+						else
+							searchOutcome := 5;
+						end if;
                   RETURN;
                END IF;
             END IF;
