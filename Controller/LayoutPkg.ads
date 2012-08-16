@@ -227,6 +227,7 @@ PACKAGE LayoutPkg IS
 			--  case 5: one section occupied, one reserved        not null   /  not null
 			--          with same train id
       PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
+      function  GetFrontSensor(TrainId : TrainIdType) return Positive;
       function  GetBackSensor(TrainId : TrainIdType) return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 

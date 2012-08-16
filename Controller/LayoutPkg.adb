@@ -433,6 +433,7 @@ PACKAGE BODY LayoutPkg IS
          section1         : SectionObjPtr;
          section2         : SectionObjPtr;
          BackId           : Positive;
+			sn               : positive
 			sList			     : naturalListType;
 			oldSensorState   : sensorStateType;
 			newSensorState   : sensorStateType;
@@ -449,6 +450,11 @@ PACKAGE BODY LayoutPkg IS
 			oldSensorState := sensorPtr.sensor.state;
 			flipSensor(sensorPtr);
 			newSensorState := sensorPtr.sensor.state;
+			if oldSensorState = open then
+				myPutLine("    -------------: In IdentifyTrainV1: sensor " & integer'image(sensorId) & " open-->closed");	
+			else
+				myPutLine("    -------------: In IdentifyTrainV1: sensor " & integer'image(sensorId) & " closed-->open");	
+			end if;
 			
          -- Inform Othrottles that sensor has fired and its new state                 
          SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
@@ -462,26 +468,25 @@ PACKAGE BODY LayoutPkg IS
 			trainId := 0;
 			if section1.state = occupied or section1.state = reserved then 
 				trainId := section1.trainId;
+				myPutLine("    -------------: In IdentifyTrainV1: working with train " & natural'image(trainId)");	
 			end if;
-			
+			--                                                    Section1   / Section2
 			--  case 1: neither section occupied/reserved         null       /  null
-			--          ACTION: 
 			--          random firing
-			--          ignore and return
+			--          display "Mystery sensor firing, ignoring" 
+			--          return
 			--  case 2: only one section occupied/reserved        not null   /  null
-			--          ACTION: 
 			--          if section1 occupied and sensor = sn and closed-->open then
 			--            NORMAL
-			--            back magnet is leaving the sensor
-         --            ignore and return
+			--            display "Back of train leaving sensor" 
          --          elsif section1 occupied and sensor = sn and open-->closed then
-         --            unexpected outcome, open sensor, ignore, return	(?)
-			--          elsif section1 occupied and sensor = s1
+         --            unexpected outcome, open sensor, ignore	(?)
+			--          elsif section1 occupied and sensor = s1 
 			--            this should never happen but if it does
 			--				  error stop train
 			--				elsif section1 = reserved then
-			--            sensor = sf
-			--            MISFIRE: front magnet fired s1 0 or 1 times (?)
+			--            assuming that sensor = sf
+			--            MISFIRE: front of train fired s1 only 0 or 1 times (?)
 			--            extend front of train and repair sensor s1
 			--				  section1 reserved-->occupied
 			--            get next section
@@ -491,58 +496,74 @@ PACKAGE BODY LayoutPkg IS
 			--               error stop train
 			--            end if
 			--          end if
+			--          return
 			--  case 3: both sections occupied/reserved but with 
 			--          different trainId's                       not null   /  null
-			--          ACTION
 			--          if sensor = sn for either train and closed-->open then
 			--            NORMAL
-			--            rear magnet is leaving the sensor
-         --            ignore and return
+			--            back of train is leaving the sensor
+         --            ignore
          --          elsif sensor = sn for either train  and open-->closed then
-         --            unexpected outcome, open sensor, ignore, return	
+         --            unexpected outcome, open sensor, ignore	
          --          else 
 			--				  error stop both trains
-			--          elsif
+			--          end if
+			--          return
 			--  case 4: both sections occupied with      
 			--          same trainId                              not null   /  not null
-			--          ACTION
 			--          if sensor = sn-1 then
-			--				  rear magnet approaching sensor
+			--				  back of train approaching sensor
 			--            if open-->closed then
 			--              NORMAL
 			--            else closed-->open
          --              unexpected outcome, close sensor 
-         --              treat normally from here			
+         --              treat normally from here	
+         --            end if			
 			--          elsif sensor = sn-2, sn-3, etc then
-			--            rear magnet failed to fire sn-1, sn-2, etc
-			--            if open-->closed then
-			--              shrink back of train
-			--            else closed-->open
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-            -- Case 1: both section ptrs are null
-            --   Ignore it and return;	
-				-- Case 2: exactly one section ptr is null
-				--   Normal: sensor closed-open, back of train leaving sensor, return
-				--   Abnormal: sensor open-closed, probably front of train has fired sensor at front of reserved section. TO DO <<<<<<<<<<<<<<<<<<
-				-- Case 3: both sections are occupied
-				--	Case 4: one section occupied, the other reserved 
+			--            back of train failed to fire sn-1, sn-2, etc
+			--            shrink back of train
+			--            close sensor
+			--          else
+			--				  error stop train
+			--          end if
+			--          return
+			-- case 5:  one section occupied, one reserved with
+			--          same train id                             not null  /  not null 
+			--          if open-->closed then
+			--            NORMAL
+			--            front of train approaching sensor
+			--            ignore
+			--          else front train leaving sensor
+			--            NORMAL
+			--            change reserved section to occupied
+			--            tell train
+			--          end if
+			--          return
 				
-         IF section1 == NULL AND section2 == NULL THEN
+         IF searchOutcome = 1 THEN
 			
-            -- Case 1: both section ptrs are null
-            myPutLine("    -------------: MYSTERY SENSOR FIRING not close to any trains: ignore it " & integer'image(sensorId) );
-            return;				
+            myPutLine("    -------------: MYSTERY SENSOR FIRING not close to any trains: ignore it" );
 				
-         ELSIF (section1 /= NULL OR section2 /= NULL) THEN
+         ELSIF searchOutcome = 2 THEN
 			
-				if oldSensorState = closed then
-					-- Case 2 normal
-					myPutLine("      -------------: back of train leaving sensor " & integer'image(sensorId) ); 
-					return;
-				else
-					-- Case 2 abnormal 
-					myPutLine("      -------------: ERROR undiagnosed sensor firing, probably front of reserved section " & integer'image(sensorId) );
-					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);					
+            sn = getBackSensor(trainId);
+				s1 = get
+				if section1.state = occupied and sensorId = sn and oldSensorState = closed then
+					myPutLine("      -------------: NORMAL: back of train leaving closed sensor"); 
+				elsif section1.state = occupied and sensorId = sn and oldSensorState = open then
+					myPutLine("      -------------: IGNORE: back of train leaving open sensor. Open sensor and ignore";
+					flipSensor(sensorPtr);
+					SendToOutQueue(makePutSensorStateMsg(SensorId, open));
+				elsif section1.state = occupied and sensorId = s1 then 
+					myPutLine("      -------------: ERROR: no reserved section but s1 fired");
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+				elsif section1.state = reserved then
+					myPutLine("      -------------: FIXING: sf fired");
+
+				end if;
+
+
+				-- Case 2 abnormal 
 					return;
 				end if;
 				
@@ -552,10 +573,10 @@ PACKAGE BODY LayoutPkg IS
 				
 					-- Case 1: sensor open-closed
 					--   Normal: Sensor sn-1 goes open-closed. (sn-1 = next to last sensor at back of train)
-					--   Abnormal: Back magnet failed to fire previous sensor. It could be sn-2, sn-3, etc. Shrink back of train.
+					--   Abnormal: Back of train failed to fire previous sensor. It could be sn-2, sn-3, etc. Shrink back of train.
 					-- Case 2: sensor closed-open
 					--   Normal: This doesn't happen.
-					--   Abnormal: Front magnet failed to fire. This could be perceived as sensor sn-1, sn-2, sn-3, etc.
+					--   Abnormal: Front of train failed to fire. This could be perceived as sensor sn-1, sn-2, sn-3, etc.
 					--                 Flip sensor. 
 					--                 If sensor = sn-1, process normally from here, else shrink back of train.
 					--             Front of train has now run into the reserved section without the LayoutManager knowing it.
@@ -621,10 +642,10 @@ PACKAGE BODY LayoutPkg IS
             ELSIF section1.State = Reserved OR section2.State = Reserved THEN
 				
 					-- Case 1: open-closed
-					--   Normal: Front magnet approaching sensor. Do nothing.
+					--   Normal: Front train approaching sensor. Do nothing.
 					--   Abnormal: This doesn't happen.
 					-- Case 2: closed-open
-					--   Normal: Front magnet leaving sensor
+					--   Normal: Front of train leaving sensor
 					--   Abnormal: This doesn't happen
                -- Sensor at front of train
                IF oldSensorState = open THEN             
@@ -1847,6 +1868,27 @@ PACKAGE BODY LayoutPkg IS
             myPutLine("    train id #" & Positive'Image(trainId));
             RAISE;
       END RemoveLastSensor;
+
+      -- Get a train's front sensor
+		function GetFrontSensor(TrainId : TrainIdType) return Positive is
+         TrainPtr : TrainObjPtr := TrainList;
+			frontId   : positive;
+      BEGIN
+         frontId := Positive'Last;
+         WHILE TrainPtr /= NULL LOOP
+            IF TrainPtr.TrainId = TrainId THEN
+               frontId := TrainPtr.SensorList.head.Sensor.Id;
+               return  frontId;                        
+            END IF;
+            TrainPtr := TrainPtr.Next;
+         END LOOP;
+			return frontId;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in GetFrontSensor: " & Exception_Information(Error));
+            myPutLine("    train id #" & Positive'Image(trainId));
+            RAISE;
+		end GetFrontSensor;
 
       -- Get a train's back sensor
 		function GetBackSensor(TrainId : TrainIdType) return Positive is
