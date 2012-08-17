@@ -227,6 +227,9 @@ PACKAGE LayoutPkg IS
 			--  case 5: one section occupied, one reserved        not null   /  not null
 			--          with same train id
       PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
+		function sensorUnderTrain(trainId : trainIdType; sensor : positive) return boolean;
+		function sensorIsNextToLast(trainId : trainIdType; sensor : positive) return boolean;
+		function  getSensorAtFrontOfReservedSection(section : sectionObj) return positive;
       function  GetFrontSensor(TrainId : TrainIdType) return Positive;
       function  GetBackSensor(TrainId : TrainIdType) return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
