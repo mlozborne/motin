@@ -68,7 +68,83 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
-		PROCEDURE IdentifyTrainV1      (SensorID : Positive);  -- section oriented, original, assumes no sensor errors
+
+		PROCEDURE IdentifyTrainV1      (SensorID : Positive);  
+			--                                                    Section1   / Section2
+			--  case 1: neither section occupied/reserved         null       /  null
+			--          random firing
+			--          display "C1 MYSTERY SENSOR FIRING not close to any trains: ignore it" 
+			--          return
+			--  case 2: only one section occupied/reserved        not null   /  null
+			--          if section1 occupied and sensor = sn and closed-->open then
+			--            display "C2 NORMAL back of train leaving closed sensor" 
+         --          elsif section1 occupied and sensor = sn and open-->closed then
+			--            display "C2 IMPOSSIBLE back of train leaving open sensor. Error stop train"
+			--				  error stop train
+			--          elsif section1 occupied and sensor = s1 
+		   --            diplay"C2 IMPOSSIBLE no reserved section but s1 fired. Error stop train"
+			--            this should never happen but if it does
+			--				  error stop train
+			--				elsif section1 = reserved then
+			--            assuming that sensor = sf
+			--            if open-->closed then
+			--              display "C2 IGNORE front of train approaching sf. Fix when leaving"
+			-- 			  else
+			--              display "C2 FIXING front of train leaving sf."
+			--              extend front of train and repair sensor s1       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<xxx
+			--				    section1 reserved-->occupied
+			--              get next section
+			--				    if next section free then
+			--				       try to reserve next
+			--              else next section is blocked
+			--                 error stop train
+			--              end if
+			--            end if
+			--          end if
+			--          return
+			--  case 3: both sections occupied/reserved but with 
+			--          different trainId's                       not null   /  null
+			--          if sensor = sn for neither train then
+			--            display "C3 ERROR doesn't match back of either train"
+			--				  error stop both trains
+         --          elsif open-->closed 
+			--            display "C3 ERROR double occupancy, one train has run into another"
+         --            error stop both trains	
+			--          else closed-->open then
+			--            display "C3 NORMAL back of train leaving closed sensor"
+			--          end if
+			--          return
+			--  case 4: both sections occupied with      
+			--          same trainId                              not null   /  not null
+			--          if sensor not in (s2..sn-1) then
+			--            display "C4 ERROR sensor not under train"
+			--			     error stop train
+			--          elsif sensor = sn-1 then
+			--            if closed-->open then
+			--              display " C4 FIXING sensor unexpectedly closed, flip, and continue"
+         --              unexpected outcome, close sensor 
+         --              treat normally from here	
+			--            end if 
+         --            display "C4 NORMAL back of train approaching sensor"
+         --            NORMAL prcessing goes here		
+			--          else sensor = sn-2, sn-3,..., s2  then
+			--            display "C4 FIXING sn-2,..s2 fired."      <<<<<<<<<<<<<<<<<<<<<<<xxx
+			--            back of train failed to fire sn-1, sn-2, etc
+			--            shrink back of train
+			--            fix sensors
+			--          end if
+			--          return
+			-- case 5:  one section occupied, one reserved with
+			--          same train id                             not null  /  not null 
+			--          if open-->closed then
+			--            display "C5 NORMAL front of train approaching sensor, ignore"
+			--          else front train leaving sensor
+			--            display "C5 NORMAL front of train leaving sensor"
+			--            change reserved section to occupied, tell train, etc...
+			--          end if
+			--          return
+
+
 		PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
 		PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;

@@ -480,97 +480,24 @@ PACKAGE BODY LayoutPkg IS
 							 sectionStateType'image(section2.state) & "/" &
 							 natural'image(section2.trainId));	
 			end if;
-			--                                                    Section1   / Section2
-			--  case 1: neither section occupied/reserved         null       /  null
-			--          random firing
-			--          display "Mystery sensor firing, ignoring" 
-			--          return
-			--  case 2: only one section occupied/reserved        not null   /  null
-			--          if section1 occupied and sensor = sn and closed-->open then
-			--            NORMAL
-			--            display "Back of train leaving sensor" 
-         --          elsif section1 occupied and sensor = sn and open-->closed then
-         --            unexpected outcome, open sensor, ignore	(?)
-			--          elsif section1 occupied and sensor = s1 
-			--            this should never happen but if it does
-			--				  error stop train
-			--				elsif section1 = reserved then
-			--            assuming that sensor = sf
-			--            if open-->closed then
-			--              display "Front of train approaching sf, fired s1 only 0 or 1 times. Handle later"
-			--              deal with problem later
-			-- 			  else
-			--              display "Front of train leaving sf, fired s1 only 0 or 1 times. trying to fix it"
-			--              extend front of train and repair sensor s1
-			--				    section1 reserved-->occupied
-			--              get next section
-			--				    if next section free then
-			--				       try to reserve next
-			--              else next section is blocked
-			--                 error stop train
-			--              end if
-			--            end if
-			--          end if
-			--          return
-			--  case 3: both sections occupied/reserved but with 
-			--          different trainId's                       not null   /  null
-			--          if sensor = sn for neither train then
-			--            display "Error, expected this to be back of one train"
-			--				  error stop both trains
-         --          elsif open-->closed 
-			--            display "One train has run into another"
-         --            error stop both trains	
-			--          else closed-->open then
-			--            NORMAL
-			--            back of train is leaving closed sensor
-			--          end if
-			--          return
-			--  case 4: both sections occupied with      
-			--          same trainId                              not null   /  not null
-			--          if sensor not in (s2..sn-1) then
-			--			     error stop train
-			--          elsif sensor = sn-1 then
-			--            if closed-->open then
-         --              unexpected outcome, close sensor 
-         --              treat normally from here	
-			--            end if 
-         --            NORMAL prcessing goes here			
-			--				  back of train approaching sensor
-			--          else sensor = sn-2, sn-3,..., s2  then
-			--            back of train failed to fire sn-1, sn-2, etc
-			--            shrink back of train
-			--            fix sensors
-			--          end if
-			--          return
-			-- case 5:  one section occupied, one reserved with
-			--          same train id                             not null  /  not null 
-			--          if open-->closed then
-			--            NORMAL
-			--            front of train approaching sensor
-			--            ignore
-			--          else front train leaving sensor
-			--            NORMAL
-			--            change reserved section to occupied
-			--            tell train
-			--          end if
-			--          return
 				
          IF searchOutcome = 1 THEN
 			
+				--  case 1: neither section occupied/reserved         null       /  null			
             myPutLine("      -------------IdentifyTrainV1: C1 MYSTERY SENSOR FIRING not close to any trains: ignore it" );
 				
          ELSIF searchOutcome = 2 THEN
 			
+				--  case 2: only one section occupied/reserved        not null   /  null
             sn := getBackSensor(trainId);
 				s1 := getFrontSensor(trainId);
 				if section1.state = occupied and sensorId = sn and oldSensorState = closed then
 					myPutLine("      -------------IdentifyTrainV1: C2 NORMAL back of train leaving closed sensor"); 
 				elsif section1.state = occupied and sensorId = sn and oldSensorState = open then
-					myPutLine("      -------------IdentifyTrainV1: C2 IGNORE back of train leaving open sensor. Open sensor and ignore");
-					flipSensor(sensorPtr);
-					SendToOutQueue(makePutSensorStateMsg(SensorId, open));
+					myPutLine("      -------------IdentifyTrainV1: C2 IMPOSSIBLE back of train leaving open sensor. Error stop train.");
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
 				elsif section1.state = occupied and sensorId = s1 then 
-					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no reserved section but s1 fired");
+					myPutLine("      -------------IdentifyTrainV1: C2 IMPOSSIBLE no reserved section but s1 fired.  Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
 				elsif section1.state = reserved then
 					sf := getSensorAtFrontOfReservedSection(section1.all);
@@ -585,6 +512,8 @@ PACKAGE BODY LayoutPkg IS
 	
 			elsif searchOutcome = 3 then
 			
+				--  case 3: both sections occupied/reserved but with 
+				--          different trainId's                       not null   /  null
 				if sensorId /= getBackSensor(section1.trainId) 
 				and sensorId /= getBackSensor(section2.trainId) then
 					myPutLine("      -------------IdentifyTrainV1: C3 ERROR doesn't match back of either train");
@@ -600,8 +529,11 @@ PACKAGE BODY LayoutPkg IS
 				
 			elsif searchOutcome = 4 then
 			
+				--  case 4: both sections occupied with      
+				--          same trainId                              not null   /  not null
 				if not sensorUnderTrain(trainId, sensorId) then
-					myPutLine("      -------------IdentifyTrainV1: C3 ERROR sensor not under train"); 
+					myPutLine("      -------------IdentifyTrainV1: C4 ERROR sensor not under train"); 
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 				elsif sensorIsNextToLast(trainId, sensorId) then  -- sensor = sn-1
 					if oldSensorState = closed then
 						myPutLine("      -------------IdentifyTrainV1: C4 FIXING sensor unexpectedly closed, flip, and continue"); 
@@ -643,6 +575,8 @@ PACKAGE BODY LayoutPkg IS
 
 			elsif searchOutcome = 5 then
 					
+				-- case 5:  one section occupied, one reserved with
+				--          same train id                             not null  /  not null 
 				if oldSensorState = open then
 					myPutLine("      -------------IdentifyTrainV1: C5 NORMAL front of train approaching sensor, ignore.");		
 				else 
