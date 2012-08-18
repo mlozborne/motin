@@ -77,47 +77,59 @@ PACKAGE LayoutPkg IS
 			--          return
 			--  case 2: only one section occupied/reserved        not null   /  null
 			--          if section1 occupied and sensor = sn and closed-->open then
-			--            display "C2 NORMAL back of train leaving closed sensor" 
+			--            display "C2 NORMAL back of train leaving closed sensor sn" 
          --          elsif section1 occupied and sensor = sn and open-->closed then
-			--            display "C2 IMPOSSIBLE back of train leaving open sensor. Error stop train"
+			--            display "C2 ERROR back of train leaving open sensor. Error stop train"
 			--				  error stop train
 			--          elsif section1 occupied and sensor = s1 
-		   --            diplay"C2 IMPOSSIBLE no reserved section but s1 fired. Error stop train"
+		   --            diplay"C2 ERROR no reserved section but s1 fired anyway. Error stop train"
 			--            this should never happen but if it does
 			--				  error stop train
 			--				elsif section1 = reserved then
-			--            assuming that sensor = sf
+			--            This might happen if s1 didn't fire twice.
+			--            We now assume that sensor = sf
 			--            if open-->closed then
 			--              display "C2 IGNORE front of train approaching sf. Fix when leaving"
 			-- 			  else
 			--              display "C2 FIXING front of train leaving sf."
-			--              extend front of train and repair sensor s1       <<<<<<<<<<<<<<<<<<<<<<<<<<<<<xxx
 			--				    section1 reserved-->occupied
-			--              get next section
-			--				    if next section free then
-			--				       try to reserve next
-			--              else next section is blocked
+			--              get next free section (nextFreeSection)
+			--				    if not found then
+			--                 display "C2 ERROR couldn't fix, next section blocked. Error stop train"
 			--                 error stop train
+			--              else found
+			--				       nextFreeSection.state = occupied
+			--                 set s1 open
+			--                 add sf to front of train  (one end of nextFreeSection)
+			--                 add sf+1 to front of train (other end of nextFreeSection)
+			--                 tell train front sensor has fired
+			--                 put train position
 			--              end if
 			--            end if
+			--          else 
+			--            display "C2 ERROR no clue what went wrong. Erro stop train"
+			--            error stop train
 			--          end if
 			--          return
 			--  case 3: both sections occupied/reserved but with 
-			--          different trainId's                       not null   /  null
+			--          different trainId's                       not null   /  not null
 			--          if sensor = sn for neither train then
-			--            display "C3 ERROR doesn't match back of either train"
+			--            display "C3 ERROR doesn't match back of either train. Error stop both trains."
 			--				  error stop both trains
          --          elsif open-->closed 
-			--            display "C3 ERROR double occupancy, one train has run into another"
+			--            display "C3 ERROR double occupancy, one train has run into another. Error stop both trains."
          --            error stop both trains	
-			--          else closed-->open then
-			--            display "C3 NORMAL back of train leaving closed sensor"
+			--          elsif closed-->open then
+			--            display "C3 NORMAL back of train leaving closed sensor sn"
+			--          else
+			--            display "C3 ERROR no clue what went wrong. Error stop both trains."
+			--            error stop both trains
 			--          end if
 			--          return
 			--  case 4: both sections occupied with      
 			--          same trainId                              not null   /  not null
 			--          if sensor not in (s2..sn-1) then
-			--            display "C4 ERROR sensor not under train"
+			--            display "C4 ERROR sensor not under train. Error stop train."
 			--			     error stop train
 			--          elsif sensor = sn-1 then
 			--            if closed-->open then
@@ -125,7 +137,7 @@ PACKAGE LayoutPkg IS
          --              unexpected outcome, close sensor 
          --              treat normally from here	
 			--            end if 
-         --            display "C4 NORMAL back of train approaching sensor"
+         --            display "C4 NORMAL back of train approaching sensor sn-1"
          --            NORMAL prcessing goes here		
 			--          else sensor = sn-2, sn-3,..., s2  then
 			--            display "C4 FIXING sn-2,..s2 fired."      <<<<<<<<<<<<<<<<<<<<<<<xxx
@@ -137,9 +149,9 @@ PACKAGE LayoutPkg IS
 			-- case 5:  one section occupied, one reserved with
 			--          same train id                             not null  /  not null 
 			--          if open-->closed then
-			--            display "C5 NORMAL front of train approaching sensor, ignore"
+			--            display "C5 NORMAL front of train approaching sensor s1, ignore"
 			--          else front train leaving sensor
-			--            display "C5 NORMAL front of train leaving sensor"
+			--            display "C5 NORMAL front of train leaving sensor s1"
 			--            change reserved section to occupied, tell train, etc...
 			--          end if
 			--          return

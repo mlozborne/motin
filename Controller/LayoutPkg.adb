@@ -440,6 +440,7 @@ PACKAGE BODY LayoutPkg IS
 			newSensorState   : sensorStateType;
 			trainId			  : trainIdType;
 			searchOutcome    : natural;
+			nextFreeSection  : sectionObjPtr;
       BEGIN
          FindSensor(SensorList, SensorID, SensorPtr);
          
@@ -492,39 +493,85 @@ PACKAGE BODY LayoutPkg IS
             sn := getBackSensor(trainId);
 				s1 := getFrontSensor(trainId);
 				if section1.state = occupied and sensorId = sn and oldSensorState = closed then
-					myPutLine("      -------------IdentifyTrainV1: C2 NORMAL back of train leaving closed sensor"); 
+					myPutLine("      -------------IdentifyTrainV1: C2 NORMAL back of train leaving closed sensor sn"); 
 				elsif section1.state = occupied and sensorId = sn and oldSensorState = open then
-					myPutLine("      -------------IdentifyTrainV1: C2 IMPOSSIBLE back of train leaving open sensor. Error stop train.");
+					myPutLine("      -------------IdentifyTrainV1: C2 ERROR back of train leaving open sensor. Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif section1.state = occupied and sensorId = s1 then 
-					myPutLine("      -------------IdentifyTrainV1: C2 IMPOSSIBLE no reserved section but s1 fired.  Error stop train.");
+					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no reserved section but s1 fired anyway.  Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif section1.state = reserved then
 					sf := getSensorAtFrontOfReservedSection(section1.all);
 					if oldSensorState = open then
 						myPutLine("      -------------IdentifyTrainV1: C2 IGNORE front of train approaching sf. Fix when leaving");
 					else
-						myPutLine("      -------------IdentifyTrainV1: C2 FIXING front of train leaving sf.");					
-                  myPutLine("      -------------IdentifyTrainV1: C2 haven't written code yet, so error stop instead");
-						sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+						myPutLine("      -------------IdentifyTrainV1: C2 FIXING front of train leaving sf.");	
+						section1.state := occupied;
+						getFreeSection(section1.nextSectionList, nextFreeSection);
+						if nextFreeSection = null then 
+							getFreeSection(section1.prevSectionList, nextFreeSection);
+						end if;
+						if nextFreeSection = null then
+							myPutLine("      -------------IdentifyTrainV1: C2 ERROR couldn't fix, next section blocked. Error stop train");	
+							sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+							SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+						else 
+							nextFreeSection.state := occupied;
+							SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
+							if section1.sensorList.head.sensor.id = sf then
+								section1.sensorList.tail.sensor.state := open;
+								addNewSensorToFront(trainId, section1.sensorList.head.sensor);
+							else
+								section1.sensorList.head.sensor.state := open;
+								addNewSensorToFront(trainId, section1.sensorList.tail.sensor);
+							end if;
+							if nextFreeSection.sensorList.head.sensor.id = sf then
+								addNewSensorToFront(trainId, nextFreeSection.sensorList.tail.sensor);
+							else
+								addNewSensorToFront(trainId, nextFreeSection.sensorList.head.sensor);
+							end if;
+							SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);
+							declare
+								sensorsPtr : sensorArrayAccess;
+							begin
+								sensorsPtr := GetSensors(TrainId);
+								convertSensorArrayToList(sensorsPtr, sList); 
+								SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
+								makeEmpty(sList);
+								disposeSensorArray(sensorsPtr);
+							end;
+						end if;
 					end if;
+				else
+					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no clue what went wrong. Erro stop train");
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				end if;
 	
 			elsif searchOutcome = 3 then
 			
 				--  case 3: both sections occupied/reserved but with 
-				--          different trainId's                       not null   /  null
+				--          different trainId's                       not null   /  not null
 				if sensorId /= getBackSensor(section1.trainId) 
 				and sensorId /= getBackSensor(section2.trainId) then
-					myPutLine("      -------------IdentifyTrainV1: C3 ERROR doesn't match back of either train");
+					myPutLine("      -------------IdentifyTrainV1: C3 ERROR doesn't match back of either train. Error stop both trains.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), section2.trainId);
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif oldSensorState = open then
-					myPutLine("      -------------IdentifyTrainV1: C3 ERROR double occupancy, one train has run into another ");
+					myPutLine("      -------------IdentifyTrainV1: C3 ERROR double occupancy, one train has run into another. Error stop both trains. ");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), section2.trainId);
-				else 
-					myPutLine("      -------------IdentifyTrainV1: C3 NORMAL back of train leaving closed sensor"); 
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+				elsif oldSensorState = closed then 
+					myPutLine("      -------------IdentifyTrainV1: C3 NORMAL back of train leaving closed sensor sn"); 
+				else
+					myPutLine("      -------------IdentifyTrainV1: C3 ERROR no clue what went wrong. Error stop both trains. ");
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), section2.trainId);
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				end if;
 				
 			elsif searchOutcome = 4 then
@@ -532,8 +579,9 @@ PACKAGE BODY LayoutPkg IS
 				--  case 4: both sections occupied with      
 				--          same trainId                              not null   /  not null
 				if not sensorUnderTrain(trainId, sensorId) then
-					myPutLine("      -------------IdentifyTrainV1: C4 ERROR sensor not under train"); 
+					myPutLine("      -------------IdentifyTrainV1: C4 ERROR sensor not under train. Error stop train."); 
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif sensorIsNextToLast(trainId, sensorId) then  -- sensor = sn-1
 					if oldSensorState = closed then
 						myPutLine("      -------------IdentifyTrainV1: C4 FIXING sensor unexpectedly closed, flip, and continue"); 
@@ -541,7 +589,7 @@ PACKAGE BODY LayoutPkg IS
 						SendToOutQueue(makePutSensorStateMsg(SensorId, closed));
 					end if;
 					-- NORMAL from here
-					myPutLine("      -------------IdentifyTrainV1: C4 NORMAL back of train approaching sensor"); 					
+					myPutLine("      -------------IdentifyTrainV1: C4 NORMAL back of train approaching sensor sn-1"); 					
                -- Free the section that contains sn (same thing as BackId)				
 					GetBackSensor(TrainId, BackId);    
 					IF section1.SensorList.Tail.Sensor.Id = BackId OR section1.SensorList.Head.Sensor.Id = BackId then
@@ -571,6 +619,7 @@ PACKAGE BODY LayoutPkg IS
 					myPutLine("      -------------IdentifyTrainV1: C4 FIXING sn-2,..s2 fired.");					
 					myPutLine("      -------------IdentifyTrainV1: C4 haven't written code yet, so error stop instead");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				end if;
 
 			elsif searchOutcome = 5 then
@@ -578,9 +627,9 @@ PACKAGE BODY LayoutPkg IS
 				-- case 5:  one section occupied, one reserved with
 				--          same train id                             not null  /  not null 
 				if oldSensorState = open then
-					myPutLine("      -------------IdentifyTrainV1: C5 NORMAL front of train approaching sensor, ignore.");		
+					myPutLine("      -------------IdentifyTrainV1: C5 NORMAL front of train approaching sensor s1, ignore.");		
 				else 
-					myPutLine("      -------------IdentifyTrainV1: C5 NORMAL front of train leaving sensor.");		
+					myPutLine("      -------------IdentifyTrainV1: C5 NORMAL front of train leaving sensor s1.");		
 					IF section1.State = Reserved THEN
 						section1.State := Occupied;
 						SendToOutQueue(makePutSectionStateMsg(section1.Id, Occupied));
@@ -2216,8 +2265,8 @@ PACKAGE BODY LayoutPkg IS
          SectionPtr : SectionNodePtr := SectList.Head;
       BEGIN
          WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State = Free AND
-                  IsSectionUseable(SectionPtr.Section) THEN
+            IF SectionPtr.Section.State = Free 
+				AND IsSectionUseable(SectionPtr.Section) THEN
                OutSectPtr := SectionPtr.Section;
                RETURN;
             END IF;
