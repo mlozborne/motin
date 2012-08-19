@@ -433,6 +433,7 @@ PACKAGE BODY LayoutPkg IS
          section2           : SectionObjPtr;
 			nextFreeSection    : sectionObjPtr;
 			section            : sectionObjPtr;
+			sectionNode        : sectionNodePtr;
 			sf, s1, sn         : sensorObjPtr;
 			-- sf front of reserved section, s1 front of train, sn back of train
 			oldSensorState     : sensorStateType;
@@ -591,7 +592,8 @@ PACKAGE BODY LayoutPkg IS
 						          & integer'image(sensorPtrs(i).id) & " from back of train"); 
 						sensorPtrs(i).state := open;   -- Open si for safety
 						SendToOutQueue(makePutSensorStateMsg(sensorPtrs(i).id, open));					
-						section := getSection(sensorPtrs(i-1).id, sensorPtrs(i).id);
+						getSection(sectionNode, sensorPtrs(i-1).id, sensorPtrs(i).id);
+						section := sectionNode.section;
 						section.state := free;
 						SendToOutQueue(makePutSectionStateMsg(section.Id, Free));
 						ReleaseBlockings(section.BlockingList);
