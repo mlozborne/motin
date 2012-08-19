@@ -89,7 +89,6 @@ PACKAGE BODY LayoutPkg IS
          ThisSensorPtr : SensorNodePtr;
          PrevSensorPtr : SensorNodePtr := null; 
          NextSensorPtr : SensorNodePtr;
-			sList		     : naturalListType;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
             IF TrainPtr.TrainId = TrainId THEN
@@ -116,10 +115,7 @@ PACKAGE BODY LayoutPkg IS
                      SensorPtr := SensorPtr.Next;
                   END LOOP;
 				  
-						convertSensorArrayToList(mySensors, sList);
-                  SendToOutQueue(makePutTrainPositionMsg(TrainId, sList));
-						makeEmpty(sList);
-                  disposeSensorArray(mySensors);
+				      PutTrainPositionMsg(TrainId);
 				  
                end;
                RETURN;
@@ -331,10 +327,7 @@ PACKAGE BODY LayoutPkg IS
 				AddNewSensorToFront(TrainId, sf);
 				SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);
 
-				-- Send train position message.
-				--convertSensorArrayToList(sensorsPtr, sList); 
-				SendToOutQueue(makePutTrainPositionMsg(TrainId, getTrainsSensorNumbers(trainId))); 
-				--makeEmpty(sList);
+				PutTrainPositionMsg(TrainId);
 				
 				disposeSensorArray(sensorsPtr);				
 				return;
@@ -381,11 +374,7 @@ PACKAGE BODY LayoutPkg IS
 				RemoveLastSensor(TrainId);
 				SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
 
-				-- Send train position message
-				-- convertSensorArrayToList(sensorsPtr, sList); 
-				-- SendToOutQueue(makePutTrainPositionMsg(t1.TrainId, sList)); 
-				-- makeEmpty(sList);
-				SendToOutQueue(makePutTrainPositionMsg(TrainId, getTrainsSensorNumbers(trainId))); 
+				PutTrainPositionMsg(TrainId);
 		  
 		      -- Tell all trains to try to move again
 				SendToAllTrainQueues(makeTryToMoveAgainMsg);			
@@ -427,20 +416,31 @@ PACKAGE BODY LayoutPkg IS
 		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+			procedure putTrainPositionMsg(TrainId : trainIdType) is
+				sensorsPtr : sensorArrayAccess;
+				sList		  : naturalListType;
+			begin
+				sensorsPtr := GetSensors(TrainId);
+				convertSensorArrayToList(sensorsPtr, sList); 
+				SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
+				makeEmpty(sList);
+				disposeSensorArray(sensorsPtr);
+			end putTrainPositionMsg;
 
       PROCEDURE IdentifyTrainV1 (SensorID : Positive) IS
-         SensorPtr        : SensorNodePtr;
-         section1         : SectionObjPtr;
-         section2         : SectionObjPtr;
-         BackId           : Positive;
-			sf, s1, sn       : positive;
+         SensorPtr          : SensorNodePtr;
+         section1           : SectionObjPtr;
+         section2           : SectionObjPtr;
+			nextFreeSection    : sectionObjPtr;
+			section            : sectionObjPtr;
+			sf, s1, sn         : sensorObjPtr;
 			-- sf front of reserved section, s1 front of train, sn back of train
-			sList			     : naturalListType;
-			oldSensorState   : sensorStateType;
-			newSensorState   : sensorStateType;
-			trainId			  : trainIdType;
-			searchOutcome    : natural;
-			nextFreeSection  : sectionObjPtr;
+			oldSensorState     : sensorStateType;
+			newSensorState     : sensorStateType;
+			trainId			    : trainIdType;
+			searchOutcome      : natural;
+			SensorPtrs         : AccessToArrayOfSensorObjPtrType;
+			last               : positive;
       BEGIN
          FindSensor(SensorList, SensorID, SensorPtr);
          
@@ -490,20 +490,20 @@ PACKAGE BODY LayoutPkg IS
          ELSIF searchOutcome = 2 THEN
 			
 				--  case 2: only one section occupied/reserved        not null   /  null
-            sn := getBackSensor(trainId);
-				s1 := getFrontSensor(trainId);
-				if section1.state = occupied and sensorId = sn and oldSensorState = closed then
+            sn := getBackSensorPtr(trainId);
+				s1 := getFrontSensorPtr(trainId);
+				if section1.state = occupied and sensorId = sn.id and oldSensorState = closed then
 					myPutLine("      -------------IdentifyTrainV1: C2 NORMAL back of train leaving closed sensor sn"); 
-				elsif section1.state = occupied and sensorId = sn and oldSensorState = open then
+				elsif section1.state = occupied and sensorId = sn.id and oldSensorState = open then
 					myPutLine("      -------------IdentifyTrainV1: C2 ERROR back of train leaving open sensor. Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
 					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-				elsif section1.state = occupied and sensorId = s1 then 
+				elsif section1.state = occupied and sensorId = s1.id then 
 					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no reserved section but s1 fired anyway.  Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
 					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif section1.state = reserved then
-					sf := getSensorAtFrontOfReservedSection(section1.all);
+					sf := getSensorAtFrontOfReservedSectionPtr(section1.all);
 					if oldSensorState = open then
 						myPutLine("      -------------IdentifyTrainV1: C2 IGNORE front of train approaching sf. Fix when leaving");
 					else
@@ -520,28 +520,20 @@ PACKAGE BODY LayoutPkg IS
 						else 
 							nextFreeSection.state := occupied;
 							SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
-							if section1.sensorList.head.sensor.id = sf then
-								section1.sensorList.tail.sensor.state := open;
+							s1.state := open;   -- Set s1 open for safety
+							SendToOutQueue(makePutSensorStateMsg(s1.id, open));
+							if section1.sensorList.head.sensor.id = sf.id then    -- Add sf to front of train
 								addNewSensorToFront(trainId, section1.sensorList.head.sensor);
 							else
-								section1.sensorList.head.sensor.state := open;
 								addNewSensorToFront(trainId, section1.sensorList.tail.sensor);
 							end if;
-							if nextFreeSection.sensorList.head.sensor.id = sf then
+							if nextFreeSection.sensorList.head.sensor.id = sf.id then   -- Add sf+1 to front of train
 								addNewSensorToFront(trainId, nextFreeSection.sensorList.tail.sensor);
 							else
 								addNewSensorToFront(trainId, nextFreeSection.sensorList.head.sensor);
 							end if;
-							SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);
-							declare
-								sensorsPtr : sensorArrayAccess;
-							begin
-								sensorsPtr := GetSensors(TrainId);
-								convertSensorArrayToList(sensorsPtr, sList); 
-								SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
-								makeEmpty(sList);
-								disposeSensorArray(sensorsPtr);
-							end;
+							SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
+							PutTrainPositionMsg(TrainId);                                 -- Put train position
 						end if;
 					end if;
 				else
@@ -554,7 +546,7 @@ PACKAGE BODY LayoutPkg IS
 			
 				--  case 3: both sections occupied/reserved but with 
 				--          different trainId's                       not null   /  not null
-				if sensorId /= getBackSensor(section1.trainId) 
+				if sensorId /= getBackSensor(section1.trainId)
 				and sensorId /= getBackSensor(section2.trainId) then
 					myPutLine("      -------------IdentifyTrainV1: C3 ERROR doesn't match back of either train. Error stop both trains.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
@@ -582,44 +574,62 @@ PACKAGE BODY LayoutPkg IS
 					myPutLine("      -------------IdentifyTrainV1: C4 ERROR sensor not under train. Error stop train."); 
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-				elsif sensorIsNextToLast(trainId, sensorId) then  -- sensor = sn-1
+				else -- sensor = sn-1, sn-2, ..., s2
+				
+					SensorPtrs := GetSensorPtrs(TrainId); -- This array contains pointers to s1,s2,...,sn
+					last := sensorPtrs'last;
+					
 					if oldSensorState = closed then
 						myPutLine("      -------------IdentifyTrainV1: C4 FIXING sensor unexpectedly closed, flip, and continue"); 
 						flipSensor(sensorPtr);
 						SendToOutQueue(makePutSensorStateMsg(SensorId, closed));
 					end if;
-					-- NORMAL from here
-					myPutLine("      -------------IdentifyTrainV1: C4 NORMAL back of train approaching sensor sn-1"); 					
-               -- Free the section that contains sn (same thing as BackId)				
-					GetBackSensor(TrainId, BackId);    
-					IF section1.SensorList.Tail.Sensor.Id = BackId OR section1.SensorList.Head.Sensor.Id = BackId then
-						section1.State := Free;
-						ReleaseBlockings(section1.BlockingList);
-						SendToOutQueue(makePutSectionStateMsg(section1.Id, Free));
-						section1.trainId := 0;
-					ELSE   
-						section2.State := Free;
-						ReleaseBlockings(section2.BlockingList);
-						SendToOutQueue(makePutSectionStateMsg(section2.Id, Free));
-						section2.trainId := 0;
-					END IF;					
-					RemoveLastSensor(TrainId);
-					SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
-					declare
-						sensorsPtr : sensorArrayAccess;
-					begin
-						sensorsPtr := GetSensors(TrainId);
-						convertSensorArrayToList(sensorsPtr, sList); 
-						SendToOutQueue(makePutTrainPositionMsg(TrainId, sList)); 
-						makeEmpty(sList);
-						disposeSensorArray(sensorsPtr);
-					end;				  
+					-- NORMAL from here if sn-1 fired else fixing by removing extra sensorStateType
+					for i in reverse 2..last loop
+						exit when sensorId = sensorPtrs(i).id;
+						myPutLine("      -------------IdentifyTrainV1: C4 removing sensor"  
+						          & integer'image(sensorPtrs(i).id) & " from back of train"); 
+						sensorPtrs(i).state := open;   -- Open si for safety
+						SendToOutQueue(makePutSensorStateMsg(sensorPtrs(i).id, open));					
+						section := getSection(sensorPtrs(i-1).id, sensorPtrs(i).id);
+						section.state := free;
+						SendToOutQueue(makePutSectionStateMsg(section.Id, Free));
+						ReleaseBlockings(section.BlockingList);
+						section.trainId := 0;
+						RemoveLastSensor(TrainId);
+						SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+					end loop;	
+					putTrainPositionMsg(TrainId);
 					SendToAllTrainQueues(makeTryToMoveAgainMsg);					
-				else -- sensor = sn-2,...,s2
-					myPutLine("      -------------IdentifyTrainV1: C4 FIXING sn-2,..s2 fired.");					
-					myPutLine("      -------------IdentifyTrainV1: C4 haven't written code yet, so error stop instead");
-					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					disposeArrayOfSensorObjPtr(sensorPtrs);
+					
+					-- myPutLine("      -------------IdentifyTrainV1: C4 NORMAL back of train approaching sensor sn-1"); 
+					-- getBackSensorPtr(trainId).state := open;   -- Open sn for safety
+	         	-- sn := GetBackSensorPtr(TrainId);    
+					-- SendToOutQueue(makePutSensorStateMsg(sn.id, open));					
+               -- Free the section that contains sn				
+					-- IF section1.SensorList.Tail.Sensor.Id = sn.id OR section1.SensorList.Head.Sensor.Id = sn.id then
+						-- section1.State := Free;
+						-- ReleaseBlockings(section1.BlockingList);
+						-- SendToOutQueue(makePutSectionStateMsg(section1.Id, Free));
+						-- section1.trainId := 0;
+					-- ELSE   
+						-- section2.State := Free;
+						-- ReleaseBlockings(section2.BlockingList);
+						-- SendToOutQueue(makePutSectionStateMsg(section2.Id, Free));
+						-- section2.trainId := 0;
+					-- END IF;					
+					-- RemoveLastSensor(TrainId);
+					-- SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+					-- putTrainPositionMsg(TrainId);
+					-- SendToAllTrainQueues(makeTryToMoveAgainMsg);					
+					-- else -- sensor = sn-2,...,s2
+					-- myPutLine("      -------------IdentifyTrainV1: C4 FIXING sn-2,..s2 fired.");	
+					
+					-- myPutLine("      -------------IdentifyTrainV1: C4 haven't written code yet, so error stop instead");
+					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					
 				end if;
 
 			elsif searchOutcome = 5 then
@@ -649,15 +659,7 @@ PACKAGE BODY LayoutPkg IS
 					END IF;
 					SendToTrainQueue(makeFrontSensorFiredMsg(section1.TrainId), section1.TrainId);
 			  
-					declare
-						sensorsPtr : sensorArrayAccess;
-					begin
-						sensorsPtr := GetSensors(section1.TrainId);
-						convertSensorArrayToList(sensorsPtr, sList); 
-						SendToOutQueue(makePutTrainPositionMsg(section1.TrainId, sList)); 
-						makeEmpty(sList);
-						disposeSensorArray(sensorsPtr);
-					end;
+					putTrainPositionMsg(section1.TrainId);		
 				end if;
 			end if;
 			return;
@@ -1698,6 +1700,40 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END AddNewSensorToFront;
          
+      FUNCTION GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType IS
+         TrainPtr  : TrainObjPtr       := TrainList;
+         SensorPtr : SensorNodePtr;
+         Sensors   : AccessToArrayOfSensorObjPtrType;
+         I         : Positive          := 1;
+      BEGIN
+         WHILE TrainPtr /= NULL LOOP
+            IF TrainPtr.TrainId = TrainId THEN
+               Sensors := NEW ArrayOfSensorObjPtrType(1..TrainPtr.SensorCount);
+               SensorPtr := TrainPtr.SensorList.Head;
+               WHILE SensorPtr /= NULL LOOP
+                  Sensors(I) := SensorPtr.Sensor;
+                  I := I + 1;
+                  SensorPtr := SensorPtr.Next;
+               END LOOP;
+               
+               -- myPutLine(" ");
+               -- myPutLine("          In GetSensors");
+               -- for i in sensors.all'range loop
+                  -- myPutLine("          sensor " & integer'image(Sensors(i)));
+               -- end loop; 
+               -- myPutLine(" ");
+               
+               return sensors;
+            END IF;
+            TrainPtr := TrainPtr.Next;
+         END LOOP;
+         return null;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in GetSensorPtrs: " & Exception_Information(Error));
+            raise;
+      END GetSensorPtrs;
+
       FUNCTION GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess IS
          TrainPtr  : TrainObjPtr       := TrainList;
          SensorPtr : SensorNodePtr;
@@ -1896,6 +1932,25 @@ PACKAGE BODY LayoutPkg IS
 		end sensorIsNextToLast;
 		
 
+      -- Get the sensor at the front of a train's reserved section ptr
+		function  getSensorAtFrontOfReservedSectionPtr(section : sectionObj) return sensorObjPtr is
+			trainId   : trainIdType;
+			ptr       : sensorObjPtr;      -- train's front sensor ptr
+      BEGIN
+			trainId := section.trainId;
+			ptr := getFrontSensorPtr(trainId);
+			if ptr = section.sensorList.head.sensor then
+				return section.sensorList.tail.sensor;
+			else	
+				return section.sensorList.head.sensor;
+			end if;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in getSensorAtFrontOfReservedSectionPtr: " & Exception_Information(Error));
+            myPutLine("    train id #" & Positive'Image(trainId));
+            RAISE;
+		end getSensorAtFrontOfReservedSectionPtr;
+
       -- Get the sensor at the front of a train's reserved section
 		function  getSensorAtFrontOfReservedSection(section : sectionObj) return positive is
 			trainId   : trainIdType;
@@ -1915,6 +1970,46 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
 		end getSensorAtFrontOfReservedSection;
 
+      -- Get a train's front sensor ptr
+		function GetFrontSensorPtr(TrainId : TrainIdType) return sensorObjPtr is
+         TrainPtr : TrainObjPtr := TrainList;
+			ptr      : sensorObjPtr := null;
+      BEGIN
+         WHILE TrainPtr /= NULL LOOP
+            IF TrainPtr.TrainId = TrainId THEN
+               ptr := TrainPtr.SensorList.head.sensor;
+               exit;                        
+            END IF;
+            TrainPtr := TrainPtr.Next;
+         END LOOP;
+			return ptr;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in GetFrontSensorPtr: " & Exception_Information(Error));
+            myPutLine("    train id #" & Positive'Image(trainId));
+            RAISE;
+		end GetFrontSensorPtr;
+		
+      -- Get a train's back sensor ptr
+		function GetBackSensorPtr(TrainId : TrainIdType) return sensorObjPtr is
+         TrainPtr : TrainObjPtr := TrainList;
+			ptr      : sensorObjPtr := null;
+      BEGIN
+         WHILE TrainPtr /= NULL LOOP
+            IF TrainPtr.TrainId = TrainId THEN
+               ptr := TrainPtr.SensorList.tail.sensor;
+               exit;                        
+            END IF;
+            TrainPtr := TrainPtr.Next;
+         END LOOP;
+			return ptr;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in GetBackSensorPtr: " & Exception_Information(Error));
+            myPutLine("    train id #" & Positive'Image(trainId));
+            RAISE;
+		end GetBackSensorPtr;
+		
       -- Get a train's front sensor
 		function GetFrontSensor(TrainId : TrainIdType) return Positive is
          TrainPtr : TrainObjPtr := TrainList;

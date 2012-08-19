@@ -44,6 +44,11 @@ PACKAGE LayoutPkg IS
    TYPE TrainObj IS PRIVATE;
    TYPE TrainObjPtr IS ACCESS TrainObj;
 	
+	type ArrayOfSensorObjPtrType         is array(positive range <>) of sensorObjPtr;
+	type AccessToArrayOfSensorObjPtrType is access ArrayOfSensorObjPtrType;	
+   PROCEDURE disposeArrayOfSensorObjPtr IS 
+      NEW Ada.Unchecked_Deallocation(Object=>ArrayOfSensorObjPtrType, Name=>AccessToArrayOfSensorObjPtrType);	   
+	
 	PROCEDURE SendToOutQueue(Cmd : MessageType);
 
    ------- Exceptions ------
@@ -99,7 +104,7 @@ PACKAGE LayoutPkg IS
 			--                 error stop train
 			--              else found
 			--				       nextFreeSection.state = occupied
-			--                 set s1 open
+			--                 SAFETY set s1 open
 			--                 add sf to front of train  (one end of nextFreeSection)
 			--                 add sf+1 to front of train (other end of nextFreeSection)
 			--                 tell train front sensor has fired
@@ -131,19 +136,27 @@ PACKAGE LayoutPkg IS
 			--          if sensor not in (s2..sn-1) then
 			--            display "C4 ERROR sensor not under train. Error stop train."
 			--			     error stop train
-			--          elsif sensor = sn-1 then
+			--          else sensor = sn-1,sn-2, sn-3,..., s2  
+			--            sn-1 would be normal, others require fixing
 			--            if closed-->open then
-			--              display " C4 FIXING sensor unexpectedly closed, flip, and continue"
+			--              display "C4 FIXING sensor unexpectedly closed, flip, and continue"
          --              unexpected outcome, close sensor 
          --              treat normally from here	
 			--            end if 
-         --            display "C4 NORMAL back of train approaching sensor sn-1"
-         --            NORMAL prcessing goes here		
-			--          else sensor = sn-2, sn-3,..., s2  then
-			--            display "C4 FIXING sn-2,..s2 fired."      <<<<<<<<<<<<<<<<<<<<<<<xxx
-			--            back of train failed to fire sn-1, sn-2, etc
-			--            shrink back of train
-			--            fix sensors
+			--            for si in sn..s2 loop
+			--              exit when si = sensor
+			--              display "C4 removing sensor si from back of train"
+			--              open si 
+			--              put sensor state message
+			--              free section (si-1,si)
+			--              put section state message
+			--              reduce blocking count for section blocked by (si-1,si)
+			--              set section train id to 0
+			--              remove si from back of train
+			--            	 send back sensor fired message to train
+			--            end loop
+			--            put train position message
+			--            tell all trains to try to move again
 			--          end if
 			--          return
 			-- case 5:  one section occupied, one reserved with
@@ -294,9 +307,11 @@ PACKAGE LayoutPkg IS
 		 PROCEDURE ReleaseBlockings(BlockingList : BlockingObjList);
 
 		-- IdentifyTrain helpers
+		procedure PutTrainPositionMsg(TrainId : trainIdType);
 		function  getTrainsSensorNumbers(trainId : trainIdType) return naturalListType; 
       PROCEDURE AddNewSensorToFront(TrainId : TrainIdType; Sensor : SensorObjPtr);
-      FUNCTION  GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess; 
+      FUNCTION  GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType;
+      FUNCTION  GetSensors    (TrainId : TrainIdType) RETURN SensorArrayAccess; 
 		procedure getUnbockedUsableSectionsContainingSensor(SensorID : Positive;
                                   FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
       PROCEDURE GetOccResSections(SensorID : Positive;
@@ -315,11 +330,14 @@ PACKAGE LayoutPkg IS
 			--  case 5: one section occupied, one reserved        not null   /  not null
 			--          with same train id
       PROCEDURE RemoveLastSensor(TrainId : TrainIdType);
-		function sensorUnderTrain(trainId : trainIdType; sensor : positive) return boolean;
-		function sensorIsNextToLast(trainId : trainIdType; sensor : positive) return boolean;
-		function  getSensorAtFrontOfReservedSection(section : sectionObj) return positive;
-      function  GetFrontSensor(TrainId : TrainIdType) return Positive;
-      function  GetBackSensor(TrainId : TrainIdType) return Positive;
+		function  sensorUnderTrain(trainId : trainIdType; sensor : positive)   return boolean;
+		function  sensorIsNextToLast(trainId : trainIdType; sensor : positive) return boolean;
+		function  getSensorAtFrontOfReservedSectionPtr(section : sectionObj)   return sensorObjPtr;
+      function  GetFrontSensorPtr(TrainId : TrainIdType)                     return sensorObjPtr;
+	   function  GetBackSensorPtr(TrainId : TrainIdType)                      return sensorObjPtr;
+	   function  getSensorAtFrontOfReservedSection(section : sectionObj)      return positive;
+      function  GetFrontSensor(TrainId : TrainIdType)                        return Positive;
+      function  GetBackSensor(TrainId : TrainIdType)                         return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
 		
