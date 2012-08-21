@@ -187,16 +187,16 @@
 			<blocking id="29" />
 			<blocking id="31" />
 		</section>
-        <section id="108">
-            <sensor id="88" />
-            <sensor id="85" />
-        </section>
 		<section id="31">
 			<sensor id="72" />
 			<sensor id="88" />
 			<switch id="15" />
 			<blocking id="30" />
 		</section>
+      <section id="109">
+          <sensor id="88" />
+          <sensor id="85" />
+        </section>
 		<section id="32">
 			<sensor id="65" />
 			<sensor id="49" />
@@ -558,10 +558,10 @@
 			<sensor id="93" />
 			<sensor id="115" />
 		</section>
-        <section id="108">
-            <sensor id="17" />
-            <sensor id="19" />
-        </section>
+      <section id="108">
+          <sensor id="17" />
+          <sensor id="19" />
+      </section>
 	</section-list>
 	<switch-list>
 		<switch id="1" state="thrown">
