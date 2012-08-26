@@ -4,6 +4,7 @@ tskill adminthrottle
 tskill throttle
 tskill StartController
 tskill railroadbig
+tskill RBLDisplay
 
 rem these lines work with Windows 7
 taskkill /T /IM startlocobufferserver.exe
