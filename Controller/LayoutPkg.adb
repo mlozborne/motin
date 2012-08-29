@@ -521,6 +521,7 @@ PACKAGE BODY LayoutPkg IS
 							SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 						else 
 							nextFreeSection.state := occupied;
+							BlockSections(nextFreeSection.BlockingList);
 							nextFreeSection.trainId := trainId;
 							SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
 							s1.state := open;   -- Set s1 open for safety
