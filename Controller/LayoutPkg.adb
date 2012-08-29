@@ -510,6 +510,7 @@ PACKAGE BODY LayoutPkg IS
 					else
 						myPutLine("      -------------IdentifyTrainV1: C2 FIXING front of train leaving sf.");	
 						section1.state := occupied;
+						SendToOutQueue(makePutSectionStateMsg(section1.Id, Occupied));
 						getFreeSection(section1.nextSectionList, nextFreeSection);
 						if nextFreeSection = null then 
 							getFreeSection(section1.prevSectionList, nextFreeSection);
@@ -520,6 +521,7 @@ PACKAGE BODY LayoutPkg IS
 							SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 						else 
 							nextFreeSection.state := occupied;
+							nextFreeSection.trainId := trainId;
 							SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
 							s1.state := open;   -- Set s1 open for safety
 							SendToOutQueue(makePutSensorStateMsg(s1.id, open));
