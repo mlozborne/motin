@@ -159,7 +159,7 @@ PACKAGE BODY SSIPkg IS
 										registeringVirtualAddr := virtAddr;   -- mo 1/12/12
 										
 										SendToOutQueue(makeLocoAdrMsg(PhysAddr));
-										SendToOutQueue(makeLocoAdrMsg(VirtAddr));
+										-- SendToOutQueue(makeLocoAdrMsg(VirtAddr));
 									ELSE
 										myPutLine("    Reinitializing a train                        in SSITask: ");    
 										TrainId := SlotLookupTable.PhysAddrToTrainId(PhysAddr);                              
@@ -221,6 +221,7 @@ PACKAGE BODY SSIPkg IS
                         myPutLine("    OPC_SL_RD_DATA processing after saving physical slot number       in SSITask"); 
                         slotLookupTable.put;
                         registeringPhysAddr := 0;
+							   SendToOutQueue(makeLocoAdrMsg(registeringVirtualAddr));  -- Now start registering the virtual address
                      ELSif not isPhy and registeringVirtualAddr = virtAddr then
                         SlotLookupTable.SaveVirtSlot(Slot, VirtAddr, Result);
                         myPutLine("    OPC_SL_RD_DATA processing after saving virtual slot number       in SSITask"); 

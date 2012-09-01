@@ -1212,6 +1212,9 @@ PACKAGE BODY LayoutPkg IS
 					SendToOutQueue(makeSwStateMsg(SwitchPtr.Switch.Id));
 				else
 					SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));
+					if not simulator then    
+						delay 3.0;             -- don't want to overwhelm the locobuffer server
+					end if;
 					if  SwitchPtr.Switch.State = Closed then
 						SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, BeginClosed));
 					else
