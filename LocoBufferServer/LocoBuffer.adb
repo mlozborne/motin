@@ -184,15 +184,17 @@ PACKAGE BODY LocoBuffer IS
 						
 						FOR I IN SocketListArray'RANGE LOOP--write to all clients
 						  IF (Integer(SocketListArray(I)) >= 0) THEN
-							 myPutLine("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
+							 myPutLine("      sent to socket" 
+							           & integer'image((Integer(SocketListArray(I))))
+										  & " with size =" & integer'image(size));
 							 Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
-							 delay 0.001; -- Not all messages are reaching the controller. Perhaps this will fix it.
+							 --delay 0.001; -- Not all messages are reaching the controller. Perhaps this will fix it.
 						  END IF;
 						END LOOP;
 					end if;
 				   
             END IF;
-            DELAY 0.001; -- locobuffer has limited read baud rate and loconet not going to generate 
+            --DELAY 0.001; -- locobuffer has limited read baud rate and loconet not going to generate 
                          -- more than 1000 message/sec				
          EXCEPTION
             WHEN error: OTHERS =>

@@ -440,7 +440,7 @@ PACKAGE BODY MessageIO IS
 						end if;
                END IF;
             END LOOP;
-            DELAY 0.01; -- no point in checking for incoming messages too frequently
+            DELAY 0.001; -- no point in checking for incoming messages too frequently
          EXCEPTION
             WHEN Error : OTHERS =>
                put_line("**************** EXCEPTION in MessageIO: ReceiveMessageTask ( " & Exception_Information(Error) & " )");

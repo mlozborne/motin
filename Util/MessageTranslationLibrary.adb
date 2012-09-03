@@ -1346,13 +1346,38 @@ package body MessageTranslationLibrary is
                return "OPC_SL_RD_DATA loco/inUse/slotNum " & natural'image(locoAdd) & " " & boolean'image(inUse) & " " & natural'image(slotNum);
             when OPC_LONG_ACK =>
 				   splitLongAck(msg, responseTo, switchState);
-					if responseTo = OPC_LOCO_ADR then
-						return "OPC_LONG_ACK to OPC_LOCO_ADR: insufficient slots";
-					elsif responseTo = OPC_SW_STATE then	
-						return "OPC_LONG_ACK to OPC_SW_STATE: state = " & switchStateType'image(switchState);
-					else
-						return "OPC_LONG_ACK to unexpected op " & unsigned_8'image(responseTo);
-					end if;
+					case responseTo is
+						when OPC_GPOFF =>
+							return "OPC_LONG_ACK to OPC_GPOFF";
+						when OPC_GPON =>
+							return "OPC_LONG_ACK to OPC_GPON";
+						when OPC_LOCO_SPD =>
+							return "OPC_LONG_ACK to OPC_LOCO_SPD";
+						when OPC_LOCO_DIRF =>
+							return "OPC_LONG_ACK to OPC_LOCO_DIRF";
+						when OPC_LOCO_SND =>
+							return "OPC_LONG_ACK to OPC_LOCO_SND";
+						when OPC_SW_REQ =>
+							return "OPC_LONG_ACK to OPC_SW_REQ";
+						when OPC_SW_REP =>
+							return "OPC_LONG_ACK to OPC_SW_REP";
+						when OPC_SW_STATE =>
+							return "OPC_LONG_ACK to OPC_SW_STATE: state = " & switchStateType'image(switchState);
+						when OPC_INPUT_REP =>
+							return "OPC_LONG_ACK to OPC_INPUT_REP";
+						when OPC_LONG_ACK =>
+							return "OPC_LONG_ACK to OPC_LONG_ACK";
+						when OPC_MOVE_SLOTS =>
+							return "OPC_LONG_ACK to OPC_MOVE_SLOTS";
+						when OPC_LOCO_ADR =>
+							return "OPC_LONG_ACK to OPC_LOCO_ADR: insufficient slots";
+						when OPC_SL_RD_DATA =>
+							return "OPC_LONG_ACK to OPC_SL_RD_DATA";
+						when OPC_WR_SL_DATA =>
+							return "OPC_LONG_ACK to OPC_WR_SL_DATA";
+						when others =>
+							return "OPC_LONG_ACK to unexpected op " & unsigned_8'image(responseTo);
+					end case;
             when OPC_MOVE_SLOTS =>
                splitMoveSlots(msg, slotNum);
                return "OPC_MOVE_SLOTS for slot " & natural'image(slotNum);
