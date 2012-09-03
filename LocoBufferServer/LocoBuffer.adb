@@ -33,6 +33,7 @@ PACKAGE BODY LocoBuffer IS
             LOOP--loop until client accepted                                          -- mo 12/17/11
                AcceptSocket := TcpAccept(Sockid=>ListenSocket, Mode=> C.Double(1));     -- non blocking ???
                EXIT WHEN Integer(AcceptSocket) > 0;
+					delay 1.0;   -- No point in checking more frequently
             END LOOP;
             FOR I IN SocketListArray'RANGE LOOP
                --loop to add to socket list
@@ -42,7 +43,6 @@ PACKAGE BODY LocoBuffer IS
                END IF;
             END LOOP;
             put_line("LocoBuffer pkg in ListenForClientTask: accepted client connection");
-            DELAY 1.0; -- no point in listening too frequently for clients 
          EXCEPTION
             WHEN error: OTHERS =>
                put_line("**************** EXCEPTION in LocoBuffer pkg: ListenForLocoBufferClientsTaskType " & Exception_Information(Error));
@@ -100,14 +100,13 @@ PACKAGE BODY LocoBuffer IS
                             WriteData(MyArray(K));
                          END LOOP;
                          
+                         msg.byteArray := myArray;
+                         msg.size := size;                         
                          messageCount := messageCount + 1;
                          myPutLine("<" & natural'image(messageCount) 
-                                      & " write to railroad; received on socket" 
-                                      & integer'image(Integer(SocketListArray(I))));                                      
-                         msg.byteArray := myArray;
-                         msg.size := size;
-                         myPutLine("      " & toEnglish(msg));
-                         
+								            & " " & toEnglish(msg)
+                                    & " // write to railroad; received on socket" 
+                                    & integer'image(Integer(SocketListArray(I))));                                      
                       END IF;
                   end if;
                END IF;
@@ -167,30 +166,30 @@ PACKAGE BODY LocoBuffer IS
                   InUse := 0;
                END IF;
                
-			   if inUse /= 0 then
-				   MyArray(1) := Data;
-				   FOR I IN 2..InUse LOOP
-					  Data := ReadData;
-					  MyArray(I) := Data;
-				   END LOOP;
-				   CValue := ClearBuffer(CZero);--clear buffer
-				   FOR J IN 1..InUse LOOP--write array to buffer
-					  Cvalue := WriteByte(C.Double(MyArray(J)), CZero);
-				   END LOOP;
-				   
-				   messageCount := messageCount + 1;
-				   msg.byteArray := myArray;
-				   msg.size := inUse;
-				   myPutLine(">" & natural'image(messageCount) & " read from railroad");
-				   myPutLine("      " & toEnglish(msg));
-				   
-				   FOR I IN SocketListArray'RANGE LOOP--write to all clients
-					  IF (Integer(SocketListArray(I)) >= 0) THEN
-						 myPutLine("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
-						 Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
-					  END IF;
-				   END LOOP;
-			   end if;
+					if inUse /= 0 then
+						MyArray(1) := Data;
+						FOR I IN 2..InUse LOOP
+						  Data := ReadData;
+						  MyArray(I) := Data;
+						END LOOP;
+						CValue := ClearBuffer(CZero);--clear buffer
+						FOR J IN 1..InUse LOOP--write array to buffer
+						  Cvalue := WriteByte(C.Double(MyArray(J)), CZero);
+						END LOOP;
+						
+						messageCount := messageCount + 1;
+						msg.byteArray := myArray;
+						msg.size := inUse;
+						myPutLine(">" & natural'image(messageCount) & " " & toEnglish(msg) & " // read from railroad");
+						
+						FOR I IN SocketListArray'RANGE LOOP--write to all clients
+						  IF (Integer(SocketListArray(I)) >= 0) THEN
+							 myPutLine("      sent to socket" & integer'image((Integer(SocketListArray(I)))));
+							 Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
+							 delay 0.001; -- Not all messages are reaching the controller. Perhaps this will fix it.
+						  END IF;
+						END LOOP;
+					end if;
 				   
             END IF;
             DELAY 0.001; -- locobuffer has limited read baud rate and loconet not going to generate 
