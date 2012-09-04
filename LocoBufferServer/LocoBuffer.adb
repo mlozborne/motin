@@ -184,10 +184,10 @@ PACKAGE BODY LocoBuffer IS
 						
 						FOR I IN SocketListArray'RANGE LOOP--write to all clients
 						  IF (Integer(SocketListArray(I)) >= 0) THEN
+							 Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
 							 myPutLine("      sent to socket" 
 							           & integer'image((Integer(SocketListArray(I))))
 										  & " with size =" & integer'image(size));
-							 Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
 							 --delay 0.001; -- Not all messages are reaching the controller. Perhaps this will fix it.
 						  END IF;
 						END LOOP;
