@@ -486,7 +486,8 @@ PACKAGE BODY LayoutPkg IS
          IF searchOutcome = 1 THEN
 			
 				--  case 1: neither section occupied/reserved         null       /  null			
-            myPutLine("      -------------IdentifyTrainV1: C1 MYSTERY SENSOR FIRING not close to any trains: ignore it" );
+            myPutLine("      -------------IdentifyTrainV1: C1 MYSTERY SENSOR FIRING not close to any trains: error stop all" );
+				SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				
          ELSIF searchOutcome = 2 THEN
 			

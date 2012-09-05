@@ -229,7 +229,7 @@ PACKAGE BODY TrainPkg IS
                                           LayoutPtr.ReleaseReservation(TrainId);
                                        END IF;
                                     END;
-                              WHEN Halted =>
+                              WHEN Halted | Error =>
                                  myPutLine("        .........call LayoutPtr.ChangeDirection(TrainId) in TrainPkg"); 
                                  LayoutPtr.ChangeDirectionOf(TrainId);
                                  SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, Horn, Bell));  -- mo 12/29/11

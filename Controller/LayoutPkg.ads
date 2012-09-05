@@ -78,7 +78,7 @@ PACKAGE LayoutPkg IS
 			--                                                    Section1   / Section2
 			--  case 1: neither section occupied/reserved         null       /  null
 			--          random firing
-			--          display "C1 MYSTERY SENSOR FIRING not close to any trains: ignore it" 
+			--          display "C1 MYSTERY SENSOR FIRING not close to any trains: error stop all" 
 			--          return
 			--  case 2: only one section occupied/reserved        not null   /  null
 			--          if section1 occupied and sensor = sn and closed-->open then
