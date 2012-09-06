@@ -48,15 +48,6 @@ BEGIN
    BEGIN
       LayoutTask.SetLayout(LayoutPtr);
       SSITask.SetLayout(LayoutPtr);
-      -- IF NOT Simulator THEN
-         -- DECLARE
-            -- ListenForLocoBufferClientsTask       : ListenForLocoBufferClientsTaskType;
-            -- WriteLocoBufferStringTask            : WriteLocoBufferStringTaskType;
-            -- ReadLocoBufferByteTask               : ReadLocoBufferByteTaskType;
-         -- BEGIN
-            -- NULL;
-         -- END;
-      -- END IF;
    END;
 EXCEPTION
    WHEN Error : OTHERS =>

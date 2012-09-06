@@ -5,6 +5,7 @@ with screenManager; use screenManager;
 with TcpIp; use TcpIp;
 with logFiles;
 with messageTranslationLibrary; use messageTranslationLibrary;
+with GlobalAdmin; use GlobalAdmin;
 
 
 package body RailroadManager is
@@ -579,7 +580,7 @@ package body RailroadManager is
                   
                   -- Stop the train
                   message := makeLocoSpdMsg(trains(location).phySlot, 1);
-                  size := sendTCPMessage(message);
+						sendMessage(socket, message, size);
 
                   -- Clear the entry in the slot lookup table
                   message := makeWriteSlotDataToClearMsg(trains(location).phySlot);
@@ -725,7 +726,7 @@ package body RailroadManager is
          end case;
 
          if cmd /= halt then
-            size := sendTCPMessage(message);
+				sendMessage(socket, message, size);
             objScreenManager.putError("sending " & toEnglish(message));
          end if;
 
@@ -733,7 +734,7 @@ package body RailroadManager is
             for i in trains'range loop
                if trainIdIsValid(i) then
                   message := makeLocoSpdMsg(trains(i).virslot, 0);
-                  size := sendTCPMessage(message);
+						sendMessage(socket, message, size);
                   objScreenManager.putError("sending " & toEnglish(message));
                end if;
 	        end loop;

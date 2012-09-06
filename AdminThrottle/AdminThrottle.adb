@@ -6,12 +6,15 @@ WITH ScreenManager;
 WITH KeyboardTask; 
 WITH RailroadManager; 
 with railroadTask; 
-with TcpIp; 
+with TcpIp; use TcpIp;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with logFiles;
 with MessageTranslationTypes;
 with Tracer; use Tracer;
+with GlobalAdmin; use GlobalAdmin;
+with ada.Text_IO; use ada.Text_IO;
+
 
 PROCEDURE AdminThrottle IS
    kLFString           : string(1..1) := ( 1=> standard.ascii.LF);
@@ -55,8 +58,8 @@ BEGIN
    
    logFiles.initialize(withAdminLog, withKeyboardLog);
    
-   tcpIp.makeTCPConnection(to_string(IP), to_string(Port));
-     
+	makeConnection(socket, IP, Port, 1.0, true);
+	     
    screenManager.objScreenManager.clearTheScreen;
    screenManager.ObjScreenManager.Initialize(withController);
    railroadManager.ObjRailroadManager.Initialize;
