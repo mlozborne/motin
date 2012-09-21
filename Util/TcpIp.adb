@@ -12,7 +12,7 @@ package body TcpIp is
 		return ("IP " & to_string(socket.ip) 
 		        & " port " & to_string(socket.port)
 				  & " connected " & boolean'image(socket.connected)
-				  & " isBlocking " & boolean'image(socket.isBlocking)
+				  & " blocking " & boolean'image(socket.blocking)
 				  & " socket number " & integer'image(integer(socket.number)));
    exception
 	   when error : others =>
@@ -83,7 +83,7 @@ package body TcpIp is
          Put_Line("Trying to connect to IP " & to_string(IP) & " and port " & to_string(Port)); 
 						
 		   socket.IP := IP;
-			socket.isBlocking := blocking;
+			socket.blocking := blocking;
 			socket.port := port;
 			
          CValue := DllInit;

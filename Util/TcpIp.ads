@@ -11,14 +11,16 @@ package TcpIp is
 
    subtype msgType is messageTranslationTypes.messageType;
 
+	procedure establishListener
+
    procedure makeConnection(
 				 socket     : out socketType;    -- the established socket   
 	          IP         : unbounded_String;  -- IP address of the server
-	          Port       : unbounded_String;  -- port on which server is listening for connections
+	          Port       : unbounded_String;  -- port on which server is listening for connection requests
 				 timeDelay  : duration;          -- how long to wait between connection attempts
-				 blocking   : boolean);          -- if true set up a connection that blocks on send and receive
+				 blocking   : boolean);          -- if true set up a socket that blocks on send and receive
 	-- pre: none 
-	-- post: a connection has been establish
+	-- post: a socket has been establish
 	-- warning: if a connection isn't established then never returns
 	
    procedure sendMessage(
@@ -46,7 +48,7 @@ private
 		IP                : unbounded_String := to_unbounded_string("");
 		port					: unbounded_String := to_unbounded_string("");
 		connected			: boolean := false;
-		isBlocking        : boolean := false;
+		blocking          : boolean := false;
 		number	       	: C.Double  := 0.0;
 	end record;
 end TcpIp;
