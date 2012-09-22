@@ -103,7 +103,9 @@ PACKAGE BODY MessageIO IS
       LOOP--loop to add clients
          LOOP--loop to accept connections
             put_line("MessageIO pkg in ListenForThrottleTask: listening for OThrottle");
-            AcceptSocket := TcpAccept(Sockid => ListenSocket, Mode => C.Double (1));    -- 1 here causes nonblocking on ReceiveMessage
+            AcceptSocket := TcpAccept(
+					Sockid => ListenSocket, 
+				   Mode => C.Double (1));    -- 1 here causes nonblocking on ReceiveMessage
             EXIT WHEN Integer(AcceptSocket) > 0;
             put_line("MessageIO pkg in ListenForThrottleTask: error in listening for OThrottle");
             DELAY 1.0;   -- only need to listen occassionally for throttle connections                     

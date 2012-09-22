@@ -58,7 +58,8 @@ BEGIN
    
    logFiles.initialize(withAdminLog, withKeyboardLog);
    
-	makeConnection(socket, IP, Port, 1.0, true);
+	initialize39DLL;
+	connectToServer(socket, IP, Port, 1.0, true);
 	     
    screenManager.objScreenManager.clearTheScreen;
    screenManager.ObjScreenManager.Initialize(withController);

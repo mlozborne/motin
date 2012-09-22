@@ -11,14 +11,32 @@ package TcpIp is
 
    subtype msgType is messageTranslationTypes.messageType;
 
-	procedure establishListener
+	procedure initialize39DLL;
+	-- Must be done first
+	
+	procedure establishListenerSocket(
+				 socket     : out socketType;    -- the established socket
+				 port       : unbounded_String;  -- port on which server is listening for connection requests
+				 maxClient  : natural;           -- max number of clients (?)
+				 blocking   : boolean;           -- if true set up a socket that blocks on send and receive
+	-- pre: none 
+	-- post: an attempt has been made to establish a listener socket				
 
-   procedure makeConnection(
+   procedure acceptClient(
+				 listenSocket   : socketType;     -- the listener socket   
+				 socketToClient : out socketType; -- the socket back to the client
+				 timeDelay      : duration;       -- how long to wait between accept attempts if the listner doesn't block
+			 	 blocking       : boolean);       -- if true set up a socket that blocks on send and receive
+	-- pre: none 
+	-- post: a socket has been establish
+	-- warning: if a connection isn't established then never returns
+	
+   procedure connectToServer(
 				 socket     : out socketType;    -- the established socket   
 	          IP         : unbounded_String;  -- IP address of the server
 	          Port       : unbounded_String;  -- port on which server is listening for connection requests
 				 timeDelay  : duration;          -- how long to wait between connection attempts
-				 blocking   : boolean);          -- if true set up a socket that blocks on send and receive
+			 	 blocking   : boolean);          -- if true set up a socket that blocks on send and receive
 	-- pre: none 
 	-- post: a socket has been establish
 	-- warning: if a connection isn't established then never returns
@@ -45,8 +63,8 @@ package TcpIp is
 private
    kLFString           : string(1..1) := ( 1=> standard.ascii.LF);   
 	type SocketType is record
-		IP                : unbounded_String := to_unbounded_string("");
-		port					: unbounded_String := to_unbounded_string("");
+		IP                : unbounded_String := to_unbounded_string("unknown");
+		port					: unbounded_String := to_unbounded_string("unknown");
 		connected			: boolean := false;
 		blocking          : boolean := false;
 		number	       	: C.Double  := 0.0;
