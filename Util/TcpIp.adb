@@ -17,38 +17,33 @@ package body TcpIp is
          raise;
    end initialize39DLL;
 		
-
+	function zeroSocket return socketType is
+	begin	
+		return c.double(0);
+	end;
+	
    procedure establishListenerSocket(
 				 socket     : out socketType;
 	          Port       : unbounded_String;
 				 maxClients : natural;
 				 blocking   : boolean) is
 		blockingMode : c.double;
-		cvalue		 : c.double;
    begin
       
 		Put_Line("Trying to establish a listener socket for port " & to_string(Port)); 
-					
-		socket.blocking := blocking;
-		socket.port := port;
-		socket.ip := to_unbounded_string("listener");
-		
+							
 		if blocking then
 			blockingMode := c.double(0);
 		else
 			blockingMode := c.double(1);
 		end if;
 		
-		socket.number := TcpListen(
+		socket := TcpListen(
 			Port => c.double(integer'value(to_string(port))),
 			Max => c.double(maxClients),
-			Mode => BlockingMode);  
-			
-		if integer(socket.number) > 0 then
-			socket.connected := true;
-		end if;
-		
-		Put_Line("Finished trying to establish a listener socket for port " & to_string(Port));
+			Mode => BlockingMode);       -- this determines the mode of the listener socket 
+
+      Put_Line("Have established listener socket " & integer'image(integer(socket))); 			
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.establishListenerSocket --" & kLFString & Exception_Information (error));
@@ -59,37 +54,29 @@ package body TcpIp is
 				 listenSocket   : socketType;     
 				 socketToClient : out socketType; 
 				 timeDelay      : duration;
-			 	 blocking       : boolean);
+			 	 blocking       : boolean) is
 		blockingMode : c.double;
-		cvalue		 : c.double;
    begin
+      Put_Line("Waiting for connection request on listen socket " & integer'image(integer(listenSocket))); 
       loop
-         Put_Line("Trying to connect to IP " & to_string(IP) & " and port " & to_string(Port)); 
 						
-		   socket.IP := IP;
-			socket.blocking := blocking;
-			socket.port := port;
-			
 			if blocking then
 				blockingMode := c.double(0);
 			else
 				blockingMode := c.double(1);
 			end if;
 			
-         socket.number := TcpConnect(
-            Ip   => New_String(to_string(IP)),
-            Port => c.double(integer'value(to_string(port))),
-            Mode => BlockingMode);  
+         socketToClient := TcpAccept(
+				sockId => listenSocket,
+            Mode => BlockingMode);    -- this determines the mode of send/receive on this socket
 				
-         exit when integer(socket.number) > 0;
+         exit when integer(socketToClient) > 0;
 			
 			if timeDelay > 0.0 then
 				delay timeDelay;
 			end if;
-      end loop;
-		socket.connected := true;
-		
-		Put_Line("Connected to IP " & to_string(IP) & " and port " & to_string(Port));
+      end loop;		
+      Put_Line("In response to request have established socket to client " & integer'image(integer(socketToClient))); 
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.acceptClient --" & kLFString & Exception_Information (error));
@@ -103,35 +90,31 @@ package body TcpIp is
 				 timeDelay  : duration; 
 				 blocking   : boolean) is
 		blockingMode : c.double;
-		cvalue		 : c.double;
    begin
       loop
          Put_Line("Trying to connect to IP " & to_string(IP) & " and port " & to_string(Port)); 
-						
-		   socket.IP := IP;
-			socket.blocking := blocking;
-			socket.port := port;
-			
+									
 			if blocking then
 				blockingMode := c.double(0);
 			else
 				blockingMode := c.double(1);
 			end if;
 			
-         socket.number := TcpConnect(
+         socket := TcpConnect(
             Ip   => New_String(to_string(IP)),
             Port => c.double(integer'value(to_string(port))),
-            Mode => BlockingMode);  
+            Mode => BlockingMode);   -- this determines the mode of send/receive on this socket
 				
-         exit when integer(socket.number) > 0;
+         exit when integer(socket) > 0;
 			
 			if timeDelay > 0.0 then
 				delay timeDelay;
 			end if;
       end loop;
-		socket.connected := true;
 		
-		Put_Line("Connected to IP " & to_string(IP) & " and port " & to_string(Port));
+		Put_Line("Now connected to IP " & to_string(IP) & 
+					" and port " & to_string(Port) & 
+					" with socket " & integer'image(integer(socket)));
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.connectToServer --" & kLFString & Exception_Information (error));
@@ -146,15 +129,15 @@ package body TcpIp is
 		cvalue		 : c.double;
       CEmptyString : Chars_Ptr := New_String("");
    begin
-		if not socket.connected then
+		if integer(socket) <= 0 then
 			size := -9999;
-			raise socketNotConnected;
+			raise socketNotEstablished;
 		end if;
       Cvalue := ClearBuffer(cZero);
       for i in 1..msg.size loop
          cvalue := writeByte(c.double(msg.byteArray(i)), cZero);
       end loop;
-      size := integer(SendMessage(socket.number, CEmptyString, CZero, CZero));
+      size := integer(SendMessage(socket, CEmptyString, CZero, CZero));
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.sendMessage --" & kLFString & Exception_Information (error));
@@ -168,17 +151,23 @@ package body TcpIp is
       CZero        : C.double := c.double(0); 
 	   cvalue		 : c.double;
    begin
-		if not socket.connected then
+		if integer(socket) <= 0 then
 			size := -9999;
 			msg.size := 0;
-			raise socketNotConnected;
+			raise socketNotEstablished;
 		end if;
       Cvalue := ReceiveMessage(              
-         Sockid => socket.number,
+         Sockid => socket,
          Len    => CZero,
          Buffid => CZero);
-      msg.size := integer(cvalue);
 		size := integer(cvalue);
+		
+		if size <= 0 then
+			msg.size := 0;
+			return;
+		end if;
+		
+      msg.size := size;
       for i in 1..msg.size loop
          msg.byteArray(i) := unsigned_8(readByte(cZero));
       end loop;
@@ -190,11 +179,7 @@ package body TcpIp is
 
 	function toString(socket : socketType) return string is
 	begin	
-		return ("IP " & to_string(socket.ip) 
-		        & " port " & to_string(socket.port)
-				  & " connected " & boolean'image(socket.connected)
-				  & " blocking " & boolean'image(socket.blocking)
-				  & " socket number " & integer'image(integer(socket.number)));
+		return (integer'image(integer(socket)));
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.toSting --" & kLFString & Exception_Information (error));

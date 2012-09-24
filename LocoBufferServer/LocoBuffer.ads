@@ -3,6 +3,8 @@
 
 WITH Interfaces; USE Interfaces;
 WITH Interfaces.C; USE Interfaces.C;
+with tcpip; use tcpip;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 PACKAGE LocoBuffer IS
 
@@ -30,13 +32,13 @@ PACKAGE LocoBuffer IS
 
    END ReadLocoBufferByteTaskType;
 
-   TYPE SocketListType IS ARRAY (0..19) OF C.Double;
+   TYPE SocketListType IS ARRAY (0..50) OF socketType;
    SocketListArray: SocketListType := (OTHERS=>c.double(-1.0));
 PRIVATE
    PRAGMA Import(C, InitializePort, "StartSerialPort");
    PRAGMA Import(C, ReadData, "ReadFromSerial");
    PRAGMA Import(C, WriteData, "WriteToSerial");
-   LocoBufferPort  : C.Double := C.Double(1236);   -- for loco buffer
+   LocoBufferPort  : unbounded_String := to_unbounded_string("1236");   -- for loco buffer
    kLFString      : string(1..1) := ( 1=> standard.ascii.LF);  
    -- KMaxLenMsg       : constant Integer := 128; -- = kMaxLenFileName + 3, from RailroadManager.ads
    -- type byteArrayType is array (1..kMaxLenMsg) of unsigned_8;

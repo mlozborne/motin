@@ -3,6 +3,7 @@ with MessageTranslationTypes; use messageTranslationTypes;
 with NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
 WITH Ada.Unchecked_Deallocation;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with tcpip; use tcpip;
 
 
 PACKAGE ControllerGlobals IS
@@ -52,20 +53,24 @@ PACKAGE ControllerGlobals IS
 	procedure convertSensorArrayToList(A : in sensorArrayAccess; L : in out naturalListType);
 	procedure convertSensorListToArray(L : in naturalListType; A : out sensorArrayAccess);
    
-   ConnectSocket   : C.Double;
+   ConnectSocket   : SocketType;
+   -- ConnectSocket   : C.Double;
    IpStrAda        : unbounded_String := to_unbounded_string("0.0.0.0");
    
    Simulator       : Boolean := False;
-   SimulatorPort   : C.Double := C.Double(1234);   -- for simulator 
-   MessageIOPort   : C.Double := C.Double(1235);   -- for othrottles
-   LocoBufferPort  : C.Double := C.Double(1236);   -- for loco buffer
+   SimulatorPort   : unbounded_String := to_unbounded_string("1234");   -- for simulator 
+   MessageIOPort   : unbounded_String := to_unbounded_string("1235");   -- for othrottles
+   LocoBufferPort  : unbounded_String := to_unbounded_string("1236");   -- for loco buffer
+   -- SimulatorPort   : C.Double := C.Double(1234);   -- for simulator 
+   -- MessageIOPort   : C.Double := C.Double(1235);   -- for othrottles
+   -- LocoBufferPort  : C.Double := C.Double(1236);   -- for loco buffer
    
 
-   Buffer0         : C.Double := C.Double(0.0);
-   BlockingMode    : C.Double := C.Double(0);
-   NonblockingMode : C.Double := C.Double(1);
-   CZero           : C.Double := C.Double(0);
-   CValue          : C.Double;
+   -- Buffer0         : C.Double := C.Double(0.0);
+   -- BlockingMode    : C.Double := C.Double(0);
+   -- NonblockingMode : C.Double := C.Double(1);
+   -- CZero           : C.Double := C.Double(0);
+   -- CValue          : C.Double;
 
    UZero : CONSTANT Unsigned_8 := 16#00#;
 

@@ -3,7 +3,8 @@
 WITH Interfaces.C.Strings; USE Interfaces.C.Strings;
 WITH Interfaces; USE Interfaces; 
 WITH Ada.Text_IO; USE Ada.Text_IO;
-WITH Api39dll; USE Api39dll;
+--WITH Api39dll; USE Api39dll;
+with tcpip; use tcpip;
 WITH CommandQueueManager; USE CommandQueueManager;
 WITH ControllerGlobals; USE ControllerGlobals;
 WITH Ada.Exceptions; USE  Ada.Exceptions;
@@ -75,42 +76,27 @@ PACKAGE BODY MessageIO IS
 		
    end LastMessageManagerType;
 
-   CZero : C.Double := C.Double (0);
-
    -------------------------------------------------
    -- set up server
    -- continuously waits for throttle connections
    -- add new connections to socketlist
    -------------------------------------------------
    TASK BODY ListenForThrottleTaskType IS
-      ListenSocket,
-         AcceptSocket,
-         CValue       : C.Double;
+         ListenSocket		: socketType;    -- this socket will block
+			AcceptSocket      : socketType;    -- this socket will NOT block
    BEGIN
-      CValue := DllInit;
-      
-      LOOP                                               
-         put_line("MessageIO pkg in ListenForThrottleTask: setting up server for OThrottles at 1235");
-         ListenSocket := TcpListen(
-            Port => MessageIOPort,
-            Max  => C.Double (2),
-            Mode => C.Double (0));             -- 0 here causes blocking on TcpAccept
-         EXIT WHEN Integer(ListenSocket) > 0;
-         put_line("MessageIO pkg in ListenForThrottleTask: error in setting up server for OThrottles");
-      END LOOP;
-      put_line("MessageIO pkg in ListenForThrottleTask: server for OThrottles now set up");
+      initialize39DLL;      
+                                                     
+		put_line("MessageIO pkg in ListenForThrottleTask: setting up server for OThrottles at 1235");
+		establishListenerSocket(listenSocket, messageIOPort, 101, true);
+		if integer(listenSocket) <= 0 then
+			put_line("Couldn't establish listener socket. Error code is " & toString(listenSocket));
+			raise socketNotEstablished;
+		end if;
       
       LOOP--loop to add clients
-         LOOP--loop to accept connections
-            put_line("MessageIO pkg in ListenForThrottleTask: listening for OThrottle");
-            AcceptSocket := TcpAccept(
-					Sockid => ListenSocket, 
-				   Mode => C.Double (1));    -- 1 here causes nonblocking on ReceiveMessage
-            EXIT WHEN Integer(AcceptSocket) > 0;
-            put_line("MessageIO pkg in ListenForThrottleTask: error in listening for OThrottle");
-            DELAY 1.0;   -- only need to listen occassionally for throttle connections                     
-         END LOOP;
-         put_line("MessageIO pkg in ListenForThrottleTask: new OThrottle at socket " & C.Double'Image(AcceptSocket));
+			acceptClient(listenSocket, acceptSocket, 1.0, false);
+         put_line("MessageIO pkg in ListenForThrottleTask: new OThrottle at socket " & toString(AcceptSocket));
          SocketList.AddSocket(AcceptSocket);--add to socketlist
       END LOOP;
    EXCEPTION
@@ -118,44 +104,101 @@ PACKAGE BODY MessageIO IS
          put_line("**************** EXCEPTION in MessageIO: ListenForThrottleTaskType " & Exception_Information(Error));
    END ListenForThrottleTaskType;
 
+   -- TASK BODY ListenForThrottleTaskType IS
+      -- ListenSocket,
+         -- AcceptSocket,
+         -- CValue       : C.Double;
+   -- BEGIN
+      -- CValue := DllInit;
+      
+      -- LOOP                                               
+         -- put_line("MessageIO pkg in ListenForThrottleTask: setting up server for OThrottles at 1235");
+         -- ListenSocket := TcpListen(
+            -- Port => MessageIOPort,
+            -- Max  => C.Double (2),
+            -- Mode => C.Double (0));             -- 0 here causes blocking on TcpAccept
+         -- EXIT WHEN Integer(ListenSocket) > 0;
+         -- put_line("MessageIO pkg in ListenForThrottleTask: error in setting up server for OThrottles");
+      -- END LOOP;
+      -- put_line("MessageIO pkg in ListenForThrottleTask: server for OThrottles now set up");
+      
+      -- LOOP--loop to add clients
+         -- LOOP--loop to accept connections
+            -- put_line("MessageIO pkg in ListenForThrottleTask: listening for OThrottle");
+            -- AcceptSocket := TcpAccept(
+					-- Sockid => ListenSocket, 
+				   -- Mode => C.Double (1));    -- 1 here causes nonblocking on ReceiveMessage
+            -- EXIT WHEN Integer(AcceptSocket) > 0;
+            -- put_line("MessageIO pkg in ListenForThrottleTask: error in listening for OThrottle");
+            -- DELAY 1.0;   -- only need to listen occassionally for throttle connections                     
+         -- END LOOP;
+         -- put_line("MessageIO pkg in ListenForThrottleTask: new OThrottle at socket " & C.Double'Image(AcceptSocket));
+         -- SocketList.AddSocket(AcceptSocket);--add to socketlist
+      -- END LOOP;
+   -- EXCEPTION
+      -- WHEN error: OTHERS =>
+         -- put_line("**************** EXCEPTION in MessageIO: ListenForThrottleTaskType " & Exception_Information(Error));
+   -- END ListenForThrottleTaskType;
+
    -----------------------------------------------------
    -- connects to LocoBuffer package server or simulator
    -- stores socket in socketlist, end task
    -----------------------------------------------------
    TASK BODY ConnectToSimulatorOrLocoBufferTaskType IS
-      ConnectSocket, CValue        : C.Double;
+      ConnectSocket        : socketType;
    BEGIN
-      CValue := DllInit;
+      initialize39DLL;
       
-      LOOP
-         IF Simulator THEN
-            put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to train simulator");
-            ConnectSocket := TcpConnect(
-               Ip   => New_String (to_string(IpStrAda)),
-               Port => SimulatorPort,
-               Mode => C.Double (1));            -- Does this cause nonblocking on SendMessage????
-         ELSE
-            put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to loco buffer");
-            ConnectSocket := TcpConnect(
-               Ip=>New_String(to_string(IpStrAda)), 
-               Port=> LocoBufferPort, 
-               Mode=>C.Double(1));               -- Does this cause nonblocking on SendMessage????
-         END IF;
-         EXIT WHEN Integer(ConnectSocket) > 0;
-         put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: error when trying to connect");
-      END LOOP;
-      
-      IF Simulator THEN
+		IF Simulator THEN
+			put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to train simulator");
+			connectToServer(connectSocket, IpStrAda, SimulatorPort, 1.0, false); 
          put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: connected to train simulator");
-      ELSE
+		ELSE
+			put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to loco buffer");
+			connectToServer(connectSocket, IpStrAda, LocoBufferPort, 1.0, false); 
          put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: connected to LocoBuffer pkg server");
-      END IF;
-      
+		END IF;
+		
       SocketList.AddRailroadSocket(ConnectSocket);
    EXCEPTION
       WHEN error: OTHERS =>
          put_line("**************** EXCEPTION in MessageIO: ConnectToSimulatorOrLocoBufferTaskType " & Exception_Information(Error));
    END ConnectToSimulatorOrLocoBufferTaskType;
+
+   -- TASK BODY ConnectToSimulatorOrLocoBufferTaskType IS
+      -- ConnectSocket, CValue        : C.Double;
+   -- BEGIN
+      -- CValue := DllInit;
+      
+      -- LOOP
+         -- IF Simulator THEN
+            -- put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to train simulator");
+            -- ConnectSocket := TcpConnect(
+               -- Ip   => New_String (to_string(IpStrAda)),
+               -- Port => SimulatorPort,
+               -- Mode => C.Double (1));            -- Does this cause nonblocking on SendMessage????
+         -- ELSE
+            -- put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to loco buffer");
+            -- ConnectSocket := TcpConnect(
+               -- Ip=>New_String(to_string(IpStrAda)), 
+               -- Port=> LocoBufferPort, 
+               -- Mode=>C.Double(1));               -- Does this cause nonblocking on SendMessage????
+         -- END IF;
+         -- EXIT WHEN Integer(ConnectSocket) > 0;
+         -- put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: error when trying to connect");
+      -- END LOOP;
+      
+      -- IF Simulator THEN
+         -- put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: connected to train simulator");
+      -- ELSE
+         -- put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: connected to LocoBuffer pkg server");
+      -- END IF;
+      
+      -- SocketList.AddRailroadSocket(ConnectSocket);
+   -- EXCEPTION
+      -- WHEN error: OTHERS =>
+         -- put_line("**************** EXCEPTION in MessageIO: ConnectToSimulatorOrLocoBufferTaskType " & Exception_Information(Error));
+   -- END ConnectToSimulatorOrLocoBufferTaskType;
 
    ---------------------------------------------------------
    -- get message from CommandQueueManager
@@ -165,8 +208,8 @@ PACKAGE BODY MessageIO IS
    TASK BODY SendMessageTaskType IS
       internalMessage : MessageType;
       MyArray         : ByteArrayType;
-      CValue,
-      Socket          : C.Double;
+      Socket          : socketType;
+      -- Socket          : C.Double;
       Slot            : SlotType;
       Size,
       SocketListLen   : Integer;
@@ -175,6 +218,7 @@ PACKAGE BODY MessageIO IS
 		firstByte   	 : unsigned_8;
 		secondByte      : unsigned_8;
 		msgSize         : integer;
+		-- CZero : C.Double := C.Double (0);
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
@@ -227,7 +271,7 @@ PACKAGE BODY MessageIO IS
             myPutLine(" ");
 			
             -- Clear the message output buffer
-				CValue := ClearBuffer(CZero);--clear buffer
+				-- CValue := ClearBuffer(CZero);--clear buffer
 				
 				-- Send the messages
             CASE firstByte IS			
@@ -239,10 +283,11 @@ PACKAGE BODY MessageIO IS
                   -- MyArray(2) := Unsigned_8(Slot);
                   -- MyArray(internalMessage.size) := makeChecksumByte(myArray, internalMessage.size); 
                   SocketList.GetSocket(0, Socket);
-                  FOR I IN 1..msgSize LOOP
-                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
-                  END LOOP;
-                  Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
+						sendMessage(socket, internalMessage, size);
+                  -- FOR I IN 1..msgSize LOOP
+                     -- CValue := WriteByte(C.Double(MyArray(I)), CZero);
+                  -- END LOOP;
+                  -- Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
 				      
 						-- internalMessage.byteArray := myArray;
 						LastMessageManager.saveMessage(internalMessage);
@@ -272,30 +317,44 @@ PACKAGE BODY MessageIO IS
 			  
 					WHEN OPC_SL_RD_DATA | OPC_LONG_ACK | OPC_SW_REP =>             --send to all othrottles, not railroad
 			   
-                  FOR I IN 1..msgSize LOOP
-                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
-                  END LOOP;
                   SocketList.GetSocketListLength(SocketListLen);
                   FOR I IN 1..(SocketListLen-1) LOOP
                      SocketList.GetSocket(I, Socket);
                      IF Integer(Socket) > 0 THEN
-                        Size := Integer(SendMessage(Socket, New_String(""),CZero, CZero));
+							   sendMessage(socket, internalMessage, size);
                      END IF;
                   END LOOP;
+                  -- FOR I IN 1..msgSize LOOP
+                     -- CValue := WriteByte(C.Double(MyArray(I)), CZero);
+                  -- END LOOP;
+                  -- SocketList.GetSocketListLength(SocketListLen);
+                  -- FOR I IN 1..(SocketListLen-1) LOOP
+                     -- SocketList.GetSocket(I, Socket);
+                     -- IF Integer(Socket) > 0 THEN
+                        -- Size := Integer(SendMessage(Socket, New_String(""),CZero, CZero));
+                     -- END IF;
+                  -- END LOOP;
 
 				  
                WHEN UZero =>   --extended messages send to all othrottles
 			   
-                  FOR I IN 1..msgSize LOOP
-                     CValue := WriteByte(C.Double(MyArray(I)), CZero);
-                  END LOOP;
                   SocketList.GetSocketListLength(SocketListLen);
                   FOR I IN 1..(SocketListLen-1) LOOP
                      SocketList.GetSocket(I, Socket);
                      IF Integer(Socket) > 0 THEN
-                        Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
+							   sendMessage(socket, internalMessage, size);
                      END IF;
                   END LOOP;
+                 -- FOR I IN 1..msgSize LOOP
+                     -- CValue := WriteByte(C.Double(MyArray(I)), CZero);
+                  -- END LOOP;
+                  -- SocketList.GetSocketListLength(SocketListLen);
+                  -- FOR I IN 1..(SocketListLen-1) LOOP
+                     -- SocketList.GetSocket(I, Socket);
+                     -- IF Integer(Socket) > 0 THEN
+                        -- Size := Integer(SendMessage(Socket, New_String(""), CZero, CZero));
+                     -- END IF;
+                  -- END LOOP;
                WHEN OTHERS=>
                   null;
             END CASE;
@@ -314,8 +373,9 @@ PACKAGE BODY MessageIO IS
    ----------------------------------------------------------
    TASK BODY ReceiveMessageTaskType IS
       Length             : Integer;
-      Socket             : C.Double;
-      CValue             : C.Double;
+      Socket             : socketType;
+      -- Socket             : C.Double;
+      -- CValue             : C.Double;
       Size               : Integer;
       MyArray            : ByteArrayType; --array of unsigned_8
       internalMessage    : MessageType;
@@ -328,12 +388,12 @@ PACKAGE BODY MessageIO IS
 		switchId    		 : switchIdType;
 		responseToOpcode	 : unsigned_8;
 		switchState			 : switchStateType;
-		
+		-- CZero : C.Double := C.Double (0);		
    BEGIN
       loop
          SocketList.GetSocket(0, Socket);
          exit when integer(socket) > 0;
-         delay 1.0;  -- no point in checking for connection to locobuffer/simulator too frequently
+         delay 0.1;  -- no point in checking for connection to locobuffer/simulator too frequently
       end loop;
 
       LOOP
@@ -350,21 +410,24 @@ PACKAGE BODY MessageIO IS
                IF (Integer(Socket) = -1) THEN
                   null;
                else -- read from client
-                  CValue := ClearBuffer(CZero);
-                  Size := Integer(ReceiveMessage(Socket, CZero, CZero));
+						
+						receiveMessage(socket, internalMessage, size);
+						myArray := internalMessage.byteArray;
+                  -- CValue := ClearBuffer(CZero);
+                  -- Size := Integer(ReceiveMessage(Socket, CZero, CZero));
                   IF Size <= 0 THEN
                      null;
                   else
 						
 						   lastMessageManager.messageReceived;
 						
-                     FOR J IN 1..Size LOOP
-                        MyArray(J) := Unsigned_8(ReadByte(CZero));
-                     END LOOP;
+                     -- FOR J IN 1..Size LOOP
+                        -- MyArray(J) := Unsigned_8(ReadByte(CZero));
+                     -- END LOOP;
 
 							-- Echo the message
-							internalMessage.Size := natural(Size);
-							internalMessage.ByteArray := MyArray;
+							-- internalMessage.Size := natural(Size);
+							-- internalMessage.ByteArray := MyArray;
 							myPutLine(" ");
 							if i /= 0 then
 								-- not from simulator/locobuffer server

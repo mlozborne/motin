@@ -8,6 +8,7 @@ WITH GenericQueue;
 WITH GenericList;
 WITH ControllerGlobals; USE ControllerGlobals;
 with MessageTranslationTypes; use messageTranslationTypes;
+with tcpip; use tcpip;
 
 PACKAGE CommandQueueManager IS
 
@@ -22,15 +23,18 @@ PACKAGE CommandQueueManager IS
    --get first message from outqueue
    PROCEDURE Get(message : OUT MessageType);
 
-   TYPE SocketListType IS ARRAY (0..100) OF C.Double;
+   TYPE SocketListType IS ARRAY (0..100) OF socketType;
    PACKAGE MessageQueue IS NEW GenericQueue(QueueElement=> MessageType);   
    
    --list of sockets used by MessageIO package
    PROTECTED TYPE SocketListT IS
-      PROCEDURE AddSocket(Socket: IN C.Double);
-      PROCEDURE AddRailroadSocket(Socket: IN C.Double);
       PROCEDURE GetSocketListLength(Length: OUT Integer);
-      PROCEDURE GetSocket(Index: IN Integer; Socket: OUT C.Double);
+      PROCEDURE AddSocket(Socket: IN socketType);
+      PROCEDURE AddRailroadSocket(Socket: IN socketType);
+      PROCEDURE GetSocket(Index: IN Integer; Socket: OUT socketType);
+      -- PROCEDURE AddSocket(Socket: IN C.Double);
+      -- PROCEDURE AddRailroadSocket(Socket: IN C.Double);
+      -- PROCEDURE GetSocket(Index: IN Integer; Socket: OUT C.Double);
    PRIVATE
       SocketListArray: SocketListType := (OTHERS=>(-1.0));
    END SocketListT;

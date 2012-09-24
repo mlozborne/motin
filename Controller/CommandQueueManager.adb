@@ -67,7 +67,7 @@ PACKAGE BODY CommandQueueManager IS
 
    PROTECTED BODY SocketListT IS
 
-      PROCEDURE AddSocket (Socket : IN  C.Double) IS
+      PROCEDURE AddSocket (Socket : IN  socketType) IS
       BEGIN
          FOR I IN 1..(SocketListArray'Length-1) LOOP
             IF (Integer(SocketListArray(I)) = -1) THEN
@@ -82,7 +82,7 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END AddSocket;
 
-      PROCEDURE AddRailroadSocket (Socket : IN C.Double) IS
+      PROCEDURE AddRailroadSocket (Socket : IN socketType) IS
       BEGIN
          SocketListArray(0) := Socket;
       EXCEPTION
@@ -101,7 +101,7 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END GetSocketListLength;
 
-      PROCEDURE GetSocket (Index : IN  Integer; Socket : OUT C.Double) IS
+      PROCEDURE GetSocket (Index : IN  Integer; Socket : OUT socketType) IS
       BEGIN
          IF (Index >= 0) AND (Index < SocketListArray'Length) THEN
             Socket := SocketListArray(Index);
