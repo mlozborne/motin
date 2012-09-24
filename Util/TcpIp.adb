@@ -30,7 +30,7 @@ package body TcpIp is
 		blockingMode : c.double;
    begin
       
-		Put_Line("Trying to establish a listener socket for port " & to_string(Port)); 
+		Put_Line("    In EstablishListenerSocket for port " & to_string(Port)); 
 							
 		if blocking then
 			blockingMode := c.double(0);
@@ -43,7 +43,7 @@ package body TcpIp is
 			Max => c.double(maxClients),
 			Mode => BlockingMode);       -- this determines the mode of the listener socket 
 
-      Put_Line("Have established listener socket " & integer'image(integer(socket))); 			
+      Put_Line("    In EstablishListenerSocket established socket " & integer'image(integer(socket))); 			
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.establishListenerSocket --" & kLFString & Exception_Information (error));
@@ -57,7 +57,7 @@ package body TcpIp is
 			 	 blocking       : boolean) is
 		blockingMode : c.double;
    begin
-      Put_Line("Waiting for connection request on listen socket " & integer'image(integer(listenSocket))); 
+      Put_Line("    In AcceptClient using listen socket " & integer'image(integer(listenSocket))); 
       loop
 						
 			if blocking then
@@ -76,7 +76,7 @@ package body TcpIp is
 				delay timeDelay;
 			end if;
       end loop;		
-      Put_Line("In response to request have established socket to client " & integer'image(integer(socketToClient))); 
+      Put_Line("    In AcceptClient have established socket to client with " & integer'image(integer(socketToClient))); 
    exception
 	   when error : others =>
 		   put_line("UNPLANNED EXCEPTION in TcpIp.acceptClient --" & kLFString & Exception_Information (error));
@@ -92,7 +92,7 @@ package body TcpIp is
 		blockingMode : c.double;
    begin
       loop
-         Put_Line("Trying to connect to IP " & to_string(IP) & " and port " & to_string(Port)); 
+         Put_Line("    In ConnectToServer using IP " & to_string(IP) & " and port " & to_string(Port)); 
 									
 			if blocking then
 				blockingMode := c.double(0);
@@ -112,7 +112,7 @@ package body TcpIp is
 			end if;
       end loop;
 		
-		Put_Line("Now connected to IP " & to_string(IP) & 
+		Put_Line("    In ConnectToServer now connected to IP " & to_string(IP) & 
 					" and port " & to_string(Port) & 
 					" with socket " & integer'image(integer(socket)));
    exception

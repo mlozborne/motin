@@ -87,16 +87,16 @@ PACKAGE BODY MessageIO IS
    BEGIN
       initialize39DLL;      
                                                      
-		put_line("MessageIO pkg in ListenForThrottleTask: setting up server for OThrottles at 1235");
+		put_line("MessageIO -- In ListenForThrottleTask: setting up server for OThrottles at 1235");
 		establishListenerSocket(listenSocket, messageIOPort, 101, true);
 		if integer(listenSocket) <= 0 then
-			put_line("Couldn't establish listener socket. Error code is " & toString(listenSocket));
+			put_line("MessageIO -- Couldn't establish listener socket. Error code is " & toString(listenSocket));
 			raise socketNotEstablished;
 		end if;
       
       LOOP--loop to add clients
 			acceptClient(listenSocket, acceptSocket, 1.0, false);
-         put_line("MessageIO pkg in ListenForThrottleTask: new OThrottle at socket " & toString(AcceptSocket));
+         put_line("MessageIO -- in ListenForThrottleTask: new OThrottle at socket " & toString(AcceptSocket));
          SocketList.AddSocket(AcceptSocket);--add to socketlist
       END LOOP;
    EXCEPTION
@@ -150,13 +150,13 @@ PACKAGE BODY MessageIO IS
       initialize39DLL;
       
 		IF Simulator THEN
-			put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to train simulator");
+			put_line("MessageIO -- in ConnectToSimulatorOrLocoBufferTask: trying to connect to train simulator");
 			connectToServer(connectSocket, IpStrAda, SimulatorPort, 1.0, false); 
-         put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: connected to train simulator");
+         put_line("MessageIO -- in ConnectToSimulatorOrLocoBufferTask: connected to train simulator");
 		ELSE
-			put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: trying to connect to loco buffer");
+			put_line("MessageIO -- in ConnectToSimulatorOrLocoBufferTask: trying to connect to loco buffer");
 			connectToServer(connectSocket, IpStrAda, LocoBufferPort, 1.0, false); 
-         put_line("MessageIO pkg in ConnectToSimulatorOrLocoBufferTask: connected to LocoBuffer pkg server");
+         put_line("MessageIO -- in ConnectToSimulatorOrLocoBufferTask: connected to LocoBuffer pkg server");
 		END IF;
 		
       SocketList.AddRailroadSocket(ConnectSocket);
