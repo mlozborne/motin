@@ -247,11 +247,6 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       end removeEntryByTrainId;
       
-      ---------------------------------------------------------------
-      -- create new entry in lookup table
-      -- TrainId should be same value returned by
-      -- previous call to RequestTrainId ()
-      ---------------------------------------------------------------
       PROCEDURE CreateEntry (
             VirtTrainAddr : IN     LocoAddressType;
             PhysTrainAddr : IN     LocoAddressType;
@@ -259,7 +254,6 @@ PACKAGE BODY CommandQueueManager IS
       BEGIN
          LookupTable(TrainId).PhysTrainAddr := PhysTrainAddr;
          LookupTable(TrainId).VirtTrainAddr := VirtTrainAddr;
-         LookupTable(TrainId).InUse := True;
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.CreateEntry " & Exception_Information(Error));
@@ -291,7 +285,7 @@ PACKAGE BODY CommandQueueManager IS
                RETURN I;
             END IF;
          END LOOP;
-         RAISE EntryNotFound;
+         return 0;  -- was RAISE EntryNotFound 
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager PhysSlotNumToTrainId " & Exception_Information(Error));
@@ -338,14 +332,14 @@ PACKAGE BODY CommandQueueManager IS
                RETURN I;
             END IF;
          END LOOP;
-         RAISE EntryNotFound;
+         return 0;  -- was RAISE EntryNotFound;
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager PhysAddrToTrainId " & Exception_Information(Error));
             raise;
       END PhysAddrToTrainId;
 
-      function addressToTrainId(address : natural) return slotType is  -- mo 1/14/12
+      function addressToTrainId(address : natural) return slotType is  -- mo 1/14/12   xxx
       begin
          for i in lookupTable'range loop
             if lookupTable(i).hasVirtSlot and lookupTable(i).hasPhySlot and
@@ -368,7 +362,7 @@ PACKAGE BODY CommandQueueManager IS
                RETURN I;
             END IF;
          END LOOP;
-         RETURN 1;          
+         RETURN 1;          xxx
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager VirtAddrToTrainId " & Exception_Information(Error));

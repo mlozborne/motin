@@ -130,10 +130,14 @@ PACKAGE BODY SSIPkg IS
 							if PhysAddr = kClearAllSlotsAddress then 
 							   myPutLine("    Unregistering all trains and clearing the DCS200 slot table          in SSITask: ");
 								unregisterAllTrainsAndClearDCS200SlotTable(LayoutPtr);
+								registeringPhysAddr := 0;    
+								registeringVirtualAddr := 0;       
 							elsif count = 0 then
 								if  slotLookupTable.IsPhysAddrInTable(PhysAddr) then
 									unregisterOneTrainAndClearItsDCS200Slot(PhysAddr, LayoutPtr);
 								end if;
+								registeringPhysAddr := 0;    
+								registeringVirtualAddr := 0;       
 							elsif registeringPhysAddr /= 0 or registeringVirtualAddr /= 0 then       -- mo 1/12/12
                         -- Currently in the middle of initializing a train so ignore this DoLocoInit
                         myPutLine("    Try again when previous doLocoInit completes       in SSITask: ");

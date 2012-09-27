@@ -65,35 +65,52 @@ PACKAGE CommandQueueManager IS
    --stores virtual slot number and address, physical slot number and address, index into table is train id
    PROTECTED SlotLookupTable IS
 
-      -- display slotLookupTable
       procedure put;
-  
-      procedure clearEntry(i : natural);
-		procedure clearTable;
+			-- display current content of talbe
+			
       PROCEDURE RequestTrainId(TrainId: OUT TrainIdType);
-      procedure removeEntryByPhysAddr(PhysAddr : LocoAddressType); 
-      procedure removeEntryByTrainId(trainId : trainIdType); 
+			-- return the index of the first unused slot in the table and 
+			--   set the slot to in use
+			-- raise LookupTableFull if there are no empty slots
+			
       PROCEDURE CreateEntry(VirtTrainAddr: IN LocoAddressType;
                             PhysTrainAddr: IN LocoAddressType; 
                             TrainId: IN TrainIdType);
+			-- pre:  TrainId has been obtained using RequestTrainId
+			-- make an entry in the table at index TrainId
+			
+		procedure clearTable;
+			-- reinitialize all entries in the table
+      procedure clearEntry(i : natural);
+			-- reinitialize all fields in entry i
+      procedure removeEntryByTrainId(trainId : trainIdType); 
+			-- same as clearEntry above
+      procedure removeEntryByPhysAddr(PhysAddr : LocoAddressType); 
+			-- clear the entry that contains the PhysAddr
+			
       FUNCTION TrainIdToVirtSlotNum(TrainId: TrainIdType) RETURN  SlotType;
+			-- return the VirtSlotNum at index TrainId
       FUNCTION TrainIdToPhysSlotNum(TrainId: TrainIdType) RETURN SlotType;
+			-- return the PhysSlotNum at index TrainId
+      FUNCTION TrainIdToVirtAddr(TrainId: TrainIdType) RETURN LocoAddressType;
+      FUNCTION TrainIdToPhysAddr(TrainId: TrainIdType) RETURN LocoAddressType;
+			
       FUNCTION PhysSlotNumToTrainId(PhysSlotNum: SlotType) RETURN TrainIdType;
-       
+			-- return the location in the table of PhysSlotNum or 0 if not found     
+      procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean);
+      FUNCTION IsPhysAddrInTable(PhysAddr: LocoAddressType) RETURN Boolean;
+      FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType;
+      FUNCTION VirtAddrToTrainId(VirtAddr: LocoAddressType) RETURN TrainIdType;
+			
       function addressToTrainId(address : natural) return slotType;  -- mo 1/12/12
       -- return 0 if there is no completed entry in the table containing this address
       --          as either a physical or virtual address
       -- return virtual slot number otherwise
       
-      procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean);
-      FUNCTION IsPhysAddrInTable(PhysAddr: LocoAddressType) RETURN Boolean;
-      FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType;
-      FUNCTION VirtAddrToTrainId(VirtAddr: LocoAddressType) RETURN TrainIdType;
-      FUNCTION TrainIdToVirtAddr(TrainId: TrainIdType) RETURN LocoAddressType;
-      FUNCTION TrainIdToPhysAddr(TrainId: TrainIdType) RETURN LocoAddressType;
       FUNCTION HasBothSlots(TrainId: TrainIdType) RETURN Boolean;
       PROCEDURE SavePhySlot(PhySlot: SlotType; PhysAddr: LocoAddressType; Result: OUT Boolean);
       PROCEDURE SaveVirtSlot(VirtSlot: SlotType; VirtAddr: LocoAddressType; Result: OUT Boolean);
+
       PROCEDURE SetTrainSensors(TrainId: TrainIdType; Sensors: SensorArrayType);
       PROCEDURE GetTrainSensors(TrainId: TrainIdType; Sensors: OUT SensorArrayAccess);
 
