@@ -87,22 +87,30 @@ PACKAGE CommandQueueManager IS
 			-- same as clearEntry above
       procedure removeEntryByPhysAddr(PhysAddr : LocoAddressType); 
 			-- clear the entry that contains the PhysAddr
-			
+		procedure removeEntryByEitherAddr(PhysAddr : LocoAddressType;
+                                   		 VirtAddr : LocoAddressType);
+			-- clear the entry that contains either address.
       FUNCTION TrainIdToVirtSlotNum(TrainId: TrainIdType) RETURN  SlotType;
-			-- return the VirtSlotNum at index TrainId
+			-- return VirtSlotNum at index TrainId. Could be 0.
       FUNCTION TrainIdToPhysSlotNum(TrainId: TrainIdType) RETURN SlotType;
-			-- return the PhysSlotNum at index TrainId
+			-- return PhysSlotNum at index TrainId. Could be 0.
       FUNCTION TrainIdToVirtAddr(TrainId: TrainIdType) RETURN LocoAddressType;
+			-- return VirtAddr at index TrainId. Could be 0.
       FUNCTION TrainIdToPhysAddr(TrainId: TrainIdType) RETURN LocoAddressType;
+			-- return PhysAddr at index TrainId. Could be 0.
 			
       FUNCTION PhysSlotNumToTrainId(PhysSlotNum: SlotType) RETURN TrainIdType;
-			-- return the location in the table of PhysSlotNum or 0 if not found     
+			-- return the index in the table of PhysSlotNum or 0 if not found     
       procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean);
+			-- return the index in the table of VirtSlotNum or 0 if not found     
       FUNCTION IsPhysAddrInTable(PhysAddr: LocoAddressType) RETURN Boolean;
+			-- return true if PhysAddr in table else return false
       FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType;
+			-- return the index in the table of PhysAddr or 0 if not found     
       FUNCTION VirtAddrToTrainId(VirtAddr: LocoAddressType) RETURN TrainIdType;
+			-- return the index in the table of VirtAddr or 0 if not found     
 			
-      function addressToTrainId(address : natural) return slotType;  -- mo 1/12/12
+      function addressToVirtSlotNum(address : natural) return SlotType;  -- mo 1/12/12
       -- return 0 if there is no completed entry in the table containing this address
       --          as either a physical or virtual address
       -- return virtual slot number otherwise

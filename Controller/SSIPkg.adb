@@ -33,6 +33,9 @@ PACKAGE BODY SSIPkg IS
    begin
       -- Get train id
       TrainId := SlotLookupTable.PhysAddrToTrainId(PhysAddr);
+		if trainId = 0 then
+			return;
+		end if;
       
       -- Tell the train task to quit
       CommandQueueManagerPut(makeTrainTaskQuitMsg(trainId));
@@ -138,12 +141,15 @@ PACKAGE BODY SSIPkg IS
 								end if;
 								registeringPhysAddr := 0;    
 								registeringVirtualAddr := 0;       
-							elsif registeringPhysAddr /= 0 or registeringVirtualAddr /= 0 then       -- mo 1/12/12
-                        -- Currently in the middle of initializing a train so ignore this DoLocoInit
-                        myPutLine("    Try again when previous doLocoInit completes       in SSITask: ");
-                        SendToOutQueue(makePutInitOutcomeMsg(PhysAddr, 123, 0, 123));  
-                        
-                     else  -- registeringPhysAddr = 0 and registeringVirtualAddr = 0
+							else 
+								if registeringPhysAddr /= 0 or registeringVirtualAddr /= 0 then       -- mo 1/12/12
+									-- Already in the middle of initializing a train 
+									-- Remove that train from the SlotLookupTable and start over with this
+									-- new DoLocoInit.
+									SlotLookupTable.removeEntryByEitherAddr(registeringPhysAddr, registeringVirtualAddr);
+									registeringPhysAddr := 0;    
+									registeringVirtualAddr := 0;     
+								end if;                      
 								pCount := positive(count);    
 								LayoutPtr.AreTrainSensorsLegal(pCount, Sensors.All, Result);
 								IF not Result THEN                 
@@ -282,15 +288,15 @@ PACKAGE BODY SSIPkg IS
                   -- end if
                   declare
                      address         : natural;
-                     trainId         : natural;
+                     virtSlotNum     : natural;
                   begin
                      SplitLocoAdrMsg(cmd, Address);  
-                     trainId := slotLookupTable.addressToTrainId(address);
-                     if trainId = 0 then
+                     virtSlotNum := slotLookupTable.addressToVirtSlotNum(address);
+                     if virtSlotNum = 0 then
                         myPutLine("    Table entry for this address is not complete             in SSITask: ");
                         sendToOutQueue(makeLongAckMsg(opc_loco_adr));
                      else
-                        sendToOutQueue(makeSlRdDataMsg(trainId, address));
+                        sendToOutQueue(makeSlRdDataMsg(virtSlotNum, address));
                      end if;
                   end;
                   

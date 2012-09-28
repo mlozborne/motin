@@ -237,6 +237,22 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       end removeEntryByPhysAddr;
       
+      procedure removeEntryByEitherAddr(PhysAddr : LocoAddressType;
+                                   		 VirtAddr : LocoAddressType) is  
+      begin
+         FOR I IN LookupTable'RANGE LOOP
+            IF (physAddr /= 0 and lookupTable(I).physTrainAddr = PhysAddr) or
+				   (virtAddr /= 0 and lookupTable(i).virtTrainAddr = virtAddr) THEN
+					clearEntry(i);
+					return;
+            END IF;
+         END LOOP;
+      EXCEPTION
+         WHEN error: OTHERS=>
+            put_line("**************** EXCEPTION CommandQueueManager: SlotLookupTable.removeEntryByEitherAddr " & Exception_Information(Error));
+            raise;
+      end removeEntryByEitherAddr;
+      
       procedure removeEntryByTrainId(trainId : trainIdType) is 
          I : trainIdType := trainId;
       begin
@@ -325,6 +341,21 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END IsPhysAddrInTable;
 
+      function addressToVirtSlotNum(address : natural) return slotType is  -- mo 1/14/12   xxx
+      begin
+         for i in lookupTable'range loop
+            if lookupTable(i).hasVirtSlot and lookupTable(i).hasPhySlot and
+            (lookupTable(i).virtTrainAddr = address or lookupTable(i).physSlotNum = address) then
+               return lookupTable(i).virtSlotNum; 
+            end if;
+         end loop;
+         return 0;
+      EXCEPTION
+         WHEN error: OTHERS=>
+            put_line("**************** EXCEPTION CommandQueueManager addressToVirtSlotNum " & Exception_Information(Error));
+            raise;
+      end addressToVirtSlotNum;
+
       FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType IS
       BEGIN
          FOR I IN LookupTable'RANGE LOOP
@@ -339,21 +370,6 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END PhysAddrToTrainId;
 
-      function addressToTrainId(address : natural) return slotType is  -- mo 1/14/12   xxx
-      begin
-         for i in lookupTable'range loop
-            if lookupTable(i).hasVirtSlot and lookupTable(i).hasPhySlot and
-            (lookupTable(i).virtTrainAddr = address or lookupTable(i).physSlotNum = address) then
-               return i; 
-            end if;
-         end loop;
-         return 0;
-      EXCEPTION
-         WHEN error: OTHERS=>
-            put_line("**************** EXCEPTION CommandQueueManager addressToTrainId " & Exception_Information(Error));
-            raise;
-      end addressToTrainId;
-
       FUNCTION VirtAddrToTrainId(VirtAddr: LocoAddressType) RETURN
             TrainIdType IS
       BEGIN
@@ -362,7 +378,7 @@ PACKAGE BODY CommandQueueManager IS
                RETURN I;
             END IF;
          END LOOP;
-         RETURN 1;          xxx
+         RETURN 0;          
       EXCEPTION
          WHEN error: OTHERS=>
             put_line("**************** EXCEPTION CommandQueueManager VirtAddrToTrainId " & Exception_Information(Error));

@@ -499,11 +499,11 @@ PACKAGE BODY LayoutPkg IS
 				elsif section1.state = occupied and sensorId = sn.id and oldSensorState = open then
 					myPutLine("      -------------IdentifyTrainV1: C2 ERROR back of train leaving open sensor. Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif section1.state = occupied and sensorId = s1.id then 
 					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no reserved section but s1 fired anyway.  Error stop train.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif section1.state = reserved then
 					sf := getSensorAtFrontOfReservedSectionPtr(section1.all);
 					if oldSensorState = open then
@@ -519,7 +519,7 @@ PACKAGE BODY LayoutPkg IS
 						if nextFreeSection = null then
 							myPutLine("      -------------IdentifyTrainV1: C2 ERROR couldn't fix, next section blocked. Error stop train");	
 							sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
-							SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+							-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 						else 
 							nextFreeSection.state := occupied;
 							BlockSections(nextFreeSection.BlockingList);
@@ -544,7 +544,7 @@ PACKAGE BODY LayoutPkg IS
 				else
 					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no clue what went wrong. Erro stop train");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				end if;
 	
 			elsif searchOutcome = 3 then
@@ -556,19 +556,19 @@ PACKAGE BODY LayoutPkg IS
 					myPutLine("      -------------IdentifyTrainV1: C3 ERROR doesn't match back of either train. Error stop both trains.");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), section2.trainId);
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif oldSensorState = open then
 					myPutLine("      -------------IdentifyTrainV1: C3 ERROR double occupancy, one train has run into another. Error stop both trains. ");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), section2.trainId);
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif oldSensorState = closed then 
 					myPutLine("      -------------IdentifyTrainV1: C3 NORMAL back of train leaving closed sensor sn"); 
 				else
 					myPutLine("      -------------IdentifyTrainV1: C3 ERROR no clue what went wrong. Error stop both trains. ");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), section2.trainId);
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				end if;
 				
 			elsif searchOutcome = 4 then
@@ -578,7 +578,7 @@ PACKAGE BODY LayoutPkg IS
 				if not sensorUnderTrain(trainId, sensorId) then
 					myPutLine("      -------------IdentifyTrainV1: C4 ERROR sensor not under train. Error stop train."); 
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
-					SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				else -- sensor = sn-1, sn-2, ..., s2
 				
 					SensorPtrs := GetSensorPtrs(TrainId); -- This array contains pointers to s1,s2,...,sn
@@ -607,35 +607,7 @@ PACKAGE BODY LayoutPkg IS
 					end loop;	
 					putTrainPositionMsg(TrainId);
 					SendToAllTrainQueues(makeTryToMoveAgainMsg);					
-					disposeArrayOfSensorObjPtr(sensorPtrs);
-					
-					-- myPutLine("      -------------IdentifyTrainV1: C4 NORMAL back of train approaching sensor sn-1"); 
-					-- getBackSensorPtr(trainId).state := open;   -- Open sn for safety
-	         	-- sn := GetBackSensorPtr(TrainId);    
-					-- SendToOutQueue(makePutSensorStateMsg(sn.id, open));					
-               -- Free the section that contains sn				
-					-- IF section1.SensorList.Tail.Sensor.Id = sn.id OR section1.SensorList.Head.Sensor.Id = sn.id then
-						-- section1.State := Free;
-						-- ReleaseBlockings(section1.BlockingList);
-						-- SendToOutQueue(makePutSectionStateMsg(section1.Id, Free));
-						-- section1.trainId := 0;
-					-- ELSE   
-						-- section2.State := Free;
-						-- ReleaseBlockings(section2.BlockingList);
-						-- SendToOutQueue(makePutSectionStateMsg(section2.Id, Free));
-						-- section2.trainId := 0;
-					-- END IF;					
-					-- RemoveLastSensor(TrainId);
-					-- SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
-					-- putTrainPositionMsg(TrainId);
-					-- SendToAllTrainQueues(makeTryToMoveAgainMsg);					
-					-- else -- sensor = sn-2,...,s2
-					-- myPutLine("      -------------IdentifyTrainV1: C4 FIXING sn-2,..s2 fired.");	
-					
-					-- myPutLine("      -------------IdentifyTrainV1: C4 haven't written code yet, so error stop instead");
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
-					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-					
+					disposeArrayOfSensorObjPtr(sensorPtrs);				
 				end if;
 
 			elsif searchOutcome = 5 then

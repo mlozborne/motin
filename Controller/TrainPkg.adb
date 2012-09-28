@@ -330,6 +330,12 @@ PACKAGE BODY TrainPkg IS
                                     State := Error;
                                     SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                     SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedAbruptStop));      -- mo 1/9/12
+												for i in 1..3 loop
+													SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, on, Bell));
+													delay 1.0;
+													SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, off, Bell));
+													delay 0.5;
+												end loop;
                               END CASE;
                            WHEN MsgLoseReservation =>
                               IF State = Moving THEN
