@@ -130,7 +130,6 @@ package body TcpIp is
       CEmptyString : Chars_Ptr := New_String("");
    begin
 		if integer(socket) <= 0 then
-			size := -9999;
 			raise socketNotEstablished;
 		end if;
       Cvalue := ClearBuffer(cZero);
