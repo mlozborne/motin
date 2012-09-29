@@ -151,8 +151,6 @@ package body TcpIp is
 	   cvalue		 : c.double;
    begin
 		if integer(socket) <= 0 then
-			size := -9999;
-			msg.size := 0;
 			raise socketNotEstablished;
 		end if;
       Cvalue := ReceiveMessage(              

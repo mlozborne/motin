@@ -306,7 +306,8 @@ PACKAGE BODY MessageIO IS
 							-- locobuffer processes them? Probably not, but if so, we can put in a delay
 							-- here.
 							if not simulator then
-								delay 3.0;   -- to avoid overwhelming the locobuffer
+								null;
+								--delay 3.0;   -- to avoid overwhelming the locobuffer
 							end if;
 						end if;
 				  

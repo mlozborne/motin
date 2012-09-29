@@ -34,10 +34,19 @@ int StartSerialPort()
 	if (fail == 0) //SetCommState failed
 		return 0;
 	
+	// ADA TEAM VERSION
+	// COMMTIMEOUTS timeouts = {0};
+	// timeouts.ReadIntervalTimeout = 1; //was 50
+	// timeouts.ReadTotalTimeoutConstant = 100; //was 50
+	// timeouts.ReadTotalTimeoutMultiplier = 1000; //was 10
+	// timeouts.WriteTotalTimeoutConstant = 0; //was 0
+	// timeouts.WriteTotalTimeoutMultiplier = 0; //was 0
+	
+	// CODY'S VERSION
 	COMMTIMEOUTS timeouts = {0};
-	timeouts.ReadIntervalTimeout = 1; //was 50
-	timeouts.ReadTotalTimeoutConstant = 100; //was 50
-	timeouts.ReadTotalTimeoutMultiplier = 1000; //was 10
+	timeouts.ReadIntervalTimeout = MAXDWORD; //was 50
+	timeouts.ReadTotalTimeoutConstant = 0; //was 50
+	timeouts.ReadTotalTimeoutMultiplier = 0; //was 10
 	timeouts.WriteTotalTimeoutConstant = 0; //was 0
 	timeouts.WriteTotalTimeoutMultiplier = 0; //was 0
 

@@ -126,8 +126,10 @@ PACKAGE BODY LocoBuffer IS
                       IF (msg.byteArray(1) AND 16#80#) = 16#80# THEN  
                          --is first byte opcode? leading bit should be 1
                          msg.byteArray(Size) := makeChecksumByte(msg.byteArray, Size);
+								 myPutLine("Top of WriteData loop");
                          FOR K IN 1..Size LOOP
                             WriteData(msg.byteArray(K));
+									 myPutLine("Finish one WriteData");
                          END LOOP;
                          
                          -- msg.byteArray := myArray;
@@ -141,7 +143,7 @@ PACKAGE BODY LocoBuffer IS
                   end if;
                END IF;
             END LOOP;
-            DELAY 0.001; -- locobuffer has limited write baud rate, mustn't overwhelm it
+				DELAY 0.001; -- locobuffer has limited write baud rate, mustn't overwhelm it
          EXCEPTION
             WHEN Error: OTHERS=>
                put_line("**************** EXCEPTION in LocoBuffer pkg: WriteLocoBufferStringTaskType " & Exception_Information(Error));
