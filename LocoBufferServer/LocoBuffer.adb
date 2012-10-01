@@ -126,10 +126,10 @@ PACKAGE BODY LocoBuffer IS
                       IF (msg.byteArray(1) AND 16#80#) = 16#80# THEN  
                          --is first byte opcode? leading bit should be 1
                          msg.byteArray(Size) := makeChecksumByte(msg.byteArray, Size);
-								 myPutLine("Top of WriteData loop");
+								 -- myPutLine("Top of WriteData loop");
                          FOR K IN 1..Size LOOP
                             WriteData(msg.byteArray(K));
-									 myPutLine("Finish one WriteData");
+									 -- myPutLine("Finish one WriteData");
                          END LOOP;
                          
                          -- msg.byteArray := myArray;
@@ -202,6 +202,7 @@ PACKAGE BODY LocoBuffer IS
 						msg.byteArray(1) := Data;
 						FOR I IN 2..InUse LOOP
 						  Data := ReadData;
+						  -- delay 0.0001;
 						  msg.byteArray(I) := Data;
 						END LOOP;
 						-- CValue := ClearBuffer(CZero);--clear buffer
@@ -218,20 +219,20 @@ PACKAGE BODY LocoBuffer IS
 						  IF (Integer(SocketListArray(I)) >= 0) THEN
 							 sendMessage(socketListArray(i), msg, size);
 							 -- Size := Integer(SendMessage(SocketListArray(I), New_String(""), CZero, CZero));
-							 myPutLine("      sent to socket" 
-							           & integer'image((Integer(SocketListArray(I))))
-										  & " with size =" & integer'image(size));
+							 -- myPutLine("      sent to socket" 
+							           -- & integer'image((Integer(SocketListArray(I))))
+										  -- & " with size =" & integer'image(size));
 							 --delay 0.001; -- Not all messages are reaching the controller. Perhaps this will fix it.
 						  END IF;
 						END LOOP;
 					end if;
 				   
             END IF;
-            --DELAY 0.001; -- locobuffer has limited read baud rate and loconet not going to generate 
-                         -- more than 1000 message/sec				
+            DELAY 0.1; -- locobuffer has limited read baud rate and loconet not going to generate 
+                        -- more than x message/sec				
          EXCEPTION
             WHEN error: OTHERS =>
-               put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask: ReadLocoByte " & Exception_Information(Error));
+               put_line("**************** EXCEPTION in LocoBuffer pkg  in  ReadLocoBufferByteTask " & Exception_Information(Error));
          END;
       END LOOP;
    END ReadLocoBufferByteTaskType;

@@ -909,7 +909,10 @@ PACKAGE BODY LayoutPkg IS
 		begin
 			ptr := sensorList.head;
 			while ptr /= null loop
-				ptr.sensor.state := open;
+				if ptr.sensor.state = closed then
+					ptr.sensor.state := open;
+               SendToOutQueue(makePutSensorStateMsg(ptr.sensor.id, open));
+				end if;
 				ptr := ptr.next;
 			end loop;
       EXCEPTION
