@@ -68,6 +68,8 @@ BEGIN
    keyboardTask.ObjKeyboardTask.Start(withController);
    
    if layoutFileName /= "" then
+		delay 10.0;  -- Don't want to read the XML file before RBLDisplay has had a chance
+		            -- to establish itself.
       command.cmd := railroadManager.readXML;
       command.fileName(1..length(layoutFileName)) := to_string(layoutFileName);
       command.fnInUse := length(layoutFileName);
