@@ -293,7 +293,7 @@ PACKAGE BODY SSIPkg IS
                      SplitLocoAdrMsg(cmd, Address);  
                      virtSlotNum := slotLookupTable.addressToVirtSlotNum(address);
                      if virtSlotNum = 0 then
-                        myPutLine("    Table entry for this address is not complete             in SSITask: ");
+                        myPutLine("    This is not a virtual address or the entry is not complete            in SSITask: ");
                         sendToOutQueue(makeLongAckMsg(opc_loco_adr));
                      else
                         sendToOutQueue(makeSlRdDataMsg(virtSlotNum, address));

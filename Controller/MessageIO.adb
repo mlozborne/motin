@@ -243,8 +243,8 @@ PACKAGE BODY MessageIO IS
 						MyArray(2) := Unsigned_8(Slot);
 						MyArray(msgSize) := makeChecksumByte(MyArray, msgSize); 					
 					when OPC_SL_RD_DATA =>
-						Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
-						MyArray(3) := Unsigned_8(Slot);
+						-- Slot := SlotLookupTable.TrainIdToVirtSlotNum(Integer(MyArray(3)));
+						-- MyArray(3) := Unsigned_8(Slot);
 						MyArray(msgSize) := makeChecksumByte(MyArray, msgSize);  
 					when UZERO =>
 						case secondByte is
