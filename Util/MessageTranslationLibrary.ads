@@ -70,7 +70,7 @@ package MessageTranslationLibrary is
    FUNCTION makeInputRepMsg               (Sensor : Positive; IsHigh : Boolean) RETURN MessageType;
    function makeLocoAdrMsg                (locoAddress : locoAddressType) return MessageType;
    function makeLocoDirfMsg               (slot : slotType; direction : directionType; light, horn, bell : onOffType) return MessageType;
-   function makeLocoSndMsg                (slot : slotType; mute : onOffType) return MessageType;
+   function makeLocoSndMsg                (slot : slotType; F5, F6, mute : onOffType := Off) return MessageType;
    function makeLocoSpdMsg                (slot : slotType; speed : speedType) return MessageType;
    function makeLongAckMsg                (opcode : unsigned_8) return MessageType; 
    function makeMoveSlotsMsg              (slot1 : slotType; slot2 : slotType) return MessageType;

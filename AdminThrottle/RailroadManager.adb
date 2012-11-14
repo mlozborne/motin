@@ -612,7 +612,7 @@ package body RailroadManager is
                   return;
                else
                   trains(n).Mute := toggle(trains(n).Mute);
-                  message := makeLocoSndMsg(trains(n).virslot, trains(n).mute);
+                  message := makeLocoSndMsg(trains(n).virslot, mute=>trains(n).mute);
                   PutTrains(Trains);
                end if;
 

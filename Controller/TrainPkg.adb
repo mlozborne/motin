@@ -269,7 +269,7 @@ PACKAGE BODY TrainPkg IS
                            SendMsg := True;
                         END IF;
                         IF SendMsg THEN 
-                           SendToOutQueue(makeLocoSndMsg(TrainId, Mute));
+                           SendToOutQueue(makeLocoSndMsg(TrainId, CloseNext, ThrowNext, Mute));
                            SendToOutQueue(makePutTrainInformationMsg(TrainId, adjustedSpeed(direction, speed), Direction, Light, Bell, Horn, Mute));
                         END IF;
                      END;
@@ -295,7 +295,7 @@ PACKAGE BODY TrainPkg IS
                               mute := off;
                               sendToOutQueue(makeLocoSpdMsg(trainId, kSpeedAbruptStop)); 
                               SendToOutQueue(makeLocoDirfMsg(TrainId, Forward, Off, Off, Off));
-                              SendToOutQueue(makeLocoSndMsg(TrainId, Off));
+                              SendToOutQueue(makeLocoSndMsg(TrainId, Off, Off, Off));
                               SendToOutQueue(makePutTrainInformationMsg(TrainId, 0, Forward, Off, Off, Off, Off));
                               SendToOutQueue(makePutTrainStateMsg(TrainId, State));                              
                            WHEN MsgFrontSensorFired =>

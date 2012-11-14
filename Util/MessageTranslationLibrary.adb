@@ -475,13 +475,15 @@ package body MessageTranslationLibrary is
          raise;
    end makeLocoDirfMsg;
 
-   function makeLocoSndMsg(slot : slotType; mute : onOffType) return MessageType is
+   function makeLocoSndMsg(slot : slotType; F5, F6, mute : onOffType := Off) return MessageType is
       message : messageType;
       snd     : unsigned_8 := 16#00#;
    begin
       message.byteArray(1) := OPC_LOCO_SND;
       message.byteArray(2) := unsigned_8(slot);
-      if mute = On then snd := snd or kMuteOn; end if;
+      if mute   = On then snd := snd or kMuteOn; end if;
+      if F5     = On then snd := snd or kF5; end if;
+      if F6     = On then snd := snd or kF6; end if;
       message.byteArray(3) := snd;
       message.size := 4;
       makeChecksumByte(message);
