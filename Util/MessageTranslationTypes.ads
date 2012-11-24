@@ -24,7 +24,7 @@ package MessageTranslationTypes is
    type  sectionStateType is (free, reserved, occupied, blocked);
    type  trainStateType   is (moving, waiting, halted, error, beginChangeDirection, beginWaiting, beginHalted);
    type  switchStateType  is (Closed, Thrown, BeginClosed, BeginThrown, Read, Unknown);
-										-- "Read" is a tempory type that indicates the controller must
+										-- "Read" is a tempory state that indicates the controller must
 										-- ask the turnout for its current state. This is used while 
 										-- reading the XML layout file.
 
