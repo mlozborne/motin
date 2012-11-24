@@ -148,14 +148,14 @@ def makePowerStr(msg):
 	else:
 		str = OPC_GPOFF
 	str += makeCheckSumByte(str)
-	return "\x02\x00" + str
+	return chr(len(str)) + chr(0) + str
 	
 def makeLocoSpdStr(msg):
 	str = OPC_LOCO_SPD
 	str += chr(msg.slot)
 	str += chr(min(127, msg.speed))
 	str += makeCheckSumByte(str)
-	return "\x04\x00" + str
+	return chr(len(str)) + chr(0) + str
 
 def makeLocoDirfStr(msg):
 	str = OPC_LOCO_DIRF
@@ -167,7 +167,7 @@ def makeLocoDirfStr(msg):
 	if msg.bell == kOn           : dirf |= bitBellOn
 	str += chr(dirf)
 	str += makeCheckSumByte(str)
-	return  "\x04\x00" + str
+	return chr(len(str)) + chr(0) + str
 	
 def makeLocoSndStr(msg):
 	str = OPC_LOCO_SND
@@ -178,7 +178,7 @@ def makeLocoSndStr(msg):
 	if msg.F6 == kOn     : snd |= bitF6
 	str += chr(snd)
 	str += makeCheckSumByte(str)
-	return  "\x04\x00" + str
+	return chr(len(str)) + chr(0) + str
 	
 def makeSwReqStr(msg):	
 	str = OPC_SW_REQ
@@ -188,16 +188,54 @@ def makeSwReqStr(msg):
 	else:
 		str += chr(bitRequestThrow)
 	str += makeCheckSumByte(str)
-	return  "\x04\x00" + str
+	return chr(len(str)) + chr(0) + str
 	
 def makeMoveSlotsStr(msg):
 	str = OPC_MOVE_SLOTS
 	str += chr(msg.slot1)
 	str += chr(msg.slot2)
-	return "\x04\x00" + str
+	str += makeCheckSumByte(str)
+	return chr(len(str)) + chr(0) + str
 	
 def makeLocoAdrStr(msg):
 	str = OPC_LOCO_ADR
+	str += chr(msg.address / 128)
+	str += chr(msg.address % 128)
+	str += makeCheckSumByte(str)
+	return chr(len(str)) + chr(0) + str
+	
+def makeWriteSlotDataToClearStr(msg):
+	str = ["\x00" for i in range(0, 14)]
+	str[0] = OPC_WR_SL_DATA
+	str[1] = "\x0E"            # message length = 14
+	str[2] = chr(msg.slot)  
+	str[3] = "\x0B"            # status = 0000 1011
+	str = ''.join(str)
+	str += makeCheckSumByte(str)
+	return chr(len(str)) + chr(0) + str
+	
+def convertNaturalToBytes(value):
+	lowByte = value % 128
+	highByte = value /128
+	return chr(lowByte), chr(highByte)
+
+def makeDoLocoInitStr(msg):
+	str = chr(0)
+	str += doLocoInit
+	lowByte, highByte = convertNaturalToBytes(msg.address)
+	str += lowByte
+	str += highByte
+	sensorCount = len(sensors)
+	str += chr(sensorCount)
+	for sensor in msg.sensors:
+		lowByte, highByte = convertNaturalToBytes(sensor)
+		str += lowByte
+		str += highByte
+	str += makeCheckSumByte(str)
+	return chr(len(str)) + chr(0) + str
+	
+"""def makeDoReadLayoutStr(msg)
+	msg.fileName """
 	
 
 def splitInputRepStr(str):

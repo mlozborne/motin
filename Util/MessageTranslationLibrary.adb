@@ -444,8 +444,8 @@ package body MessageTranslationLibrary is
       message : messageType;
    begin
       message.byteArray(1) := OPC_LOCO_ADR;
-      message.byteArray(3) := unsigned_8(locoAddress mod 128);
       message.byteArray(2) := unsigned_8(locoAddress / 128);
+      message.byteArray(3) := unsigned_8(locoAddress mod 128);
       message.size := 4;
       makeChecksumByte(message);
       return message;
