@@ -13,7 +13,6 @@ bitRequestThrow      = 0x10
 bitReportClosed      = 0x30
 bitReportThrown      = 0x20
 
-
 # Some message constants
 kOn                   = 1        # For lights, horn, bell, mute, power
 kOff                  = 0
@@ -44,7 +43,6 @@ kUnknown              = 5
 kSensorOpen           = 0        # For sensor states 
 kSensorClosed         = 1
 
-
 # Opcodes sent to controller/railroad
 OPC_GPOFF      = '\x82' # power off
 OPC_GPON       = '\x83' # power on
@@ -55,6 +53,7 @@ OPC_SW_REQ     = '\xB0' # move a turnout
 OPC_MOVE_SLOTS = '\xBA' # set a slot to in-use	
 OPC_LOCO_ADR   = '\xBF' # request for slot data
 OPC_WR_SL_DATA = '\xEF' # write data into a slot
+OPC_SW_STATE   = '\xBC' # request state of a turnout
 doLocoInit             = chr(8)
 doReadLayout           = chr(10)
 getSwitchStates        = chr(22)
@@ -85,7 +84,6 @@ LocoAdrMsg                 = namedtuple('LocoAdrMsg', 'address')
 WriteSlotDataToClearMsg    = namedtuple('WriteSlotDataToClearMsg', 'slot')
 DoLocoInitMsg              = namedtuple('DoLocoInitMsg', 'address, sensors')
 DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg', 'fileName')
-GetSwitchStatesMsg         = namedtuple('GetSwitchStatesMsg', 'dummy')
 
 # Received message formats
 InputRepMsg                 = namedtuple('InputRepMsg', 'sensor, isHi')
@@ -95,11 +93,11 @@ SlRdDataMsg                 = namedtuple('SlRdDataMsg', 'address, isAddressAlrea
 PutTrainStateMsg            = namedtuple('PutTrainStateMsg', 'slot, state')
 PutTrainPositionMsg         = namedtuple('PutTrainPositionMsg', 'slot, sensors')
 PutSectionStateMsg          = namedtuple('PutSectionStateMsg', 'id, state')
-PutSwitchStateMsg           = namedtuple('PutSwitchStateMsg', 'id, switchState')
+PutSwitchStateMsg           = namedtuple('PutSwitchStateMsg', 'id, state')
 PutSensorStateMsg           = namedtuple('PutSensorStateMsg', 'id, state')
 PutInitOutcomeMsg           = namedtuple('PutInitOutcomeMsg', 'physAdd, physSlot, virtAdd, virtSlot')
 PutReadLayoutResponseMsg    = namedtuple('PutReadLayoutResponseMsg', 'responseFlag, code')
-PutTrainInformationMsg      = namedtuple('PutTrainInformationMsg', 'slot, speed, direction, lights, bell, horn')
+PutTrainInformationMsg      = namedtuple('PutTrainInformationMsg', 'slot, speed, direction, lights, bell, horn, mute')
 PutPowerChangeCompleteMsg   = namedtuple('PutPowerChangeCompleteMsg', 'dummy')
 
 def makeMsgStr(msg):
@@ -113,226 +111,259 @@ def makeMsgStr(msg):
 	elif isinstance(msg, WriteSlotDataToClearMsg)    : return makeWriteSlotDataToClearStr(msg)
 	elif isinstance(msg, DoLocoInitMsg)              : return makeDoLocoInitStr(msg)
 	elif isinstance(msg, DoReadLayoutMsg)            : return makeDoReadLayoutStr(msg)
-	elif isinstance(msg, GetSwitchStatesMsg)         : return makeGetSwitchStatesStr(msg)
 	else                                             : return None
 	
-def splitMsgStr(str):
-	if str[0] != 0:
-		opcode = str[0]
+def splitMsgStr(st):
+	if st[0] != 0:
+		opcode = st[0]
 	else:
-		opcode = str[1]
-	if   opcode == OPC_INPUT_REP              : return splitInputRepStr(str)
-	elif opcode == OPC_SW_REP                 : return splitSwRepStr(str)
-	elif opcode == OPC_LONG_ACK               : return splitLongAckStr(str)
-	elif opcode == OPC_SL_RD_DATA             : return splitSlRdDataStr(str)
-	elif opcode == putTrainState              : return splitPutTrainStateStr(str)
-	elif opcode == putTrainPosition           : return splitPutTrainPositionStr(str)
-	elif opcode == putSectionState            : return splitPutSectionStateStr(str)
-	elif opcode == putSwitchState             : return splitPutSwitchStateStr(str)
-	elif opcode == putSensorState             : return splitPutSensorStateStr(str)
-	elif opcode == putInitOutcome             : return splitPutInitOutcomeStr(str)
-	elif opcode == putReadLayoutResponse      : return splitPutReadLayoutResponseStr(str)
-	elif opcode == putTrainInformation        : return splitPutTrainInformationStr(str)
-	elif opcode == putPowerChangeComplete     : return splitPutPowerChangeCompleteStr(str)
-	else                                      : return none 
+		opcode = st[1]
+	if   opcode == OPC_INPUT_REP              : return splitInputRepStr(st)
+	elif opcode == OPC_SW_REP                 : return splitSwRepStr(st)
+	elif opcode == OPC_LONG_ACK               : return splitLongAckStr(st)
+	elif opcode == OPC_SL_RD_DATA             : return splitSlRdDataStr(st)
+	elif opcode == putTrainState              : return splitPutTrainStateStr(st)
+	elif opcode == putTrainPosition           : return splitPutTrainPositionStr(st)
+	elif opcode == putSectionState            : return splitPutSectionStateStr(st)
+	elif opcode == putSwitchState             : return splitPutSwitchStateStr(st)
+	elif opcode == putSensorState             : return splitPutSensorStateStr(st)
+	elif opcode == putInitOutcome             : return splitPutInitOutcomeStr(st)
+	elif opcode == putReadLayoutResponse      : return splitPutReadLayoutResponseStr(st)
+	elif opcode == putTrainInformation        : return splitPutTrainInformationStr(st)
+	elif opcode == putPowerChangeComplete     : return splitPutPowerChangeCompleteStr(st)
+	else                                      : return repr(st) 
 
-def makeCheckSumByte(str):
+def makeCheckSumByte(st):
 	checkSum = 0xFF
-	for byte in str:
+	for byte in st:
 		checkSum ^= ord(byte)
 	return chr(checkSum)
 
 def makePowerStr(msg):
+	#<0x83><CHK>    on
+	#<0x82><CHK>    off
 	if msg.setting == kOn:
-		str = OPC_GPON
+		st = OPC_GPON
 	else:
-		str = OPC_GPOFF
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+		st = OPC_GPOFF
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def makeLocoSpdStr(msg):
-	str = OPC_LOCO_SPD
-	str += chr(msg.slot)
-	str += chr(min(127, msg.speed))
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+	#<0xA0><SLOT#><SPD><CHK> 
+	st = OPC_LOCO_SPD
+	st += chr(msg.slot)
+	st += chr(min(127, msg.speed))
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 
 def makeLocoDirfStr(msg):
-	str = OPC_LOCO_DIRF
-	str += chr(msg.slot)
+	#<0xA1><SLOT#><DIR_STATE><CHK> 
+	st = OPC_LOCO_DIRF
+	st += chr(msg.slot)
 	dirf = 0x00
 	if msg.direction == kBackward: dirf |= bitBackward
 	if msg.lights == kOn         : dirf |= bitLightsOn
 	if msg.horn == kOn           : dirf |= bitHornOn
 	if msg.bell == kOn           : dirf |= bitBellOn
-	str += chr(dirf)
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+	st += chr(dirf)
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def makeLocoSndStr(msg):
-	str = OPC_LOCO_SND
-	str += chr(msg.slot)
+	#<0xA2><SLOT#><SOUND><CHK>
+	st = OPC_LOCO_SND
+	st += chr(msg.slot)
 	snd = 0x00
 	if msg.mute == kOn   : snd |= bitMuteOn
 	if msg.F5 == kOn     : snd |= bitF5
 	if msg.F6 == kOn     : snd |= bitF6
-	str += chr(snd)
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+	st += chr(snd)
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def makeSwReqStr(msg):	
-	str = OPC_SW_REQ
-	str += chr(msg.switch - 1)
+	#<0xB0><SW1><SW2><CHK> 
+	st = OPC_SW_REQ
+	st += chr(msg.switch - 1)
 	if msg.direction == kClosed:
-		str += chr(bitRequestClose)
+		st += chr(bitRequestClose)
 	else:
-		str += chr(bitRequestThrow)
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+		st += chr(bitRequestThrow)
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def makeMoveSlotsStr(msg):
-	str = OPC_MOVE_SLOTS
-	str += chr(msg.slot1)
-	str += chr(msg.slot2)
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+	#<0xBA><slot#><slot#><chk> 
+	st = OPC_MOVE_SLOTS
+	st += chr(msg.slot1)
+	st += chr(msg.slot2)
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def makeLocoAdrStr(msg):
-	str = OPC_LOCO_ADR
-	str += chr(msg.address / 128)
-	str += chr(msg.address % 128)
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+	#<0xBF><adrhigh><adrlow><chk> 
+	st = OPC_LOCO_ADR
+	st += chr(msg.address / 128)
+	st += chr(msg.address % 128)
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def makeWriteSlotDataToClearStr(msg):
-	str = ["\x00" for i in range(0, 14)]
-	str[0] = OPC_WR_SL_DATA
-	str[1] = "\x0E"            # message length = 14
-	str[2] = chr(msg.slot)  
-	str[3] = "\x0B"            # status = 0000 1011
-	str = ''.join(str)
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+	#<0xEF><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
+	st = ["\x00" for i in range(0, 13)]
+	st[0] = OPC_WR_SL_DATA
+	st[1] = "\x0E"            # message length = 14
+	st[2] = chr(msg.slot)  
+	st[3] = "\x0B"            # status = 0000 1011
+	st = ''.join(st)
+	st += makeCheckSumByte(st)
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
 def convertNaturalToBytes(value):
 	lowByte = value % 128
 	highByte = value /128
 	return chr(lowByte), chr(highByte)
+	
 
 def makeDoLocoInitStr(msg):
-	str = chr(0)
-	str += doLocoInit
+	#<0><8><physical loco address> <count> <sensor#>...<sensor#>      where address and sensor# are 2 bytes
+	st = chr(0)
+	st += doLocoInit
 	lowByte, highByte = convertNaturalToBytes(msg.address)
-	str += lowByte
-	str += highByte
-	sensorCount = len(sensors)
-	str += chr(sensorCount)
+	st += lowByte
+	st += highByte
+	sensorCount = len(msg.sensors)
+	st += chr(sensorCount)
 	for sensor in msg.sensors:
 		lowByte, highByte = convertNaturalToBytes(sensor)
-		str += lowByte
-		str += highByte
-	str += makeCheckSumByte(str)
-	return chr(len(str)) + chr(0) + str
+		st += lowByte
+		st += highByte
+	return chr(len(st)%128) + chr(len(st)/128) + st
 	
-"""def makeDoReadLayoutStr(msg)
-	msg.fileName """
+def makeDoReadLayoutStr(msg):
+	#<0><10><count><XML file name>       where count is 1 byte
+	st = chr(0)
+	st += doReadLayout
+	st += chr(len(msg.fileName))
+	st += msg.fileName
+	return chr(len(st)%128) + chr(len(st)/128) + st	
 	
-
-def splitInputRepStr(str):
+def splitInputRepStr(st):
+	#<0xB2><SN1><SN2><CHK>
 	bitI      = 0x20
 	bitL      = 0x10
-	a = ord(str[1])
-	b = ord(str[2]) & 0x0F
+	a = ord(st[1])
+	b = ord(st[2]) & 0x0F
 	c = 2 * (128 * b + a + 1)
-	if (str[2] & bitI) == bitI:
+	if (ord(st[2]) & bitI) == bitI:
 		# bitI is 1
 		sensor = c
 	else:
 		# bitI is 0
 		sensor = c - 1
-	isHi = ((str[2] & bitL) == bitL)
+	isHi = ((ord(st[2]) & bitL) == bitL)
 	return InputRepMsg(sensor = sensor, isHi = isHi)
-
-def splitSwRepStr(str):
-	switch = 1 + ord(str[1]) + 128 * (ord(str[2]) & 0x0F);
-	if (ord(str[2]) & kReportClosed) == kReportClosed: 
-		direction = closed
-	else:
-		direction = thrown
-	return SwRepMsg(switch = switch, direction = direction)
-
-def splitLongAckStr(str):
-	responseToOpcode = ord(str[1]) | 0x80
-	if responseToOpcode == OPC_SW_STATE:
-		if str[2] == '\x30':
-			state = kClosed
-		else:	
-			state = kThrown
-	return LongAckMsg(responseToOpcode = responseToOpcode, switchState = state)
 
 def convertBytesToNatural(b1, b2):
 	return ord(b1) + 128 * ord(b2)
 
-def splitSlRdDataStr(str):
-	return SlRdDataMsg(
-	       address = convertBytesToNatural(str[4], str[9]), 
-			 isAddressAlreadyInUse = ((ord(str[3]) & 0x30) == 0x30), 
-			 slot = ord(str[2]))
+def splitSwRepStr(st):
+	#<0xB1><SW1><SW2><CHK> 
+	b1 = st[1]
+	b2 = chr(ord(st[2]) & 0x0F)
+	switch = 1 + convertBytesToNatural(b1, b2)
+	if (ord(st[2]) & bitReportClosed) == bitReportClosed: 
+		direction = kClosed
+	else:
+		direction = kThrown
+	return SwRepMsg(switch = switch, direction = direction)
 
-def splitPutTrainStateStr(str):
-	return PutTrainStateMsg(slot = ord(str[2]), state = ord(str[3]))
+def splitLongAckStr(st):
+	#<0xB4><lopc><ack><CHK>
+	responseToOpcode = chr(ord(st[1]) | 0x80)
+	if responseToOpcode == OPC_SW_STATE:
+		if st[2] == '\x30':
+			state = kClosed
+		else:	
+			state = kThrown
+	else:
+		state = 0
+	return LongAckMsg(responseToOpcode = responseToOpcode, switchState = state)
+
+def splitSlRdDataStr(st):
+	#<0xE7><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
+	return SlRdDataMsg(
+	       address = convertBytesToNatural(st[4], st[9]), 
+			 isAddressAlreadyInUse = ((ord(st[3]) & 0x30) == 0x30), 
+			 slot = ord(st[2]))
+
+def splitPutTrainStateStr(st):
+	#<0><1><slot#> <train state>
+	return PutTrainStateMsg(slot = ord(st[2]), state = ord(st[3]))
 	
-def splitPutTrainPositionStr(str):
-	slot = ord(str[2])
-	sensorCount = ord(str[3])
+def splitPutTrainPositionStr(st):
+	#<0><2><slot#><count><sensor#>...<sensor#>           where sensor# is 2 bytes
+	slot = ord(st[2])
+	sensorCount = ord(st[3])
 	sensors = []
 	for i in range (1, sensorCount+1):
-		sensors.append(convertBytesToNatural(str[3 + 2*1-1], str[3 + 2*i])) 
+		sensors.append(convertBytesToNatural(st[3 + 2*i-1], st[3 + 2*i])) 
 	return PutTrainPositionMsg(slot = slot, sensors = sensors)
 
-def splitPutSectionStateStr(str):
+def splitPutSectionStateStr(st):
+	#<0><3><section#> <section state>                  where section# is 2 bytes
 	return PutSensorStateMsg(
-	       id = convertBytesToNatural(str[2], str[3]), 
-			 state = ord(str[4]))
+	       id = convertBytesToNatural(st[2], st[3]), 
+			 state = ord(st[4]))
 
-def splitPutSwitchStateStr(str):
+def splitPutSwitchStateStr(st):
+	#<0><4><switch#> <switch state>
 	return PutSwitchStateMsg(
-	       id = ord(str[2]), 
-			 state = ord(str[3]))
+	       id = ord(st[2]), 
+			 state = ord(st[3]))
 
-def splitPutSensorStateStr(str):
+def splitPutSensorStateStr(st):
+	#<0><5><sensor#> <sensor state>                   where sensor# is 2 bytes
 	return PutSensorStateMsg(
-	       id = convertBytesToNatural(str[2], str[3]), 
-			 state = ord(str[4]))
+	       id = convertBytesToNatural(st[2], st[3]), 
+			 state = ord(st[4]))
 
-def splitPutInitOutcomeStr(str):
+def splitPutInitOutcomeStr(st):
+	#<0><9><physical loco address> <slot#> <virtual loco address> <slot#>   where addresses are 2 bytes
 	return PutInitOutcomeMsg(
-	       physAdd = convertBytesToNatural(str[2], str[3]), 
-			 physSlot = ord(str[4]), 
-			 virtAdd = convertBytesToNatural(str[5], str[6]), 
-			 virtSlot = ord(str[7]))
+	       physAdd = convertBytesToNatural(st[2], st[3]), 
+			 physSlot = ord(st[4]), 
+			 virtAdd = convertBytesToNatural(st[5], st[6]), 
+			 virtSlot = ord(st[7]))
 
-def splitPutReadLayoutResponseStr(str):
+def splitPutReadLayoutResponseStr(st):
+	#<0><11><XML read response flag><code>          where code is 2 bytes
 	return PutReadLayoutResponseMsg(
-	       responseFlag = ord(str[2]), 
-			 code = convertBytesToNatural(str[3], str[4]))
+	       responseFlag = ord(st[2]), 
+			 code = convertBytesToNatural(st[3], st[4]))
 
-def splitPutTrainInformationStr(str):
+def splitPutTrainInformationStr(st):
+	#<0><21><virtual slot#> <speed> <direction> <light> <bell> <horn> <mute>
    return PutTrainInformationMsg(
-	       slot=ord(str[2]), speed=ord(str[3]), direction=ord(str[4]),
-			 lights=ord(str[5]), bell=ord(str[6]), horn = ord(str[7]),
-			 mute = ord(str[8]))
+	       slot=ord(st[2]), speed=ord(st[3]), direction=ord(st[4]),
+			 lights=ord(st[5]), bell=ord(st[6]), horn = ord(st[7]),
+			 mute = ord(st[8]))
 			 
-def splitPutPowerChangeCompleteStr(str):
+def splitPutPowerChangeCompleteStr(st):
+	#<0><26>
 	return PutPowerChangeCompleteMsg(dummy = 0)
 
 #########################################################################################
 	
 import unittest
 
-def ex(n, str):                        # extend the string with length and checkSum
-	str += makeCheckSumByte(str)
-	return chr(n) + chr(0) + str
+def ex(n, st):                        # expand the sting with length and checkSum
+	st += makeCheckSumByte(st)
+	return chr(n%128) + chr(n/128) + st
+	
+def ex2(n, st):                       # expand the sting WITHOUT checksum
+	return chr(n%128) + chr(n/128) + st
 
 class TestMessageTranslationLibrary(unittest.TestCase):
 
@@ -368,8 +399,99 @@ class TestMessageTranslationLibrary(unittest.TestCase):
 		msg = SwReqMsg(switch=1, direction=kThrown)
 		self.assertEquals(ex(4, "\xB0\x00\x10"), makeMsgStr(msg))
 		
-#		msg = MoveSlotsMsg(slot1=1, slot2=2)
-#		self.assertEquals(ex(4, "\xBA\x01\x02"), makeMsgStr(msg))
+		msg = MoveSlotsMsg(slot1=1, slot2=2)
+		self.assertEquals(ex(4, "\xBA\x01\x02"), makeMsgStr(msg))
+		
+		msg = LocoAdrMsg(address=1111)
+		st = "\xBF" + chr(1111/128) + chr(1111%128)
+		self.assertEquals(ex(4, st), makeMsgStr(msg))
+		
+		msg = WriteSlotDataToClearMsg(slot=1)
+		st = "\xEF\x0E\x01\x0B\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+		self.assertEquals(ex(14, st), makeMsgStr(msg))
+		
+		msg = DoLocoInitMsg(address=1111, sensors=[1, 2, 3])
+		st =  chr(0) + chr(8) + chr(1111%128) + chr(1111/128) + \
+		      chr(3) + \
+				chr(1) + chr(0) + \
+				chr(2) + chr(0) + \
+				chr(3) + chr(0)
+		self.assertEquals(ex2(11, st), makeMsgStr(msg))
+		
+		msg = DoReadLayoutMsg(fileName="abc")
+		st = chr(0) + chr(10) + chr(3) + "abc"
+		self.assertEquals(ex2(6, st), makeMsgStr(msg))
+		
+	def testSplitMsgStr(self):
+		st = "\xB2" + chr(0) + chr(0)
+		st += makeCheckSumByte(st)
+		self.assertEquals(InputRepMsg(sensor=1,isHi=False), splitInputRepStr(st))		
+		st = "\xB2" + chr(4) + chr(0)
+		st += makeCheckSumByte(st)
+		self.assertEquals(InputRepMsg(sensor=9,isHi=False), splitInputRepStr(st))		
+		st = "\xB2" + chr(4) + "\x10"
+		st += makeCheckSumByte(st)
+		self.assertEquals(InputRepMsg(sensor=9,isHi=True), splitInputRepStr(st))		
+		st = "\xB2" + chr(121) + "\x31"
+		st += makeCheckSumByte(st)
+		self.assertEquals(InputRepMsg(sensor=500,isHi=True), splitInputRepStr(st))
+		st = "\xB2" + chr(121) + "\x01"
+		st += makeCheckSumByte(st)
+		self.assertEquals(InputRepMsg(sensor=499,isHi=False), splitInputRepStr(st))
+		
+		st = "\xB1" + chr(115) + "\x33"
+		st += makeCheckSumByte(st)
+		self.assertEquals(SwRepMsg(switch=500, direction=kClosed), splitSwRepStr(st))
+
+		st = "\xB4" + "\x3F" + "\x00"
+		st += makeCheckSumByte(st)
+		self.assertEquals(LongAckMsg(responseToOpcode=OPC_LOCO_ADR, switchState=0), \
+		                  splitLongAckStr(st))
+
+		st =  "\xE7\x0E\x01\x30" + \
+		      chr(1111%128) + "\x00\x00\x00\x00" + chr(1111/128) + \
+				"\x00\x00\x00"
+		st += makeCheckSumByte(st)
+		self.assertEquals(SlRdDataMsg(address=1111, isAddressAlreadyInUse=True, slot=1), \
+		                  splitSlRdDataStr(st))
+
+		st = chr(0) + chr(1) + chr(1) + chr(kMoving)
+		self.assertEquals(PutTrainStateMsg(slot=1, state=kMoving), splitPutTrainStateStr(st))
+		
+		st =  chr(0) + chr(2) + chr(1) + chr(3) + \
+		      chr(73) + chr(1) + \
+				chr(74) + chr(1) + \
+				chr(75) + chr(1)
+		self.assertEquals(PutTrainPositionMsg(slot=1, sensors=[201,202,203]), \
+		                  splitPutTrainPositionStr(st))
+		
+		st = chr(0) + chr(3) + chr(72) + chr(1) + chr(kFree)
+		self.assertEquals(PutSectionStateMsg(id=200, state=kFree), splitPutSectionStateStr(st))
+		
+		st = chr(0) + chr(4) + chr(99) + chr(kBeginClosed)
+		self.assertEquals(PutSwitchStateMsg(id=99, state=kBeginClosed), splitPutSwitchStateStr(st))
+		
+		st = chr(0) + chr(5) + chr(116) + chr(3) + chr(kSensorOpen)
+		self.assertEquals(PutSensorStateMsg(id=500, state=kSensorOpen), splitPutSensorStateStr(st))
+		
+		st =  chr(0) + chr(9) + \
+				chr(1111%128) + chr(1111/128) + chr(1) + \
+				chr(11) + chr(0) + chr(2)
+		self.assertEquals(PutInitOutcomeMsg(physAdd=1111, physSlot=1, virtAdd=11, virtSlot=2), \
+		                  splitPutInitOutcomeStr(st))
+		
+		st =  chr(0) + chr(11) + chr(100) + chr(72) + chr(1)
+		self.assertEquals(PutReadLayoutResponseMsg(responseFlag=100, code=200), \
+								splitPutReadLayoutResponseStr(st))
+								
+		st =  chr(0) + chr(21) + chr(1) + chr(100) + chr(kForward) + \
+		      chr(kOn) + chr(kOff) + chr(kOn) + chr(kOn)
+		self.assertEquals(PutTrainInformationMsg(slot=1, speed=100, direction=kForward,
+		                                         lights=kOn, bell=kOff, horn=kOn, mute=kOn), \
+															  splitPutTrainInformationStr(st))
+															  
+		st = chr(0) + chr(26)
+		self.assertEquals(PutPowerChangeCompleteMsg(dummy=0), splitPutPowerChangeCompleteStr(st))
 
 def runTest():
 	suite = unittest.makeSuite(TestMessageTranslationLibrary)
