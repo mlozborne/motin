@@ -114,7 +114,7 @@ def makeMsgStr(msg):
 	else                                             : return None
 	
 def splitMsgStr(st):
-	if st[0] != 0:
+	if st[0] != chr(0):
 		opcode = st[0]
 	else:
 		opcode = st[1]
@@ -131,7 +131,7 @@ def splitMsgStr(st):
 	elif opcode == putReadLayoutResponse      : return splitPutReadLayoutResponseStr(st)
 	elif opcode == putTrainInformation        : return splitPutTrainInformationStr(st)
 	elif opcode == putPowerChangeComplete     : return splitPutPowerChangeCompleteStr(st)
-	else                                      : return repr(st) 
+	else                                      : return st.encode("hex")
 
 def makeCheckSumByte(st):
 	checkSum = 0xFF
@@ -313,7 +313,7 @@ def splitPutTrainPositionStr(st):
 
 def splitPutSectionStateStr(st):
 	#<0><3><section#> <section state>                  where section# is 2 bytes
-	return PutSensorStateMsg(
+	return PutSectionStateMsg(
 	       id = convertBytesToNatural(st[2], st[3]), 
 			 state = ord(st[4]))
 
