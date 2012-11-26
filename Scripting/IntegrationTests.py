@@ -4,7 +4,6 @@ Test TCP basics
 import time
 from MessageTranslationLibrary import *
 from TCP import *
-import os
 import subprocess
 		
 def testSend():
@@ -39,12 +38,14 @@ class BlinkLights(Thread):
 			time.sleep(0.1)
 			self.sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
 			time.sleep(0.1)
+		time.sleep(5)
+		subprocess.call("tskill railroadbig", shell=True)                       # for XP
+		subprocess.call("taskkill /T /IM railroadbig.exe", shell=True)          # for Windows 7
 
 def testReceive():
 	subprocess.call("start ../runSoftware/RailroadBig.exe", shell=True)
 	sk = RailSocket('localhost', 1234)
 	process = BlinkLights(sk)
 	process.start()
-	time.sleep(5)
 	while True:
 		print sk.receive()
