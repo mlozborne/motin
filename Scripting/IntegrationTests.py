@@ -84,28 +84,25 @@ def waitForSensor(sk, id, state):
 	print "Waiting for sensor {0} to enter state {1}".format(id, state)
 	msg = sk.receive()
 	while not isinstance(msg, PutSensorStateMsg) or msg.id != id or msg.state != state:
-		print "  Received the message: {0}".format(msg)
 		msg = sk.receive()
 
 def testControllingTrain():
 	print "Starting simulator and controller"
 	subprocess.call("start ../runSoftware/RailroadBig.exe", shell=True)
+	time.sleep(1)
 	subprocess.call("start ../runSoftware/StartController.exe IP 127.0.0.1 PORT 1234 TRACE yes", shell=True)
 	#subprocess.call("start ../runSoftware/AdminThrottle.exe IP 127.0.0.1 PORT 1235 MODE controller LAYOUTFILE ../runSoftware/Layout.xml KEYBOARDLOG no ADMINLOG yes", shell=True)
-	time.sleep(5)
+	time.sleep(3)
 	
 	print "Connect a socket to the controller"
 	sk = RailSocket('localhost', 1235)
 	
-	print "Sending DoReadLayoutMsg and waiting for the PutReadLayoutResponseMsg response"
 	sk.send(DoReadLayoutMsg(fileName = "../runSoftware/Layout.xml"))
 	msg = sk.receive()
 	while not isinstance(msg, PutReadLayoutResponseMsg):
-		print "  Received the message: " + repr(msg)
 		msg = sk.receive()
-	time.sleep(5)
+	time.sleep(3)
 		
-	print "Checking the response"
 	if msg.responseFlag != 1:
 		print "ABEND"
 		print "Error in XML file with flag = " + repr(msg.responseFlag) + " and code = " + repr(msg.code)
@@ -115,26 +112,45 @@ def testControllingTrain():
 	#Initiliazing train 1111
 	tr = Train(1111, sk)
 	if not tr.doLocoInit([5, 1]):
-		print "ABEND: couldn't initiaze the train"
+		print "ABEND: couldn't initialize the train"
 		return	
 		
-	print "Starting train 1111 with a speed of 100 and lights on"
-	tr.setLights(kOn)
-	tr.setSpeed(100)
-	
-	time.sleep(3)
-	
-	print "Throwing turnout 4"
+	tr.setSpeed(100)	
 	sk.send(SwReqMsg(switch = 4, direction = kThrown))
+	time.sleep(2)
 	
-	waitForSensor(sk, 59, kSensorOpen)
+	speed1 = 100
+	speed2 = 50
+	for i in range(0, 1):
+		tr.setDirection(kForward)
+		speed1 -= 3
+		tr.setSpeed(speed1)
+		time.sleep(3)	
 		
-	print "Sensor 59 fired. Stopping train 1111, reversing, and turning off lights"
+		tr.setSpeed(0)		
+		time.sleep(1)
+		
+		tr.setDirection(kBackward)
+		speed2 -= 3
+		tr.setSpeed(speed2)
+		time.sleep(3)
+
+		tr.setSpeed(0)		
+		time.sleep(1)
+		
+		
+	tr.setLights(kOn)
+	tr.setDirection(kForward)
+	tr.setSpeed(100)
+	time.sleep(3)
 	tr.setSpeed(0)
-	tr.setDirection(kBackward)
-	tr.setSpeed(60)
-	
-	return
+	#time.sleep(1)
+"""	for i in range(0,3):
+		tr.setLights(kOff)
+		time.sleep(1)
+		tr.setLights(kOn)
+		time.sleep(1) """
+		
 	
 	
 	

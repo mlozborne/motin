@@ -11,6 +11,7 @@ class RailSocket:
 			time.sleep(1)
 		
 	def send(self, msg):
+		print "Sending {0}".format(msg)
 		self.sock.sendall(makeMsgStr(msg))
 		
 	def close(self):
@@ -26,5 +27,7 @@ class RailSocket:
 			self.inBuffer += buf
 		strMsg = self.inBuffer[2:2+strSize]
 		self.inBuffer = self.inBuffer[2+strSize:]
-		return splitMsgStr(strMsg)
+		msg = splitMsgStr(strMsg)
+		print "    Receiving {0}".format(msg)
+		return msg
 		
