@@ -78,6 +78,8 @@ def testTalkingToController():
 	
 ########################################################################
 
+from Train import *
+
 def testControllingTrain():
 	print "Starting simulator and controller"
 	subprocess.call("start ../runSoftware/RailroadBig.exe", shell=True)
@@ -94,6 +96,7 @@ def testControllingTrain():
 	while not isinstance(msg, PutReadLayoutResponseMsg):
 		print "  Received the message: " + repr(msg)
 		msg = sk.receive()
+	time.sleep(5)
 		
 	print "Checking the response"
 	if msg.responseFlag != 1:
@@ -102,25 +105,15 @@ def testControllingTrain():
 		print "THE END"
 		return
 	
-	print "Initiliazing train 1111"
-	sk.send(DoLocoInitMsg(address = 1111, sensors = [5, 1]))
-	print "Waiting for the PutInitOutcomeMsg response"
-	msg = sk.receive()
-	while not isinstance(msg, PutInitOutcomeMsg):
-		print "  Received the message: " + repr(msg)
-		msg = sk.receive()
-		
-	print "Checking the response and remembering the virtual slot if successful"
-	if msg.physSlot > 120:
-		print "ABEND"
-		print "Error code = " + repr(msg.physSlot)
-		return
-	vslot = msg.virtSlot	
-	print "The virtual slot is " + repr(vslot)
+	#Initiliazing train 1111
+	tr = Train(1111, sk)
+	if not tr.doLocoInit([5, 1]):
+		print "ABEND: couldn't initiaze the train"
+		return	
 		
 	print "Starting train 1111 with a speed of 100 and lights on"
-	sk.send(LocoDirfMsg(slot = vslot, direction = kForward, lights = kOn, horn = kOff, bell = kOff))
-	sk.send(LocoSpdMsg(slot = vslot, speed = 100))
+	tr.setLights(kOn)
+	tr.setSpeed(100)
 	
 	time.sleep(3)
 	
@@ -133,10 +126,11 @@ def testControllingTrain():
 		print "  Received the message: " + repr(msg)
 		msg = sk.receive()
 		
-	print "Sensor 59 fired. Stopping train 4444, reversing, and turning off lights"
-	sk.send(LocoSpdMsg(slot = vslot, speed = 0))
-	sk.send(LocoDirfMsg(slot = vslot, direction = kBackward, lights = kOff, horn = kOff, bell = kOff))
-	sk.send(LocoSpdMsg(slot = vslot, speed = 50))
+	print "Sensor 59 fired. Stopping train 1111, reversing, and turning off lights"
+	tr.setSpeed(0)
+	tr.setDirection(kBackward)
+	tr.setSpeed(60)
+	
 	return
 	
 	
