@@ -76,3 +76,85 @@ def testTalkingToController():
 	while True:
 		print sk.receive()
 	
+########################################################################
+
+def testControllingTrain():
+	print "Starting simulator and controller"
+	subprocess.call("start ../runSoftware/RailroadBig.exe", shell=True)
+	subprocess.call("start ../runSoftware/StartController.exe IP 127.0.0.1 PORT 1234 TRACE yes", shell=True)
+	#subprocess.call("start ../runSoftware/AdminThrottle.exe IP 127.0.0.1 PORT 1235 MODE controller LAYOUTFILE ../runSoftware/Layout.xml KEYBOARDLOG no ADMINLOG yes", shell=True)
+	time.sleep(5)
+	
+	print "Connect a socket to the controller"
+	sk = RailSocket('localhost', 1235)
+	
+	print "Sending DoReadLayoutMsg and waiting for the PutReadLayoutResponseMsg response"
+	sk.send(DoReadLayoutMsg(fileName = "../runSoftware/Layout.xml"))
+	msg = sk.receive()
+	while not isinstance(msg, PutReadLayoutResponseMsg):
+		print "  Received the message: " + repr(msg)
+		msg = sk.receive()
+		
+	print "Checking the response"
+	if msg.responseFlag != 1:
+		print "ABEND"
+		print "Error in XML file with flag = " + repr(msg.responseFlag) + " and code = " + repr(msg.code)
+		print "THE END"
+		return
+	
+	print "Initiliazing train 1111"
+	sk.send(DoLocoInitMsg(address = 1111, sensors = [5, 1]))
+	print "Waiting for the PutInitOutcomeMsg response"
+	msg = sk.receive()
+	while not isinstance(msg, PutInitOutcomeMsg):
+		print "  Received the message: " + repr(msg)
+		msg = sk.receive()
+		
+	print "Checking the response and remembering the virtual slot if successful"
+	if msg.physSlot > 120:
+		print "ABEND"
+		print "Error code = " + repr(msg.physSlot)
+		return
+	vslot = msg.virtSlot	
+	print "The virtual slot is " + repr(vslot)
+		
+	print "Starting train 1111 with a speed of 100 and lights on"
+	sk.send(LocoDirfMsg(slot = vslot, direction = kForward, lights = kOn, horn = kOff, bell = kOff))
+	sk.send(LocoSpdMsg(slot = vslot, speed = 100))
+	
+	time.sleep(3)
+	
+	print "Throwing turnout 4"
+	sk.send(SwReqMsg(switch = 4, direction = kThrown))
+	
+	print "Waiting for the front of the train to reach sensor 59"
+	msg = sk.receive()
+	while not isinstance(msg, PutSensorStateMsg) or msg.id != 59 or msg.state == kSensorOpen:
+		print "  Received the message: " + repr(msg)
+		msg = sk.receive()
+		
+	print "Sensor 59 fired. Stopping train 4444, reversing, and turning off lights"
+	sk.send(LocoSpdMsg(slot = vslot, speed = 0))
+	sk.send(LocoDirfMsg(slot = vslot, direction = kBackward, lights = kOff, horn = kOff, bell = kOff))
+	sk.send(LocoSpdMsg(slot = vslot, speed = 50))
+	return
+	
+	
+	
+	
+	
+	
+	
+	
+	#sk.send(LocoSpdMsg(slot = vslot, speed = 50))
+	
+	#time.sleep(1)
+	#print "Waiting 10 seconds and sending the train back"
+	#time.sleep(10)
+	#sk.send(LocoDirfMsg(slot = vslot, direction = kBackward, lights = kOn, horn = kOff, bell = kOff))
+	#
+	
+
+
+	
+		
