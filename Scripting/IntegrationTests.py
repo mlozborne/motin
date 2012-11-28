@@ -80,6 +80,13 @@ def testTalkingToController():
 
 from Train import *
 
+def waitForSensor(sk, id, state):
+	print "Waiting for sensor {0} to enter state {1}".format(id, state)
+	msg = sk.receive()
+	while not isinstance(msg, PutSensorStateMsg) or msg.id != id or msg.state != state:
+		print "  Received the message: {0}".format(msg)
+		msg = sk.receive()
+
 def testControllingTrain():
 	print "Starting simulator and controller"
 	subprocess.call("start ../runSoftware/RailroadBig.exe", shell=True)
@@ -120,11 +127,7 @@ def testControllingTrain():
 	print "Throwing turnout 4"
 	sk.send(SwReqMsg(switch = 4, direction = kThrown))
 	
-	print "Waiting for the front of the train to reach sensor 59"
-	msg = sk.receive()
-	while not isinstance(msg, PutSensorStateMsg) or msg.id != 59 or msg.state == kSensorOpen:
-		print "  Received the message: " + repr(msg)
-		msg = sk.receive()
+	waitForSensor(sk, 59, kSensorOpen)
 		
 	print "Sensor 59 fired. Stopping train 1111, reversing, and turning off lights"
 	tr.setSpeed(0)
