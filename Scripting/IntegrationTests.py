@@ -79,12 +79,19 @@ def testTalkingToController():
 ########################################################################
 
 from Train import *
+from Layout import *
 
-def waitForSensor(sk, id, state):
-	print "Waiting for sensor {0} to enter state {1}".format(id, state)
-	msg = sk.receive()
-	while not isinstance(msg, PutSensorStateMsg) or msg.id != id or msg.state != state:
-		msg = sk.receive()
+def stopTrain(self):
+	self.setSpeed(0)
+	self.setLights(kOff)
+	
+def blink(self, n):
+	print "\nIn blink n = {0}\n".format(n)
+	for i in range(0, 3):
+		self.setLights(kOn)
+		time.sleep(1)
+		self.setLights(kOff)
+		time.sleep(1)
 
 def testControllingTrain():
 	print "Starting simulator and controller"
@@ -94,78 +101,33 @@ def testControllingTrain():
 	#subprocess.call("start ../runSoftware/AdminThrottle.exe IP 127.0.0.1 PORT 1235 MODE controller LAYOUTFILE ../runSoftware/Layout.xml KEYBOARDLOG no ADMINLOG yes", shell=True)
 	time.sleep(3)
 	
-	print "Connect a socket to the controller"
+	print "\nConnect a socket to the controller"
 	sk = RailSocket('localhost', 1235)
 	
-	sk.send(DoReadLayoutMsg(fileName = "../runSoftware/Layout.xml"))
-	msg = sk.receive()
-	while not isinstance(msg, PutReadLayoutResponseMsg):
-		msg = sk.receive()
-	time.sleep(3)
-		
-	if msg.responseFlag != 1:
+	print "\nRead the layout file"
+	responseFlag, code = readLayoutFile(sk, "../runSoftware/Layout.xml")
+	print "responseFlag = {0} and code ={1}".format(responseFlag, code)
+	if responseFlag != 1:
 		print "ABEND"
 		print "Error in XML file with flag = " + repr(msg.responseFlag) + " and code = " + repr(msg.code)
 		print "THE END"
-		return
-	
-	#Initiliazing train 1111
-	tr = Train(1111, sk)
-	if not tr.doLocoInit([5, 1]):
-		print "ABEND: couldn't initialize the train"
 		return	
-		
+	
+	print "\nCommand the train"
+	tr = Train(1111, sk)
+	response = tr.doLocoInit([5, 1])
+	if response > 120:
+		print "\nABEND: couldn't initialize the train. Response code = {0}".format(response)
+		return		
+	tr.do(blink, 4)
 	tr.setSpeed(100)	
 	sk.send(SwReqMsg(switch = 4, direction = kThrown))
-	time.sleep(2)
+	tr.waitForSensor(62)
+	func = stopTrain
+	tr.do(stopTrain)
 	
-	speed1 = 100
-	speed2 = 50
-	for i in range(0, 1):
-		tr.setDirection(kForward)
-		speed1 -= 3
-		tr.setSpeed(speed1)
-		time.sleep(3)	
-		
-		tr.setSpeed(0)		
-		time.sleep(1)
-		
-		tr.setDirection(kBackward)
-		speed2 -= 3
-		tr.setSpeed(speed2)
-		time.sleep(3)
+	time.sleep(1)
 
-		tr.setSpeed(0)		
-		time.sleep(1)
-		
-		
-	tr.setLights(kOn)
-	tr.setDirection(kForward)
-	tr.setSpeed(100)
-	time.sleep(3)
-	tr.setSpeed(0)
-	#time.sleep(1)
-"""	for i in range(0,3):
-		tr.setLights(kOff)
-		time.sleep(1)
-		tr.setLights(kOn)
-		time.sleep(1) """
-		
-	
-	
-	
-	
-	
-	
-	
-	
-	#sk.send(LocoSpdMsg(slot = vslot, speed = 50))
-	
-	#time.sleep(1)
-	#print "Waiting 10 seconds and sending the train back"
-	#time.sleep(10)
-	#sk.send(LocoDirfMsg(slot = vslot, direction = kBackward, lights = kOn, horn = kOff, bell = kOff))
-	#
 	
 
 
