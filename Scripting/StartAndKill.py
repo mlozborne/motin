@@ -118,5 +118,11 @@ if __name__ == "__main__":
     start("ut4", port = "1236")
     start("RBLDisplay", ip = "127.1.1.1")
     start("adminthrottle",  ip = "127.0.0.1", port = "1234", logs = "yes")
+    print "\n"
+    kill("sim")
+    kill("cont")
+    kill("ut4")
+    kill("RBL")
+    kill("admin")
     raw_input("...")
     
