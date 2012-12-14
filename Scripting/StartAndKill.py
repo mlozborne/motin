@@ -18,7 +18,7 @@ def setPath(st):
 
 def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
     """
-    Usage
+    Usage (only uses first two letters of name)
       start("simulator")
       start("controller", ip = "127.0.0.1", port = "1234", trace = "yes")
       start("ut4", ip = "127.0.0.1", port = "1234")
@@ -84,6 +84,14 @@ def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
             " ADMINLOG " + logs, shell=True)
 
 def kill(name):
+    """
+    Usage (only uses first two letters of name)
+      kill("simulator")
+      kill("controller")
+      kill("ut4")
+      kill("RBLDisplay")
+      kill("adminthrottle")
+    """
     if   name.lower()[:2] == "si": name = "RailroadBig"
     elif name.lower()[:2] == "co": name = "StartController"
     elif name.lower()[:2] == "ut": name = "Throttle"
