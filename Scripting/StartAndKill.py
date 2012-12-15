@@ -2,16 +2,16 @@ from Log import printLog
 import platform
  
 # Comment this out during testing
-import subprocess
+#import subprocess
 
 # Comment this out during production
-"""class Subprocess:
+class Subprocess:
     def call(self, st, shell = ""):
         print st
-subprocess = Subprocess()"""
+subprocess = Subprocess()
 
 
-gPath = "../runSoftware"
+gPath = "../../runSoftware"
 
 def setPath(st):
     global gPath
@@ -130,37 +130,4 @@ def kill(name = "all"):
             subprocess.call("taskkill /T /IM adminthrottle", shell=True)
             printLog("StartAndKill: taskkill /T /IM RailroadBig, StartController, Throttle, RBLDisplay, AdminThrottle")
 
-#########################################################################################
-########################### Unit Testing ################################################
-#########################################################################################
-"""
-Before testing
-   Comment out "import subprocess" at top of this file.
-After testing
-   Comment out class subprocess at top of this file
-"""
-from Log import openLog, closeLog
-
-if __name__ == "__main__":
-    openLog()
-    start("simulator")
-    start("controller", ip = "127.0.0.1", port = "1234", trace = "yes")
-    start("ut4", ip = "127.0.0.1", port = "1234")
-    start("RBLDisplay", ip = "127.0.0.1", port = "1235")
-    start("adminthrottle",  ip = "127.0.0.1", port = "1235", layoutFile = "layout.xml", logs = "no")
-    print "\n"
-    start("controller", trace = "no")
-    start("ut4", port = "1236")
-    start("RBLDisplay", ip = "127.1.1.1")
-    start("adminthrottle",  ip = "127.0.0.1", port = "1234", logs = "yes")
-    print "\n"
-    kill("sim")
-    kill("cont")
-    kill("ut4")
-    kill("RBL")
-    kill("admin")
-    kill()
-    kill("all")
-    closeLog()
-    raw_input("...")
     
