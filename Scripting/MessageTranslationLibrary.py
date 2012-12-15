@@ -526,4 +526,5 @@ class TestMessageTranslationLibrary(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.makeSuite(TestMessageTranslationLibrary)
     unittest.TextTestRunner().run(suite)
+    #unittest.main()
     x = raw_input("press enter")

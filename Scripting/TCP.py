@@ -1,5 +1,6 @@
 from socket import *
 import time
+from Log import printLog
 
 from MessageTranslationLibrary import *
 
@@ -10,13 +11,15 @@ class RailSocket:
         while True:
             if not self.sock.connect_ex((host, port)): break
             time.sleep(1)
+        printLog("TCP: Opened RailSocket = {0}".format(self.sock))
 		
     def send(self, msg):
-        print "Sending {0}".format(msg)
+        printLog("<<< Sending {0}".format(msg))
         self.sock.sendall(makeMsgStr(msg))
 		
     def close(self):
         self.sock.close()
+        printLog("TCP: Closed RailSocket")
 
     def receive(self):
         if len(self.inBuffer) < 2:
@@ -29,7 +32,7 @@ class RailSocket:
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)
-        print "    Receiving {0}".format(msg)
+        printLog("    >>> Receiving {0}".format(msg))
         return msg
 
 ############################################################################
@@ -50,7 +53,7 @@ def testSend():
     Will see only the messages sent.
     """
     print "Entering function testSend"
-    sak.startSimulator()
+    sak.start("simulator")
     sk = RailSocket('localhost', 1234)
     sk.send(LocoAdrMsg(address=1111))
     time.sleep(1)
@@ -61,9 +64,9 @@ def testSend():
         time.sleep(0.2)
         sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
         time.sleep(0.2)
-    x = raw_input("Press enter to kill RailroadBig and leave function testSend")
+    raw_input("Press enter to kill RailroadBig and leave function testSend")
     sk.close()
-    sak.killSimulator()
+    sak.kill("simulator")
     print "Leaving function testSend"
 
 ############################################################################
@@ -77,7 +80,7 @@ def testReceive():
     Should see messages sent and messages received.
     """
     print "Entering function testReceive\n"
-    sak.startSimulator()
+    sak.start("simulator")
     sk = RailSocket('localhost', 1234)
     process = TestBlinkLightsDirectly(sk)
     process.start()
@@ -85,8 +88,8 @@ def testReceive():
         try:
             sk.receive()
         except:
-            print "EXCEPTION in testReceive: sk.receive() failed because Railroad is dead\n"
             break
+    sk.close()
     print "Leaving function testReceive\n"
 
 class TestBlinkLightsDirectly(Thread):
@@ -105,9 +108,8 @@ class TestBlinkLightsDirectly(Thread):
             time.sleep(0.2)
             self.sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
             time.sleep(0.2)
-        x = raw_input("\nPress enter to kill RailroadBig and stop thread BlinkLightsDirectly \n")
-        self.sk.close()
-        sak.killSimulator()
+        raw_input("\nPress enter to kill RailroadBig and stop thread BlinkLightsDirectly \n")
+        sak.kill("simulator")
         print "Ending thread BlinkLightsDirectly\n"
 
 ############################################################################
@@ -122,8 +124,8 @@ def testTalkingToController():
     Should see messages sent and messages received.
     """
     print "Entering function testTalkingToController"
-    sak.startSimulator()
-    sak.startController()
+    sak.start("simulator")
+    sak.start("controller")
     #sak.startController(ip = "127.0.0.1", port = "1234", trace = "yes")
     sk = RailSocket('localhost', 1235)
     time.sleep(2)
@@ -135,8 +137,8 @@ def testTalkingToController():
         try:
             sk.receive()
         except:
-            print "EXCEPTION in testTalkingToController: sk.receive() failed because Controller is dead\n"
             break
+    sk.close()
     print "Leaving function testTalkingToController\n"
 
 class TestBlinkLightsViaController(Thread):
@@ -153,17 +155,19 @@ class TestBlinkLightsViaController(Thread):
             time.sleep(0.2)
             self.sk.send(LocoDirfMsg(slot=5, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
             time.sleep(0.2)
-        x = raw_input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
-        self.sk.close()
-        sak.killSimulator()
-        sak.killController()
+        raw_input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
+        sak.kill("simulator")
+        sak.kill("controller")
         print "Ending thread BlinkLightsViaController\n"
 
 ############################################################################
 #      RUN FROM WINDOWS EXPLORER
 ############################################################################
 
+from Log import openLog, closeLog, flushLog
+
 if __name__ == "__main__":
+    openLog()
     while True:
         print "\n\n\n"
         print "1. Test send"
@@ -175,9 +179,15 @@ if __name__ == "__main__":
         if option == "q":
             break
         elif option == "1":
+            printLog("testSend()\n")
             testSend()
         elif option == "2":
+            printLog("testReceive()\n")
             testReceive()
         elif option == "3":
+            printLog("testTalkingToController()\n")
             testTalkingToController()
+        flushLog()
+        printLog("\n\n\n")
+    closeLog()
        

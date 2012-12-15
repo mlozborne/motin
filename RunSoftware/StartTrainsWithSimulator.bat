@@ -5,3 +5,4 @@ rem start AdminThrottle.exe IP 127.0.0.1 PORT 1235 MODE controller LAYOUTFILE La
 rem start AdminThrottle.exe IP 127.0.0.1 PORT 1234 MODE standalone KEYBOARDLOG no ADMINLOG yes
 rem start Throttle.exe IP 127.0.0.1 PORT 1234
 pause
+m
