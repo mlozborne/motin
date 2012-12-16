@@ -3,6 +3,7 @@
 #########################################################################################
 
 import unittest
+from MessageTranslationTypes import *
 from MessageTranslationLibrary import *
 
 
