@@ -31,4 +31,4 @@ if __name__ == "__main__":
     kill()
     kill("all")
     closeLog()
-    raw_input("...")
+    raw_input("press enter to quit")

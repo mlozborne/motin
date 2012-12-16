@@ -31,3 +31,4 @@ if __name__ == "__main__":
     raw_input("Pause until press enter")
     for i in range(10):
         PrintLine(str(i)+str(i)+str(i)).start()
+    raw_input("press enter to quit")

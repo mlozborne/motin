@@ -2,13 +2,13 @@ from Log import printLog
 import platform
  
 # Comment this out during testing
-#import subprocess
+import subprocess
 
 # Comment this out during production
-class Subprocess:
-    def call(self, st, shell = ""):
-        print st
-subprocess = Subprocess()
+#class Subprocess:
+#    def call(self, st, shell = ""):
+#        print st
+#subprocess = Subprocess()
 
 
 gPath = "../../runSoftware"

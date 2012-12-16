@@ -1,12 +1,11 @@
-from functools import partial
-from socket import *
-import time
-
 from MessageTranslationLibrary import *
+from Log import printLog
+from TCP import *
+from functools import partial
 
 class Train:
     def __init__(self, address, sock):
-        print "Initializing train " + repr(address)
+        printLog("Initializing train " + repr(address))
         self.address = address
         self.sk = sock
         self.slot = 0
@@ -87,3 +86,6 @@ class Train:
 #########################################################################
 ################  Unit Testing                  #########################
 #########################################################################
+
+from functools import partial
+import time
