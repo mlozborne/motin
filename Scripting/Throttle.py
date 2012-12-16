@@ -2,7 +2,7 @@ from MessageTranslationTypes import *
 from MessageTranslationLibrary import *
 from Log import printLog
 from TCP import *
-from functools import partial
+#from functools import partial
 
 class Throttle(object):
     def __init__(self, sock):
@@ -78,5 +78,7 @@ class Throttle(object):
 
     def moveSwitch(self, id, direction):
         self.sk.send(SwReqMsg(switch=id, direction=direction))
+
+
 
 			

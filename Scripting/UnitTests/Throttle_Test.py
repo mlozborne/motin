@@ -3,23 +3,25 @@
 Test TCP basics
 """
 import StartAndKill as sak
-from Layout import readLayout
+from Layout import readLayoutFile
 from TCP import *
-from Train import *
+from Throttle import *
+from MessageTranslationTypes import kOn, kOff, kClosed, kThrown
+
 
 def stopTrain(self):
     self.setSpeed(0)
 
-def blink(self, n):
+def blinkLights(self, n):
     for i in range(5):
         self.setLights(kOn)
-        time.sleep(1)
+        time.sleep(0.2)
         self.setLights(kOff)
-        time.sleep(1)
+        time.sleep(0.2)
 
 if __name__ == "__main__":
-    start("simulator")
-    start("controller")
+    sak.start("simulator")
+    sak.start("controller")
     time.sleep(3)
     sk = RailSocket('localhost', 1235)
 
@@ -30,25 +32,28 @@ if __name__ == "__main__":
         print "Error in XML file with flag = {0} and code = {1}".format(responseFlag, code)
         print "THE END"
         raw_input("press enter to quit")
-        return
-
+        
     throt = Throttle(sk)
     physAdd, physSlot, virtAdd, virtSlot = throt.doLocoInit(1111, [5, 1])
+    print "physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot)
     if physSlot > 120:
         print "\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot)
-        return
-    throt.do(blink, 4)
+        raw_input("press enter to quit")
+        
+    throt.do(blinkLights, 4)
     throt.setSpeed(100)
+    time.sleep(3)
     throt.throwNextSwitch()
-    throt.moveSwitch(4, kClosed)
-    time.sleep(2)
-    throt.moveSwitch(4, kThrown)
+    throt.moveSwitch(12, kClosed)
+    time.sleep(4)
+    throt.moveSwitch(12, kThrown)
+    time.sleep(5)
     throt.do(stopTrain)
 
-    raw_input(press enter to quit)
+    raw_input("press enter to quit")
     sk.close()
-    kill("controller")
-    kill("simulator")
+    sak.kill("controller")
+    sak.kill("simulator")
 
 
 
@@ -56,8 +61,8 @@ if __name__ == "__main__":
 ################  Unit Testing                  #########################
 #########################################################################
 
-from functools import partial
-import time
+#from functools import partial
+#import time
 
 
 
