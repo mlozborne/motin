@@ -1,5 +1,5 @@
 
-from MessageTranslationTypes import *
+from MessageTranslationTypes_1 import *
 
 #######################################################################
 # Top level make and split
@@ -17,7 +17,7 @@ def makeMsgStr(msg):
     else: return None
 	
 def splitMsgStr(st):
-    if st[0] != chr(0):
+    if st[0] != 0:
         opcode = st[0]
     else:
         opcode = st[1]
@@ -35,23 +35,24 @@ def splitMsgStr(st):
     elif opcode == putTrainInformation: return splitPutTrainInformationStr(st)
     elif opcode == putPowerChangeComplete: return splitPutPowerChangeCompleteStr(st)
     else: return st
-
+#    else: return st.encode('utf-8')
+#    else: return st.encode("hex")
 
 #######################################################################
 # Utility routines
 def utMakeCheckSumByte(st):
     checkSum = 0xFF
     for byte in st:
-        checkSum ^= ord(byte)
-    return chr(checkSum)
+        checkSum ^= byte
+    return checkSum
 
 def utConvertNaturalToBytes(value):
     lowByte = value % 128
     highByte = value // 128
-    return chr(lowByte), chr(highByte)
+    return lowByte, highByte
 
 def utConvertBytesToNatural(b1, b2):
-    return ord(b1) + 128 * ord(b2)
+    return b1 + 128 * b2
 
 #######################################################################
 # Make routines
@@ -59,115 +60,114 @@ def makePowerStr(msg):
     #<0x83><CHK>    on
     #<0x82><CHK>    off
     if msg.setting == kOn:
-        st = OPC_GPON
+        st = [OPC_GPON]
     else:
-        st = OPC_GPOFF
-    st += utMakeCheckSumByte(st)
+        st = [OPC_GPOFF]
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeLocoSpdStr(msg):
     #<0xA0><SLOT#><SPD><CHK>
-    st = OPC_LOCO_SPD
-    st += chr(msg.slot)
-    st += chr(min(127, msg.speed))
-    st += utMakeCheckSumByte(st)
+    st = [OPC_LOCO_SPD]
+    st.append(msg.slot)
+    st.append(min(127, msg.speed))
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 
 def makeLocoDirfStr(msg):
     #<0xA1><SLOT#><DIR_STATE><CHK>
-    st = OPC_LOCO_DIRF
-    st += chr(msg.slot)
+    st = [OPC_LOCO_DIRF]
+    st.append(msg.slot)
     dirf = 0x00
     if msg.direction == kBackward: dirf |= bitBackward
     if msg.lights == kOn: dirf |= bitLightsOn
     if msg.horn == kOn: dirf |= bitHornOn
     if msg.bell == kOn: dirf |= bitBellOn
-    st += chr(dirf)
-    st += utMakeCheckSumByte(st)
+    st.append(dirf)
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeLocoSndStr(msg):
     #<0xA2><SLOT#><SOUND><CHK>
-    st = OPC_LOCO_SND
-    st += chr(msg.slot)
+    st = [OPC_LOCO_SND]
+    st.append(msg.slot)
     snd = 0x00
     if msg.mute == kOn: snd |= bitMuteOn
     if msg.F5 == kOn: snd |= bitF5
     if msg.F6 == kOn: snd |= bitF6
-    st += chr(snd)
-    st += utMakeCheckSumByte(st)
+    st.append(snd)
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeSwReqStr(msg):	
     #<0xB0><SW1><SW2><CHK>
-    st = OPC_SW_REQ
-    st += chr(msg.switch - 1)
+    st = [OPC_SW_REQ]
+    st.append(msg.switch - 1)
     if msg.direction == kClosed:
-        st += chr(bitRequestClose)
+        st.append(bitRequestClose)
     else:
-        st += chr(bitRequestThrow)
-    st += utMakeCheckSumByte(st)
+        st.append(bitRequestThrow)
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeMoveSlotsStr(msg):
     #<0xBA><slot#><slot#><chk>
-    st = OPC_MOVE_SLOTS
-    st += chr(msg.slot1)
-    st += chr(msg.slot2)
-    st += utMakeCheckSumByte(st)
+    st = [OPC_MOVE_SLOTS]
+    st.append(msg.slot1)
+    st.append(msg.slot2)
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeLocoAdrStr(msg):
     #<0xBF><adrhigh><adrlow><chk>
-    st = OPC_LOCO_ADR
-    st += chr(msg.address // 128)
-    st += chr(msg.address % 128)
-    st += utMakeCheckSumByte(st)
+    st = [OPC_LOCO_ADR]
+    st.append(msg.address // 128)
+    st.append(msg.address % 128)
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeWriteSlotDataToClearStr(msg):
     #<0xEF><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
-    st = ["\x00" for i in range(0, 13)]
+    st = [0 for x in range(0, 13)]
     st[0] = OPC_WR_SL_DATA
-    st[1] = "\x0E"            # message length = 14
-    st[2] = chr(msg.slot)
-    st[3] = "\x0B"            # status = 0000 1011
-    st = ''.join(st)
-    st += utMakeCheckSumByte(st)
+    st[1] = 0x0E            # message length = 14
+    st[2] = msg.slot
+    st[3] = 0x0B            # status = 0000 1011
+    st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeDoLocoInitStr(msg):
     #<0><8><physical loco address> <count> <sensor#>...<sensor#>      where address and sensor# are 2 bytes
-    st = chr(0)
-    st += doLocoInit
+    st = [0]
+    st.append(doLocoInit)
     lowByte, highByte = utConvertNaturalToBytes(msg.address)
-    st += lowByte
-    st += highByte
+    st.append(lowByte)
+    st.append(highByte)
     sensorCount = len(msg.sensors)
-    st += chr(sensorCount)
+    st.append(sensorCount)
     for sensor in msg.sensors:
         lowByte, highByte = utConvertNaturalToBytes(sensor)
-        st += lowByte
-        st += highByte
+        st.append(lowByte)
+        st.append(highByte)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 def makeDoReadLayoutStr(msg):
     #<0><10><count><XML file name>       where count is 1 byte
-    st = chr(0)
-    st += doReadLayout
-    st += chr(len(msg.fileName))
+    st = [0]
+    st.append(doReadLayout)
+    st.append(len(msg.fileName))
     st += msg.fileName
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return lowByte + highByte + st
+    return [lowByte, highByte] + st
 	
 #######################################################################
 # Split routines

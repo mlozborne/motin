@@ -57,11 +57,12 @@ def testReceive():
     process = TestBlinkLightsDirectly(sk)
     process.start()
     while True:
-        try:
-            sk.receive()
-        except:
-            break
-    xxxxx#sk.close()
+        sk.receive()
+#        try:
+#            sk.receive()
+#        except:
+#            break
+    sk.close()
     print("Leaving function testReceive\n")
 
 class TestBlinkLightsDirectly(Thread):
