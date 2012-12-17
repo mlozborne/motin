@@ -10,7 +10,6 @@ from MessageTranslationLibrary import *
 from MessageTranslationTypes import *
 import StartAndKill as sak
 from TCP import *
-from TCP import RailSocket
 from threading import Thread
 
 ############################################################################
@@ -58,10 +57,10 @@ def testReceive():
     process.start()
     while True:
         sk.receive()
-#        try:
-#            sk.receive()
-#        except:
-#            break
+        try:
+            sk.receive()
+        except:
+            break
     sk.close()
     print("Leaving function testReceive\n")
 
@@ -102,7 +101,7 @@ def testTalkingToController():
     sak.start("controller")
     sk = RailSocket('localhost', 1235)
     time.sleep(2)
-    sk.send(DoReadLayoutMsg("../../runSoftware/Layout.xml"))
+    sk.send(DoReadLayoutMsg(b'../../runSoftware/Layout.xml'))
     process = TestBlinkLightsViaController(sk)
     time.sleep(5)
     process.start()
@@ -128,7 +127,7 @@ class TestBlinkLightsViaController(Thread):
             time.sleep(0.2)
             self.sk.send(LocoDirfMsg(slot=5, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
             time.sleep(0.2)
-        raw_input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
+        input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
         sak.kill("simulator")
         sak.kill("controller")
         print("Ending thread BlinkLightsViaController\n")

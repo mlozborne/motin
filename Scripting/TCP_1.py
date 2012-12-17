@@ -3,7 +3,7 @@ from socket import *
 import time
 from Log import printLog
 
-from MessageTranslationLibrary_1 import *
+from MessageTranslationLibrary import *
 
 class RailSocket(object):
     def __init__(self, host, port):

@@ -1,5 +1,5 @@
 
-from MessageTranslationTypes_1 import *
+from MessageTranslationTypes import *
 
 #######################################################################
 # Top level make and split
@@ -59,7 +59,7 @@ def utConvertBytesToNatural(b1, b2):
 def makePowerStr(msg):
     #<0x83><CHK>    on
     #<0x82><CHK>    off
-    assert(msg.setting in (kOn, kOff))
+    assert(msg.setting in kPowerValues)
     if msg.setting == kOn:
         st = [OPC_GPON]
     else:
@@ -70,10 +70,10 @@ def makePowerStr(msg):
 	
 def makeLocoSpdStr(msg):
     #<0xA0><SLOT#><SPD><CHK>
-    assert(1 <= msg.slot <= 127 and msg.speed >= 0)
+    assert(kSlotMin <= msg.slot <= kSlotMax and msg.speed >= kSpeedMin)
     st = [OPC_LOCO_SPD]
     st.append(msg.slot)
-    st.append(min(127, msg.speed))
+    st.append(min(kSpeedMax, msg.speed))
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return [lowByte, highByte] + st
@@ -81,11 +81,11 @@ def makeLocoSpdStr(msg):
 def makeLocoDirfStr(msg):
     #<0xA1><SLOT#><DIR_STATE><CHK>
     assert(
-        1 <= msg.slot <= 127 and \
-        msg.direction in(kBackward,kForward) and \
-        msg.lights in (kOn, kOff) and \
-        msg.horn in (kOn, kOff) and \
-        msg.bell in (kOn, kOff))
+        kSlotMin <= msg.slot <= kSlotMax and \
+        msg.direction in kDirectionValues and \
+        msg.lights in kLightsValues and \
+        msg.horn in kHornValues and \
+        msg.bell in kBellValues)
     st = [OPC_LOCO_DIRF]
     st.append(msg.slot)
     dirf = 0x00
@@ -101,10 +101,10 @@ def makeLocoDirfStr(msg):
 def makeLocoSndStr(msg):
     #<0xA2><SLOT#><SOUND><CHK>
     assert(
-        1 <= msg.slot <= 127 and \
-        msg.mute in (kOn, kOff) and \
-        msg.F5 in (kOn, kOff) and \
-        msg.F6 in (kOn, kOff))
+        kSlotMin <= msg.slot <= kSlotMax and \
+        msg.mute in kMuteValues and \
+        msg.F5 in kF5Values and \
+        msg.F6 in kF6Values)
     st = [OPC_LOCO_SND]
     st.append(msg.slot)
     snd = 0x00
@@ -118,7 +118,7 @@ def makeLocoSndStr(msg):
 	
 def makeSwReqStr(msg):	
     #<0xB0><SW1><SW2><CHK>
-    assert(1 <= msg.switch <= 127 and msg.direction in (kClosed, kThrown))
+    assert(kSwitchMin <= msg.switch <= kSwitchMax and msg.direction in kDirectionValues)
     st = [OPC_SW_REQ]
     st.append(msg.switch - 1)
     if msg.direction == kClosed:
@@ -131,7 +131,7 @@ def makeSwReqStr(msg):
 	
 def makeMoveSlotsStr(msg):
     #<0xBA><slot#><slot#><chk>
-    assert(1 <= msg.slot1 <= 127 and 1 <= msg.slot2 <= 127)
+    assert(kSlotMin <= msg.slot1 <= kSlotMax and kSlotMin <= msg.slot2 <= kSlotMax)
     st = [OPC_MOVE_SLOTS]
     st.append(msg.slot1)
     st.append(msg.slot2)
@@ -141,7 +141,7 @@ def makeMoveSlotsStr(msg):
 	
 def makeLocoAdrStr(msg):
     #<0xBF><adrhigh><adrlow><chk>
-    assert(1 <= msg.address <= 9999)
+    assert(kLocoAddressMin <= msg.address <= kLocoAddressMax)
     st = [OPC_LOCO_ADR]
     st.append(msg.address // 128)
     st.append(msg.address % 128)
@@ -151,7 +151,7 @@ def makeLocoAdrStr(msg):
 	
 def makeWriteSlotDataToClearStr(msg):
     #<0xEF><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
-    assert(1 <= msg.slot <= 127)
+    assert(kSlotMin <= msg.slot <= kSlotMax)
     st = [0 for x in range(0, 13)]
     st[0] = OPC_WR_SL_DATA
     st[1] = 0x0E            # message length = 14
@@ -163,7 +163,9 @@ def makeWriteSlotDataToClearStr(msg):
 	
 def makeDoLocoInitStr(msg):
     #<0><8><physical loco address> <count> <sensor#>...<sensor#>      where address and sensor# are 2 bytes
-    assert
+    assert(kLocoAddressMin <= msg.address <= kLocoAddressMax)
+    for x in msg.sensors:
+        assert(kSensorMin <= x <= kSensorMax)
     st = [0]
     st.append(doLocoInit)
     lowByte, highByte = utConvertNaturalToBytes(msg.address)
@@ -180,6 +182,7 @@ def makeDoLocoInitStr(msg):
 	
 def makeDoReadLayoutStr(msg):
     #<0><10><count><XML file name>       where count is 1 byte
+    assert(isinstance(msg.fileName, kFileNameType))
     st = [0]
     st.append(doReadLayout)
     st.append(len(msg.fileName))

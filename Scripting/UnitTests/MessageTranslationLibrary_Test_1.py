@@ -3,8 +3,8 @@
 #########################################################################################
 
 import unittest
-from MessageTranslationTypes_1 import *
-from MessageTranslationLibrary_1 import *
+from MessageTranslationTypes import *
+from MessageTranslationLibrary import *
 
 
 def utEx(st):                        # expand the sting with length and checkSum
