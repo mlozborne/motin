@@ -68,81 +68,79 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 8, (1111%128), (1111//128), 3, 1, 0, 2, 0, 3, 0]
         self.assertEquals(utEx2(st), makeMsgStr(msg))
 
-        msg = DoReadLayoutMsg(fileName=[ord('a'),ord('b'),ord('c')])
+        msg = DoReadLayoutMsg(fileName=b'abc')
         st = [0, 10, 3, ord('a'), ord('b'), ord('c')]
         self.assertEquals(utEx2(st), makeMsgStr(msg))
 
     def testSplitMsgStr(self):
         pass
-#        st = [0xB2" + chr(0) + chr(0)
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(InputRepMsg(sensor=1, isHi=False), splitMsgStr(st))
-#        st = [0xB2" + chr(4) + chr(0)
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(InputRepMsg(sensor=9, isHi=False), splitMsgStr(st))
-#        st = [0xB2" + chr(4) + [0x10"
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(InputRepMsg(sensor=9, isHi=True), splitMsgStr(st))
-#        st = [0xB2" + chr(121) + [0x31"
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(InputRepMsg(sensor=500, isHi=True), splitMsgStr(st))
-#        st = [0xB2" + chr(121) + [0x01"
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(InputRepMsg(sensor=499, isHi=False), splitMsgStr(st))
-#
-#        st = [0xB1" + chr(115) + [0x33"
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(SwRepMsg(switch=500, direction=kClosed), splitMsgStr(st))
-#
-#        st = [0xB4" + [0x3F" + [0x00"
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(LongAckMsg(responseToOpcode=OPC_LOCO_ADR, switchState=0), \
-#                          splitMsgStr(st))
-#
-#        st = [0xE7,0x0E,0x01,0x30" + \
-#            chr(1111 % 128) + [0x00,0x00,0x00,0x00" + chr(1111 // 128) + \
-#            [0x00,0x00,0x00"
-#        st += utMakeCheckSumByte(st)
-#        self.assertEquals(SlRdDataMsg(address=1111, isAddressAlreadyInUse=True, slot=1), \
-#                          splitMsgStr(st))
-#
-#        st = chr(0) + chr(1) + chr(1) + chr(kMoving)
-#        self.assertEquals(PutTrainStateMsg(slot=1, state=kMoving), splitMsgStr(st))
-#
-#        st = chr(0) + chr(2) + chr(1) + chr(3) + \
-#            chr(73) + chr(1) + \
-#            chr(74) + chr(1) + \
-#            chr(75) + chr(1)
-#        self.assertEquals(PutTrainPositionMsg(slot=1, sensors=[201, 202, 203]), \
-#                          splitMsgStr(st))
-#
-#        st = chr(0) + chr(3) + chr(72) + chr(1) + chr(kFree)
-#        self.assertEquals(PutSectionStateMsg(id=200, state=kFree), splitMsgStr(st))
-#
-#        st = chr(0) + chr(4) + chr(99) + chr(kBeginClosed)
-#        self.assertEquals(PutSwitchStateMsg(id=99, state=kBeginClosed), splitMsgStr(st))
-#
-#        st = chr(0) + chr(5) + chr(116) + chr(3) + chr(kSensorOpen)
-#        self.assertEquals(PutSensorStateMsg(id=500, state=kSensorOpen), splitMsgStr(st))
-#
-#        st = chr(0) + chr(9) + \
-#            chr(1111 % 128) + chr(1111 // 128) + chr(1) + \
-#            chr(11) + chr(0) + chr(2)
-#        self.assertEquals(PutInitOutcomeMsg(physAdd=1111, physSlot=1, virtAdd=11, virtSlot=2), \
-#                          splitMsgStr(st))
-#
-#        st = chr(0) + chr(11) + chr(100) + chr(72) + chr(1)
-#        self.assertEquals(PutReadLayoutResponseMsg(responseFlag=100, code=200), \
-#                          splitMsgStr(st))
-#
-#        st = chr(0) + chr(21) + chr(1) + chr(100) + chr(kForward) + \
-#            chr(kOn) + chr(kOff) + chr(kOn) + chr(kOn)
-#        self.assertEquals(PutTrainInformationMsg(slot=1, speed=100, direction=kForward,
-#                          lights=kOn, bell=kOff, horn=kOn, mute=kOn), \
-#                          splitMsgStr(st))
-#
-#        st = chr(0) + chr(26)
-#        self.assertEquals(PutPowerChangeCompleteMsg(dummy=0), splitMsgStr(st))
+        st = [0xB2, 0, 0]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(InputRepMsg(sensor=1, isHi=False), splitMsgStr(st))
+
+        st = [0xB2, 4, 0]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(InputRepMsg(sensor=9, isHi=False), splitMsgStr(st))
+
+        st = [0xB2, 4, 0x10]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(InputRepMsg(sensor=9, isHi=True), splitMsgStr(st))
+
+        st = [0xB2, 121, 0x31]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(InputRepMsg(sensor=500, isHi=True), splitMsgStr(st))
+
+        st = [0xB2, 121, 0x01]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(InputRepMsg(sensor=499, isHi=False), splitMsgStr(st))
+
+        st = [0xB1, 115, 0x33]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(SwRepMsg(switch=500, direction=kClosed), splitMsgStr(st))
+
+        st = [0xB4, 0x3F, 0x00]
+        st.append(utMakeCheckSumByte(st))
+        self.assertEquals(LongAckMsg(responseToOpcode=OPC_LOCO_ADR, switchState=0), \
+                          splitMsgStr(st))
+
+        st = [0xE7,0x0E,0x01,0x30, \
+            1111 % 128, 0x00,0x00,0x00,0x00, 1111 // 128, \
+            0x00, 0x00, 0x00]
+        st.append(utMakeCheckSumByte(st)) 
+        self.assertEquals(SlRdDataMsg(address=1111, isAddressAlreadyInUse=True, slot=1), \
+                          splitMsgStr(st))
+
+        st = [0, 1, 1, kMoving]
+        self.assertEquals(PutTrainStateMsg(slot=1, state=kMoving), splitMsgStr(st))
+
+        st = [0, 2, 1, 3, 73, 1, 74, 1, 75, 1]
+        self.assertEquals(PutTrainPositionMsg(slot=1, sensors=[201, 202, 203]), \
+                          splitMsgStr(st))
+
+        st = [0, 3, 72, 1, kFree]
+        self.assertEquals(PutSectionStateMsg(id=200, state=kFree), splitMsgStr(st))
+
+        st = [0, 4, 99, kBeginClosed]
+        self.assertEquals(PutSwitchStateMsg(id=99, state=kBeginClosed), splitMsgStr(st))
+
+        st = [0, 5, 116, 3, kSensorOpen]
+        self.assertEquals(PutSensorStateMsg(id=500, state=kSensorOpen), splitMsgStr(st))
+
+        st = [0, 9, 1111 % 128, 1111 // 128, 1, 11, 0, 2]
+        self.assertEquals(PutInitOutcomeMsg(physAdd=1111, physSlot=1, virtAdd=11, virtSlot=2), \
+                          splitMsgStr(st))
+
+        st = [0, 11, 100, 72, 1]
+        self.assertEquals(PutReadLayoutResponseMsg(responseFlag=100, code=200), \
+                          splitMsgStr(st))
+
+        st = [0, 21, 1, 100, kForward, kOn, kOff, kOn, kOn]
+        self.assertEquals(PutTrainInformationMsg(slot=1, speed=100, direction=kForward,
+                          lights=kOn, bell=kOff, horn=kOn, mute=kOn), \
+                          splitMsgStr(st))
+
+        st = [0, 26]
+        self.assertEquals(PutPowerChangeCompleteMsg(dummy=0), splitMsgStr(st))
 
 if __name__ == "__main__":
     suite = unittest.makeSuite(TestMessageTranslationLibrary)

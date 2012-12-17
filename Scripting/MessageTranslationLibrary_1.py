@@ -59,6 +59,7 @@ def utConvertBytesToNatural(b1, b2):
 def makePowerStr(msg):
     #<0x83><CHK>    on
     #<0x82><CHK>    off
+    assert(msg.setting in (kOn, kOff))
     if msg.setting == kOn:
         st = [OPC_GPON]
     else:
@@ -69,6 +70,7 @@ def makePowerStr(msg):
 	
 def makeLocoSpdStr(msg):
     #<0xA0><SLOT#><SPD><CHK>
+    assert(1 <= msg.slot <= 127 and msg.speed >= 0)
     st = [OPC_LOCO_SPD]
     st.append(msg.slot)
     st.append(min(127, msg.speed))
@@ -78,6 +80,12 @@ def makeLocoSpdStr(msg):
 
 def makeLocoDirfStr(msg):
     #<0xA1><SLOT#><DIR_STATE><CHK>
+    assert(
+        1 <= msg.slot <= 127 and \
+        msg.direction in(kBackward,kForward) and \
+        msg.lights in (kOn, kOff) and \
+        msg.horn in (kOn, kOff) and \
+        msg.bell in (kOn, kOff))
     st = [OPC_LOCO_DIRF]
     st.append(msg.slot)
     dirf = 0x00
@@ -92,6 +100,11 @@ def makeLocoDirfStr(msg):
 	
 def makeLocoSndStr(msg):
     #<0xA2><SLOT#><SOUND><CHK>
+    assert(
+        1 <= msg.slot <= 127 and \
+        msg.mute in (kOn, kOff) and \
+        msg.F5 in (kOn, kOff) and \
+        msg.F6 in (kOn, kOff))
     st = [OPC_LOCO_SND]
     st.append(msg.slot)
     snd = 0x00
@@ -105,6 +118,7 @@ def makeLocoSndStr(msg):
 	
 def makeSwReqStr(msg):	
     #<0xB0><SW1><SW2><CHK>
+    assert(1 <= msg.switch <= 127 and msg.direction in (kClosed, kThrown))
     st = [OPC_SW_REQ]
     st.append(msg.switch - 1)
     if msg.direction == kClosed:
@@ -117,6 +131,7 @@ def makeSwReqStr(msg):
 	
 def makeMoveSlotsStr(msg):
     #<0xBA><slot#><slot#><chk>
+    assert(1 <= msg.slot1 <= 127 and 1 <= msg.slot2 <= 127)
     st = [OPC_MOVE_SLOTS]
     st.append(msg.slot1)
     st.append(msg.slot2)
@@ -126,6 +141,7 @@ def makeMoveSlotsStr(msg):
 	
 def makeLocoAdrStr(msg):
     #<0xBF><adrhigh><adrlow><chk>
+    assert(1 <= msg.address <= 9999)
     st = [OPC_LOCO_ADR]
     st.append(msg.address // 128)
     st.append(msg.address % 128)
@@ -135,6 +151,7 @@ def makeLocoAdrStr(msg):
 	
 def makeWriteSlotDataToClearStr(msg):
     #<0xEF><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
+    assert(1 <= msg.slot <= 127)
     st = [0 for x in range(0, 13)]
     st[0] = OPC_WR_SL_DATA
     st[1] = 0x0E            # message length = 14
@@ -146,6 +163,7 @@ def makeWriteSlotDataToClearStr(msg):
 	
 def makeDoLocoInitStr(msg):
     #<0><8><physical loco address> <count> <sensor#>...<sensor#>      where address and sensor# are 2 bytes
+    assert
     st = [0]
     st.append(doLocoInit)
     lowByte, highByte = utConvertNaturalToBytes(msg.address)
@@ -165,7 +183,7 @@ def makeDoReadLayoutStr(msg):
     st = [0]
     st.append(doReadLayout)
     st.append(len(msg.fileName))
-    st += msg.fileName
+    st += list(msg.fileName)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return [lowByte, highByte] + st
 	
@@ -175,32 +193,32 @@ def splitInputRepStr(st):
     #<0xB2><SN1><SN2><CHK>
     bitI      = 0x20
     bitL      = 0x10
-    a = ord(st[1])
-    b = ord(st[2]) & 0x0F
+    a = st[1]
+    b = st[2] & 0x0F
     c = 2 * (128 * b + a + 1)
-    if (ord(st[2]) & bitI) == bitI:
+    if (st[2] & bitI) == bitI:
         # bitI is 1
         sensor = c
     else:
         # bitI is 0
         sensor = c - 1
-    isHi = ((ord(st[2]) & bitL) == bitL)
+    isHi = ((st[2] & bitL) == bitL)
     return InputRepMsg(sensor=sensor, isHi=isHi)
 
 def splitSwRepStr(st):
     #<0xB1><SW1><SW2><CHK>
     b1 = st[1]
-    b2 = chr(ord(st[2]) & 0x0F)
+    b2 = st[2] & 0x0F
     switch = 1 + utConvertBytesToNatural(b1, b2)
-    if (ord(st[2]) & bitReportClosed) == bitReportClosed:
+    if (st[2] & bitReportClosed) == bitReportClosed:
         direction = kClosed
     else:
         direction = kThrown
-    return SwRepMsg(switch=switch, direction=direction)
+    return SwRepMsg(switch = switch, direction = direction)
 
 def splitLongAckStr(st):
     #<0xB4><lopc><ack><CHK>
-    responseToOpcode = chr(ord(st[1]) | 0x80)
+    responseToOpcode = st[1] | 0x80
     if responseToOpcode == OPC_SW_STATE:
         if st[2] == '\x30':
             state = kClosed
@@ -208,68 +226,68 @@ def splitLongAckStr(st):
             state = kThrown
     else:
         state = 0
-    return LongAckMsg(responseToOpcode=responseToOpcode, switchState=state)
+    return LongAckMsg(responseToOpcode = responseToOpcode, switchState = state)
 
 def splitSlRdDataStr(st):
     #<0xE7><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
     return SlRdDataMsg(
-                       address=utConvertBytesToNatural(st[4], st[9]),
-                       isAddressAlreadyInUse=((ord(st[3]) & 0x30) == 0x30),
-                       slot=ord(st[2]))
+        address = utConvertBytesToNatural(st[4], st[9]),
+        isAddressAlreadyInUse = (st[3] & 0x30) == 0x30,
+        slot = st[2])
 
 def splitPutTrainStateStr(st):
     #<0><1><slot#> <train state>
-    return PutTrainStateMsg(slot=ord(st[2]), state=ord(st[3]))
+    return PutTrainStateMsg(slot = st[2], state = st[3])
 	
 def splitPutTrainPositionStr(st):
     #<0><2><slot#><count><sensor#>...<sensor#>           where sensor# is 2 bytes
-    slot = ord(st[2])
-    sensorCount = ord(st[3])
+    slot = st[2]
+    sensorCount = st[3]
     sensors = []
     for i in range (1, sensorCount + 1):
         sensors.append(utConvertBytesToNatural(st[3 + 2 * i-1], st[3 + 2 * i]))
-    return PutTrainPositionMsg(slot=slot, sensors=sensors)
+    return PutTrainPositionMsg(slot = slot, sensors = sensors)
 
 def splitPutSectionStateStr(st):
     #<0><3><section#> <section state>                  where section# is 2 bytes
     return PutSectionStateMsg(
-                              id=utConvertBytesToNatural(st[2], st[3]),
-                              state=ord(st[4]))
+        id = utConvertBytesToNatural(st[2], st[3]),
+        state = st[4])
 
 def splitPutSwitchStateStr(st):
     #<0><4><switch#> <switch state>
     return PutSwitchStateMsg(
-                             id=ord(st[2]),
-                             state=ord(st[3]))
+        id = st[2],
+        state = st[3])
 
 def splitPutSensorStateStr(st):
     #<0><5><sensor#> <sensor state>                   where sensor# is 2 bytes
     return PutSensorStateMsg(
-                             id=utConvertBytesToNatural(st[2], st[3]),
-                             state=ord(st[4]))
+        id = utConvertBytesToNatural(st[2], st[3]),
+        state = st[4])
 
 def splitPutInitOutcomeStr(st):
     #<0><9><physical loco address> <slot#> <virtual loco address> <slot#>   where addresses are 2 bytes
     return PutInitOutcomeMsg(
-                             physAdd=utConvertBytesToNatural(st[2], st[3]),
-                             physSlot=ord(st[4]),
-                             virtAdd=utConvertBytesToNatural(st[5], st[6]),
-                             virtSlot=ord(st[7]))
+        physAdd = utConvertBytesToNatural(st[2], st[3]),
+        physSlot = st[4],
+        virtAdd = utConvertBytesToNatural(st[5], st[6]),
+        virtSlot = st[7])
 
 def splitPutReadLayoutResponseStr(st):
     #<0><11><XML read response flag><code>          where code is 2 bytes
     return PutReadLayoutResponseMsg(
-                                    responseFlag=ord(st[2]),
-                                    code=utConvertBytesToNatural(st[3], st[4]))
+        responseFlag = st[2],
+        code = utConvertBytesToNatural(st[3], st[4]))
 
 def splitPutTrainInformationStr(st):
     #<0><21><virtual slot#> <speed> <direction> <light> <bell> <horn> <mute>
     return PutTrainInformationMsg(
-                                  slot=ord(st[2]), speed=ord(st[3]), direction=ord(st[4]),
-                                  lights=ord(st[5]), bell=ord(st[6]), horn=ord(st[7]),
-                                  mute=ord(st[8]))
+        slot = st[2], speed = st[3], direction = st[4],
+        lights = st[5], bell = st[6], horn = st[7],
+        mute = st[8])
 			 
 def splitPutPowerChangeCompleteStr(st):
     #<0><26>
-    return PutPowerChangeCompleteMsg(dummy=0)
+    return PutPowerChangeCompleteMsg(dummy = 0)
 

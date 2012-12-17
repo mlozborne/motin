@@ -80,6 +80,20 @@ putPowerChangeComplete = 26
 
 #######################################################################
 # Sent message formats
+kDirectionValues = (kForward, kBackward)
+kSetRequestValues = (kThrown, kClosed)
+kPowerValues = (kOn, kOff)
+kLightsValues = (kOn, kOff)
+kHornValues = (kOn, kOff)
+kBellValues = (kOn, kOff)
+kMuteValues = (kOn, kOff)
+kF5Values = (kOn, kOff)
+kF6Values = (kOn, kOff)
+kSlotMin = 1; kSlotMax = 127
+kSpeedMin = 0; kSpeedMax = 127
+kLocoAddressMin = 1; kLocoAddressMax = 9999
+kSensorMin = 1; kSensorMax = 16383
+kFileNameType = "bytes"
 PowerMsg                   = namedtuple('PowerMsg', 'setting')
 LocoSpdMsg                 = namedtuple('LocoSpdMsg', 'slot, speed')
 LocoDirfMsg                = namedtuple('LocoDirfMsg', 'slot, direction, lights, horn, bell')
