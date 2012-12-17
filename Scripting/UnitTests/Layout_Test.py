@@ -8,7 +8,7 @@ if __name__ == "__main__":
     sak.start("simulator")
     sak.start("controller")
     sk = RailSocket('localhost', 1235)
-    responseFlag, code = readLayoutFile(sk, "../../runSoftware/Layout.xml")
+    responseFlag, code = readLayoutFile(sk, b"../../runSoftware/Layout.xml")
     if responseFlag  == 1:
         print ("test passed")
     else:

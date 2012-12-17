@@ -25,20 +25,20 @@ if __name__ == "__main__":
     time.sleep(3)
     sk = RailSocket('localhost', 1235)
 
-    responseFlag, code = readLayoutFile(sk, "../../runSoftware/Layout.xml")
-    print "responseFlag = {0} and code ={1}".format(responseFlag, code)
+    responseFlag, code = readLayoutFile(sk, b"../../runSoftware/Layout.xml")
+    print("responseFlag = {0} and code ={1}".format(responseFlag, code))
     if responseFlag != 1:
-        print "ABEND"
-        print "Error in XML file with flag = {0} and code = {1}".format(responseFlag, code)
-        print "THE END"
-        raw_input("press enter to quit")
+        print("ABEND")
+        print("Error in XML file with flag = {0} and code = {1}".format(responseFlag, code))
+        print ("THE END")
+        input("press enter to quit")
         
     throt = Throttle(sk)
     physAdd, physSlot, virtAdd, virtSlot = throt.doLocoInit(1111, [5, 1])
-    print "physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot)
+    print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot))
     if physSlot > 120:
-        print "\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot)
-        raw_input("press enter to quit")
+        print("\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot))
+        input("press enter to quit")
         
     throt.do(blinkLights, 4)
     throt.setSpeed(100)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     time.sleep(5)
     throt.do(stopTrain)
 
-    raw_input("press enter to quit")
+    input("press enter to quit")
     sk.close()
     sak.kill("controller")
     sak.kill("simulator")
