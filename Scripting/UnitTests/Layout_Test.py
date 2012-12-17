@@ -10,11 +10,11 @@ if __name__ == "__main__":
     sk = RailSocket('localhost', 1235)
     responseFlag, code = readLayoutFile(sk, "../../runSoftware/Layout.xml")
     if responseFlag  == 1:
-        print "test passed"
+        print ("test passed")
     else:
-        print "test failed with responseFlag = {0} and code = {1}".format(responseFlag, code)
+        print ("test failed with responseFlag = {0} and code = {1}".format(responseFlag, code))
     flushLog()
-    raw_input("press enter to quit")    
+    input("press enter to quit")    
     sak.kill("controller")
     sak.kill("simulator")
     closeLog()

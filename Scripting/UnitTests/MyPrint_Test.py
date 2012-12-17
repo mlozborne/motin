@@ -24,4 +24,4 @@ class PrintLine(threading.Thread):
 if __name__ == "__main__":
     for i in range(9):
         PrintLine(str(i)).start()
-    raw_input("press enter to quit")
+    input("press enter to quit")

@@ -1,7 +1,6 @@
 ############################################################################
 ###################### Unit Testing             ############################
 ############################################################################
-
 import threading
 from Log import *
 
@@ -25,10 +24,10 @@ if __name__ == "__main__":
     openLog(name = "logzzz.txt", flushFrequency = 10)
     for i in range(9):
         PrintLine(str(i)).start()
-    raw_input("Pause until press enter")
+    input("Pause until press enter")
     printLog("...................... MIDPOINT.........................")
     flushLog()
-    raw_input("Pause until press enter")
+    input("Pause until press enter")
     for i in range(10):
         PrintLine(str(i)+str(i)+str(i)).start()
-    raw_input("press enter to quit")
+    input("press enter to quit")

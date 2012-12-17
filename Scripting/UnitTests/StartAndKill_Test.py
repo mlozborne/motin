@@ -17,12 +17,12 @@ if __name__ == "__main__":
     start("ut4", ip = "127.0.0.1", port = "1234")
     start("RBLDisplay", ip = "127.0.0.1", port = "1235")
     start("adminthrottle",  ip = "127.0.0.1", port = "1235", layoutFile = "layout.xml", logs = "no")
-    print "\n"
+    print ("\n")
     start("controller", trace = "no")
     start("ut4", port = "1236")
     start("RBLDisplay", ip = "127.1.1.1")
     start("adminthrottle",  ip = "127.0.0.1", port = "1234", logs = "yes")
-    print "\n"
+    print ("\n")
     kill("sim")
     kill("cont")
     kill("ut4")
@@ -31,4 +31,4 @@ if __name__ == "__main__":
     kill()
     kill("all")
     closeLog()
-    raw_input("press enter to quit")
+    input("press enter to quit")

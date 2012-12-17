@@ -1,3 +1,4 @@
+
 from socket import *
 import time
 from Log import printLog
@@ -7,15 +8,22 @@ from MessageTranslationLibrary import *
 class RailSocket(object):
     def __init__(self, host, port):
         self.inBuffer = ""
-        self.sock = socket(AF_INET, SOCK_STREAM)
+        printLog("TCP: Trying create socket")
+        self.sock = socket()
+        xxxxx#self.sock.setblocking(True)
+        printLog("TCP: Socket created = {0}".format(self.sock))
         while True:
             if not self.sock.connect_ex((host, port)): break
             time.sleep(1)
-        printLog("TCP: Opened RailSocket = {0}".format(self.sock))
+        printLog("TCP: Connect to IP = {0}, port = {1}".format(host, port))
 		
     def send(self, msg):
-        printLog("<<< Sending {0}".format(msg))
-        self.sock.sendall(makeMsgStr(msg))
+        st1 = makeMsgStr(msg)
+        xxxxxx st2 = st1.encode('utf-8')  #unicodes larger than 127 are converted into two bytes
+        if len(st2) > len(st1):
+            st2 = st2[:2] + st2[3:]
+        printLog("<<< Sent message = {0}, st1 = {1}, st2 = {2}".format(msg, list(st1), list(st2)))
+        self.sock.sendall(st2)
 		
     def close(self):
         self.sock.close()
@@ -32,7 +40,7 @@ class RailSocket(object):
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)
-        printLog("    >>> Receiving {0}".format(msg))
+        printLog("    >>> Received {0}".format(msg))
         return msg
 
        

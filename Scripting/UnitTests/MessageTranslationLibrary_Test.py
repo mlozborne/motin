@@ -57,7 +57,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         self.assertEquals(utEx("\xBA\x01\x02"), makeMsgStr(msg))
 
         msg = LocoAdrMsg(address=1111)
-        st = "\xBF" + chr(1111 / 128) + chr(1111 % 128)
+        st = "\xBF" + chr(1111 // 128) + chr(1111 % 128)
         self.assertEquals(utEx(st), makeMsgStr(msg))
 
         msg = WriteSlotDataToClearMsg(slot=1)
@@ -65,7 +65,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         self.assertEquals(utEx(st), makeMsgStr(msg))
 
         msg = DoLocoInitMsg(address=1111, sensors=[1, 2, 3])
-        st = chr(0) + chr(8) + chr(1111 % 128) + chr(1111 / 128) + \
+        st = chr(0) + chr(8) + chr(1111 % 128) + chr(1111 // 128) + \
             chr(3) + \
             chr(1) + chr(0) + \
             chr(2) + chr(0) + \
@@ -103,7 +103,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
                           splitMsgStr(st))
 
         st = "\xE7\x0E\x01\x30" + \
-            chr(1111 % 128) + "\x00\x00\x00\x00" + chr(1111 / 128) + \
+            chr(1111 % 128) + "\x00\x00\x00\x00" + chr(1111 // 128) + \
             "\x00\x00\x00"
         st += utMakeCheckSumByte(st)
         self.assertEquals(SlRdDataMsg(address=1111, isAddressAlreadyInUse=True, slot=1), \
@@ -129,7 +129,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         self.assertEquals(PutSensorStateMsg(id=500, state=kSensorOpen), splitMsgStr(st))
 
         st = chr(0) + chr(9) + \
-            chr(1111 % 128) + chr(1111 / 128) + chr(1) + \
+            chr(1111 % 128) + chr(1111 // 128) + chr(1) + \
             chr(11) + chr(0) + chr(2)
         self.assertEquals(PutInitOutcomeMsg(physAdd=1111, physSlot=1, virtAdd=11, virtSlot=2), \
                           splitMsgStr(st))
@@ -151,4 +151,4 @@ if __name__ == "__main__":
     suite = unittest.makeSuite(TestMessageTranslationLibrary)
     unittest.TextTestRunner().run(suite)
     #unittest.main()
-    raw_input("press enter")
+    input("press enter")

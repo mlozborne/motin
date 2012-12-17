@@ -4,7 +4,7 @@ printCondition = Condition()
 
 def myPrint(st):
     printCondition.acquire()
-    print st
+    print (st)
     printCondition.notify()
     printCondition.release()
 

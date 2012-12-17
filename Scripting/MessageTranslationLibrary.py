@@ -1,3 +1,4 @@
+
 from MessageTranslationTypes import *
 
 #######################################################################
@@ -33,7 +34,9 @@ def splitMsgStr(st):
     elif opcode == putReadLayoutResponse: return splitPutReadLayoutResponseStr(st)
     elif opcode == putTrainInformation: return splitPutTrainInformationStr(st)
     elif opcode == putPowerChangeComplete: return splitPutPowerChangeCompleteStr(st)
-    else: return st.encode("hex")
+    else: return st
+#    else: return st.encode('utf-8')
+#    else: return st.encode("hex")
 
 #######################################################################
 # Utility routines
@@ -45,7 +48,7 @@ def utMakeCheckSumByte(st):
 
 def utConvertNaturalToBytes(value):
     lowByte = value % 128
-    highByte = value / 128
+    highByte = value // 128
     return chr(lowByte), chr(highByte)
 
 def utConvertBytesToNatural(b1, b2):
@@ -124,7 +127,7 @@ def makeMoveSlotsStr(msg):
 def makeLocoAdrStr(msg):
     #<0xBF><adrhigh><adrlow><chk>
     st = OPC_LOCO_ADR
-    st += chr(msg.address / 128)
+    st += chr(msg.address // 128)
     st += chr(msg.address % 128)
     st += utMakeCheckSumByte(st)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
