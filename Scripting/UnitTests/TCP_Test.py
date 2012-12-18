@@ -5,7 +5,7 @@
 
 import time
 
-from Log import printLog
+from Log import printLog1
 from MessageTranslationLibrary import *
 from MessageTranslationTypes import *
 import StartAndKill as sak

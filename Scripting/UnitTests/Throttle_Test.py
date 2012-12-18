@@ -7,7 +7,7 @@ from Layout import readLayoutFile
 from TCP import *
 from Throttle import *
 from MessageTranslationTypes import kOn, kOff, kClosed, kThrown
-
+from Log import *
 
 def stopTrain(self):
     self.setSpeed(0)
@@ -19,7 +19,26 @@ def blinkLights(self, n):
         self.setLights(kOff)
         time.sleep(0.2)
 
+def tootHorn(self):
+    self.setHorn(kOn)
+    time.sleep(1)
+
+    self.setHorn(kOff)
+    time.sleep(.2)
+
+    self.setHorn(kOn)
+    time.sleep(.2)
+
+    self.setHorn(kOff)
+    time.sleep(.2)
+
+    self.setHorn(kOn)
+    time.sleep(1)
+
+    self.setHorn(kOff)
+
 if __name__ == "__main__":
+    openLog()
     sak.start("simulator")
     sak.start("controller")
     time.sleep(3)
@@ -40,7 +59,10 @@ if __name__ == "__main__":
         print("\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot))
         input("press enter to quit")
         
+    throt.setBell(kOn)
     throt.do(blinkLights, 4)
+    throt.setBell(kOff)
+    throt.do(tootHorn)
     throt.setSpeed(100)
     time.sleep(3)
     throt.throwNextSwitch()
@@ -50,19 +72,13 @@ if __name__ == "__main__":
     time.sleep(5)
     throt.do(stopTrain)
 
+    flushLog()
     input("press enter to quit")
     sk.close()
     sak.kill("controller")
     sak.kill("simulator")
+    closeLog()
 
-
-
-#########################################################################
-################  Unit Testing                  #########################
-#########################################################################
-
-#from functools import partial
-#import time
 
 
 

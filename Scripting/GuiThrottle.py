@@ -1,15 +1,16 @@
 from breezypythongui import EasyFrame, N, W, NORMAL, DISABLED
 from Throttle import Throttle
 #from TCP import RailSocket
-from MessageTranslationTypes import kOff, kOn
+from MessageTranslationTypes import kOff, kOn, kForward, kBackward
 
-class ThrottleGUI(EasyFrame):
+class GuiThrottle(EasyFrame):
 
     def __init__(self, sk):
-        """Sets up the view.  The model comes in as an argument."""
         EasyFrame.__init__(self, title="Throttle")
+        
         self.sk = sk                        # socket to railroad
-        self.lights = kOff
+        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 'mute': kOff, 'direction': kForward}
+
         self.throttle = Throttle(sk)
 
         # Label and field for train address
@@ -25,7 +26,10 @@ class ThrottleGUI(EasyFrame):
         self.stateField = self.addTextField("Halted", row=2, column=1, sticky = N+W)
 
         # Initialize button
-        self.addButton(text="  Initialize  ", row=3, column=0, command=self.initializeTrain, columnspan = 2)
+        self.initializeButton = self.addButton(text="  Initialize  ", row=3, column=0, command=self.initializeTrain)
+
+        # Direction button
+        self.directionButton  = self.addButton(text="  Direction  ", row=3, column=1, command=self.changeDirection, state = DISABLED)
 
         # Lights button
         self.lightButton = self.addButton(text="    Lights    ", row=5, column=0, command=self.changeLights, state = DISABLED)
@@ -52,7 +56,7 @@ class ThrottleGUI(EasyFrame):
                                           resolution = 1,
                                           length = 250,
                                           tickinterval = 0,
-                                          command = self.changeSpeed)
+                                          command = None)
         self.speedSlider.set(0)
 
         # Halt button
@@ -64,6 +68,7 @@ class ThrottleGUI(EasyFrame):
         if physSlot > 120:
             print("\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot))
             input("press enter to quit")
+        self.directionButton.config(state = NORMAL)
         self.bellButton.config(state = NORMAL)
         self.closeNextButton.config(state = NORMAL)
         self.throwNextButton.config(state = NORMAL)
@@ -71,34 +76,53 @@ class ThrottleGUI(EasyFrame):
         self.hornButton.config(state = NORMAL)
         self.muteButton.config(state = NORMAL)
         self.haltButton.config(state = NORMAL)
+        self.speedSlider.config(command = self.changeSpeed)
+        self.initializeButton.config(state = DISABLED)
+
+    def flipToggle(self, key):
+        if key == "direction":
+            if self.toggles[key] == kForward:
+                self.toggles[key] = kBackward
+            else:
+                self.toggles[key] = kForward
+        else:
+            if self.toggles[key] == kOff:
+                self.toggles[key] = kOn
+            else:
+                self.toggles[key] = kOff
+
+    def changeDirection(self):
+        self.flipToggle("direction")
+        self.throttle.setDirection(self.toggles['direction'])
 
     def changeLights(self):
-        if self.lights == kOff:
-            self.lights = kOn
-        else:
-            self.lights = kOff
-        self.throttle.setLights(self.lights)
+        self.flipToggle("lights")
+        self.throttle.setLights(self.toggles['lights'])
 
     def changeBell(self):
-        pass
+        self.flipToggle("bell")
+        self.throttle.setBell(self.toggles['bell'])
 
     def changeHorn(self):
-        pass
+        self.flipToggle("horn")
+        self.throttle.setHorn(self.toggles['horn'])
 
     def changeMute(self):
-        pass
+        self.flipToggle("mute")
+        self.throttle.setMute(self.toggles['mute'])
 
     def closeNext(self):
-        pass
+        self.throttle.closeNextSwitch()
 
     def throwNext(self):
-        pass
+        self.throttle.throwNextSwitch()
 
     def changeSpeed(self, speed):
-        pass
+        self.throttle.setSpeed(int(speed))
 
     def haltTrain(self):
-        pass
+        self.throttle.setSpeed(1)
+        self.speedSlider.set(0)
 
 
 
