@@ -8,14 +8,14 @@ from MessageTranslationLibrary import *
 class RailSocket(object):
     def __init__(self, host, port):
         self.inBuffer = []
-        printLog("TCP: Trying create socket")
+        printLog("Trying to create socket               ...in TCP")
         self.sock = socket()
         #self.sock.setblocking(1)
-        printLog("TCP: Socket created = {0}".format(self.sock))
+        printLog("Socket created = {0}                  ...in TCP".format(self.sock))
         while True:
             if not self.sock.connect_ex((host, port)): break
             time.sleep(1)
-        printLog("TCP: Connect to IP = {0}, port = {1}".format(host, port))
+        printLog("Connected to IP = {0}, port = {1}        ...in TCP".format(host, port))
 		
     def send(self, msg):
         st = makeMsgStr(msg)
@@ -25,7 +25,7 @@ class RailSocket(object):
 		
     def close(self):
         self.sock.close()
-        printLog("TCP: Closed RailSocket")
+        printLog("Closed RailSocket                  ...in TCP")
 
     def receive(self):
         if len(self.inBuffer) < 2:

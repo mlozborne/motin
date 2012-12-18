@@ -11,7 +11,7 @@ def readLayoutFile(sk, fileName):
     """
     Won't work because shouldn't receive directly  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     """
-    printLog("Layout: reading file = {0}".format(fileName))
+    printLog("Reading layout file = {0}               ...in Layout".format(fileName))
     time.sleep(2)
     sk.send(DoReadLayoutMsg(fileName=fileName))
     msg = sk.receive()

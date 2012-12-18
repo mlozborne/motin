@@ -6,7 +6,7 @@ from TCP import *
 
 class Throttle(object):
     def __init__(self, sock):
-        printLog("Initializing Throttle ")
+        printLog("Initializing Throttle      ...in Throttle")
         self.sk = sock
         self.virtSlot = None
         self.direction = kForward
