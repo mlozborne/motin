@@ -1,7 +1,14 @@
-from breezypythongui import EasyFrame, N, W, NORMAL, DISABLED
+from MessageTranslationTypes import kBackward
+from MessageTranslationTypes import kForward
+from MessageTranslationTypes import kOff
+from MessageTranslationTypes import kOn
 from Throttle import Throttle
-#from TCP import RailSocket
-from MessageTranslationTypes import kOff, kOn, kForward, kBackward
+from breezypythongui import DISABLED
+from breezypythongui import EasyFrame
+from breezypythongui import N
+from breezypythongui import NORMAL
+from breezypythongui import W
+from tkinter import PhotoImage, LEFT
 
 class GuiThrottle(EasyFrame):
 
@@ -25,42 +32,52 @@ class GuiThrottle(EasyFrame):
         self.addLabel(text="State", row=2, column=0)
         self.stateField = self.addTextField("Halted", row=2, column=1, sticky = N+W)
 
-        # Initialize button
-        self.initializeButton = self.addButton(text="  Initialize  ", row=3, column=0, command=self.initializeTrain)
+        # Button initialize 
+        self.btInitialize = self.addButton(text="  Initialize  ", row=3, column=0, command=self.initializeTrain)
 
-        # Direction button
-        self.directionButton  = self.addButton(text="  Direction  ", row=3, column=1, command=self.changeDirection, state = DISABLED)
+        # Button direction
+        self.btDirection  = self.addButton(text="  Direction  ", row=3, column=1, command=self.changeDirection, state = DISABLED)
+        self.gifTrainRight = PhotoImage(file='..\\gifs\\TrainRight.gif')
+        self.gifTrainLeft = PhotoImage(file='..\\gifs\\TrainLeft.gif')
+        self.btDirection.config(image=self.gifTrainRight,width="60",height="20")
 
-        # Lights button
-        self.lightButton = self.addButton(text="    Lights    ", row=5, column=0, command=self.changeLights, state = DISABLED)
+        # Button lights
+        self.btLight = self.addButton(text="    Lights    ", row=5, column=0, command=self.changeLights, state = DISABLED)
+        self.gifLight = PhotoImage(file='..\\gifs\\Light.gif')
+        self.btLight.config(image=self.gifLight,width="60",height="20")
 
-        # Bell button
-        self.bellButton = self.addButton(text="      Bell      ", row=5, column=1, command=self.changeBell, state = DISABLED)
+        # Button bell
+        self.btBell = self.addButton(text="      Bell      ", row=5, column=1, command=self.changeBell, state = DISABLED)
+        self.gifBell = PhotoImage(file='..\\gifs\\bell.gif')
+        self.btBell.config(image=self.gifBell,width="60",height="20")
 
-        # Horn button
-        self.hornButton = self.addButton(text="     Horn     ", row=6, column=0, command=self.changeHorn, state = DISABLED)
+        # Button horn
+        self.btHorn = self.addButton(text="     Horn     ", row=6, column=0, command=self.changeHorn, state = DISABLED)
+        self.gifHorn = PhotoImage(file='..\\gifs\\horn.gif')
+        self.btHorn.config(image=self.gifHorn,width="60",height="20")
 
-        # Mute button
-        self.muteButton = self.addButton(text="     Mute     ", row=6, column=1, command=self.changeMute, state = DISABLED)
 
-        # Close next button
-        self.closeNextButton = self.addButton(text="Close Next", row=7, column=0, command=self.closeNext, state = DISABLED)
+        # Button mute
+        self.btMute = self.addButton(text="     Mute     ", row=6, column=1, command=self.changeMute, state = DISABLED)
 
-        # Throw next button
-        self.throwNextButton = self.addButton(text="Throw Next", row=7, column=1, command=self.throwNext, state = DISABLED)
+        # Button close next
+        self.btCloseNext = self.addButton(text="Close Next", row=7, column=0, command=self.closeNext, state = DISABLED)
 
-        # Speed slider
-        self.speedSlider = self.addScale(label = "Speed",
+        # Button throw next
+        self.btThrowNext = self.addButton(text="Throw Next", row=7, column=1, command=self.throwNext, state = DISABLED)
+
+        # Slider speed
+        self.slSpeed = self.addScale(label = "Speed",
                                           row = 9, column = 0, columnspan = 2,
                                           from_ = 0, to = 127,
                                           resolution = 1,
                                           length = 250,
                                           tickinterval = 0,
                                           command = None)
-        self.speedSlider.set(0)
+        self.slSpeed.set(0)
 
         # Halt button
-        self.haltButton = self.addButton(text="     Halt     ", row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
+        self.btHalt = self.addButton(text="     Halt     ", row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
 
     def initializeTrain(self):
         physAdd, physSlot, virtAdd, virtSlot = self.throttle.doLocoInit(1111, [5, 1])
@@ -68,16 +85,16 @@ class GuiThrottle(EasyFrame):
         if physSlot > 120:
             print("\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot))
             input("press enter to quit")
-        self.directionButton.config(state = NORMAL)
-        self.bellButton.config(state = NORMAL)
-        self.closeNextButton.config(state = NORMAL)
-        self.throwNextButton.config(state = NORMAL)
-        self.lightButton.config(state = NORMAL)
-        self.hornButton.config(state = NORMAL)
-        self.muteButton.config(state = NORMAL)
-        self.haltButton.config(state = NORMAL)
-        self.speedSlider.config(command = self.changeSpeed)
-        self.initializeButton.config(state = DISABLED)
+        self.btDirection.config(state = NORMAL)
+        self.btBell.config(state = NORMAL)
+        self.btCloseNext.config(state = NORMAL)
+        self.btThrowNext.config(state = NORMAL)
+        self.btLight.config(state = NORMAL)
+        self.btHorn.config(state = NORMAL)
+        self.btMute.config(state = NORMAL)
+        self.btHalt.config(state = NORMAL)
+        self.slSpeed.config(command = self.changeSpeed)
+        self.btInitialize.config(state = DISABLED)
 
     def flipToggle(self, key):
         if key == "direction":
@@ -93,6 +110,10 @@ class GuiThrottle(EasyFrame):
 
     def changeDirection(self):
         self.flipToggle("direction")
+        if self.toggles['direction'] == kForward:
+            self.btDirection.config(image=self.gifTrainRight,width="60",height="20")
+        else:
+            self.btDirection.config(image=self.gifTrainLeft,width="60",height="20")
         self.throttle.setDirection(self.toggles['direction'])
 
     def changeLights(self):
@@ -122,7 +143,7 @@ class GuiThrottle(EasyFrame):
 
     def haltTrain(self):
         self.throttle.setSpeed(1)
-        self.speedSlider.set(0)
+        self.slSpeed.set(0)
 
 
 
