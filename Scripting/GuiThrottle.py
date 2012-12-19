@@ -52,7 +52,8 @@ class GuiThrottle(EasyFrame):
         self.btBell.config(image=self.gifBell,width="60",height="20")
 
         # Button horn
-        self.btHorn = self.addButton(text="     Horn     ", row=6, column=0, command=self.changeHorn, state = DISABLED)
+        self.btHorn = self.addButton(text="     Horn     ", row=6, column=0, command=self.stopHorn, state = DISABLED)
+        self.btHorn.bind("<Button>", self.startHorn)
         self.gifHorn = PhotoImage(file='..\\gifs\\horn.gif')
         self.btHorn.config(image=self.gifHorn,width="60",height="20")
 
@@ -124,9 +125,11 @@ class GuiThrottle(EasyFrame):
         self.flipToggle("bell")
         self.throttle.setBell(self.toggles['bell'])
 
-    def changeHorn(self):
-        self.flipToggle("horn")
-        self.throttle.setHorn(self.toggles['horn'])
+    def startHorn(self, location):
+        self.throttle.setHorn(kOn)
+
+    def stopHorn(self):
+        self.throttle.setHorn(kOff)
 
     def changeMute(self):
         self.flipToggle("mute")
