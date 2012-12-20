@@ -77,5 +77,6 @@ def main():
     switches[1].setValue("thrown")
     print("")
     switches[1].setValue("closed")
+    input("press enter to end program")
 
 main()
