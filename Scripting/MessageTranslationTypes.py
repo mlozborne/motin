@@ -94,7 +94,7 @@ kSpeedMin = 0; kSpeedMax = 127
 kSwitchMin = 1; kSwitchMax = 128
 kLocoAddressMin = 1; kLocoAddressMax = 9999
 kSensorMin = 1; kSensorMax = 16383
-kFileNameType = bytes
+kFileNameType = bytes           # This is the type for a bytes array. Don't try to fix the error indicator
 PowerMsg                   = namedtuple('PowerMsg', 'setting')
 LocoSpdMsg                 = namedtuple('LocoSpdMsg', 'slot, speed')
 LocoDirfMsg                = namedtuple('LocoDirfMsg', 'slot, direction, lights, horn, bell')
