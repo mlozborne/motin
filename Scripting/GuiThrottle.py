@@ -8,23 +8,26 @@ from breezypythongui import EasyFrame
 from breezypythongui import N
 from breezypythongui import NORMAL
 from breezypythongui import W
-from tkinter import PhotoImage, LEFT
+from tkinter import PhotoImage
 from multiprocessing import Process, Queue
+from threading import Thread
 import sys
 
 class ThrottleProcess(Process):
-    def __init__(self, skToRailroad):
+    def __init__(self, skToRailroad, quMessagesFromController):
         print("Initializing ThrottleProcess"); sys.stdout.flush
         self.skToRailroad = skToRailroad
+        self.quMessagesFromController = quMessagesFromController
         Process.__init__(self)
         
     def run(self):
         print("Running ThrottleProcess"); sys.stdout.flush()
-        GuiThrottle(self.skToRailroad).mainloop()
+        GuiThrottle(self.skToRailroad, self.quMessagesFromController).mainloop()
         
 class GuiThrottle(EasyFrame):
 
     def __init__(self, skToRailroad, quMessagesFromController):
+        print("Initializing GuiThrottle"); sys.stdout.flush
         EasyFrame.__init__(self, title="Throttle")
         self.throttle = Throttle(skToRailroad)
         self.quMessagesFromController = quMessagesFromController
@@ -100,10 +103,9 @@ class GuiThrottle(EasyFrame):
 
     def initializeTrain(self):
         physAdd, physSlot, virtAdd, virtSlot = self.throttle.doLocoInit(1111, [5, 1])
-        print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot))
+        print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot)); sys.stdout.flush
         if physSlot > 120:
-            print("\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot))
-            input("press enter to quit")
+            self.messageBox(title = "ERROR", message = "Error code {0}".format(physAdd))
         self.btDirection.config(state = NORMAL)
         self.btBell.config(state = NORMAL)
         self.btCloseNext.config(state = NORMAL)
@@ -168,4 +170,15 @@ class GuiThrottle(EasyFrame):
 
 class QuReaderThread(Thread):
     def __init(self, theGui, quMessagesFromController):
+        print("Initializing a queue reader"); sys.stdout.flush()
+        Thread.__init__(self)
+        self.gui = theGui
+        self.qu = quMessagesFromController
+
+    def run(self):
+        while True:
+            msg = self.qu.get()
+            self.gui.processMessageFromController(msg)
+
+
 
