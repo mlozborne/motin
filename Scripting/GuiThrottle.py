@@ -1,42 +1,38 @@
-from MessageTranslationTypes import kBackward
-from MessageTranslationTypes import kForward
-from MessageTranslationTypes import kOff
-from MessageTranslationTypes import kOn
-from Throttle import Throttle
-from breezypythongui import DISABLED
-from breezypythongui import EasyFrame
-from breezypythongui import N
-from breezypythongui import NORMAL
-from breezypythongui import W
+from MessageTranslationTypes import *
+from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W
 from tkinter import PhotoImage
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 from threading import Thread
 import sys
+from Throttle import Throttle
 
-class ThrottleProcess(Process):
-    def __init__(self, skToRailroad, quMessagesFromController):
-        print("Initializing ThrottleProcess"); sys.stdout.flush
-        self.skToRailroad = skToRailroad
-        self.quMessagesFromController = quMessagesFromController
+class GuiThrottleProcess(Process):
+    def __init__(self, quFromCon, quToCon):
+        print("Initializing ThrottleProcess"); sys.stdout.flush()
+        self.quFromCon = quFromCon
+        self.quToCon = quToCon
         Process.__init__(self)
         
     def run(self):
-        print("Running ThrottleProcess"); sys.stdout.flush()
-        GuiThrottle(self.skToRailroad, self.quMessagesFromController).mainloop()
+        print("Running GuiThrottleProcess"); sys.stdout.flush()
+        GuiThrottle(self.quFromCon, self.quToCon).mainloop()
         
 class GuiThrottle(EasyFrame):
 
-    def __init__(self, skToRailroad, quMessagesFromController):
-        print("Initializing GuiThrottle"); sys.stdout.flush
-        EasyFrame.__init__(self, title="Throttle")
-        self.throttle = Throttle(skToRailroad)
-        self.quMessagesFromController = quMessagesFromController
-       
-        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 'mute': kOff, 'direction': kForward}
-
+    def __init__(self, quFromCon, quToCon):
+        print("Initializing GuiThrottle"); sys.stdout.flush()
         
+        EasyFrame.__init__(self, title="Throttle")
+        
+        self.quFromCon = quFromCon
+        self.quToCon = quToCon
+        self.throttle = Throttle(quToCon)
+        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
+                        'mute': kOff, 'direction': kForward}
+
         # Set up the queue reader for this window
-        quReaderThread = QuReaderThread(self, self.quMessagesFromController)
+        quReaderThread = QuReaderThread(self, self.quFromCon)
+        quReaderThread.start()
 
         # Label and field for train address
         self.addLabel(text="Train address", row=0, column=0)
@@ -51,39 +47,47 @@ class GuiThrottle(EasyFrame):
         self.stateField = self.addTextField("Halted", row=2, column=1, sticky = N+W)
 
         # Button initialize 
-        self.btInitialize = self.addButton(text="  Initialize  ", row=3, column=0, command=self.initializeTrain)
+        self.btInitialize = self.addButton(text="  Initialize  ", 
+            row=3, column=0, command=self.initializeTrain)
 
         # Button direction
-        self.btDirection  = self.addButton(text="  Direction  ", row=3, column=1, command=self.changeDirection, state = DISABLED)
+        self.btDirection  = self.addButton(text="  Direction  ", 
+            row=3, column=1, command=self.changeDirection, state = DISABLED)
         self.gifTrainRight = PhotoImage(file='..\\gifs\\TrainRight.gif')
         self.gifTrainLeft = PhotoImage(file='..\\gifs\\TrainLeft.gif')
         self.btDirection.config(image=self.gifTrainRight,width="60",height="20")
 
         # Button lights
-        self.btLight = self.addButton(text="    Lights    ", row=5, column=0, command=self.changeLights, state = DISABLED)
+        self.btLight = self.addButton(text="    Lights    ", 
+            row=5, column=0, command=self.changeLights, state = DISABLED)
         self.gifLight = PhotoImage(file='..\\gifs\\Light.gif')
         self.btLight.config(image=self.gifLight,width="60",height="20")
 
         # Button bell
-        self.btBell = self.addButton(text="      Bell      ", row=5, column=1, command=self.changeBell, state = DISABLED)
+        self.btBell = self.addButton(text="      Bell      ", 
+            row=5, column=1, command=self.changeBell, state = DISABLED)
         self.gifBell = PhotoImage(file='..\\gifs\\bell.gif')
         self.btBell.config(image=self.gifBell,width="60",height="20")
 
         # Button horn
-        self.btHorn = self.addButton(text="     Horn     ", row=6, column=0, command=self.stopHorn, state = DISABLED)
+        self.btHorn = self.addButton(text="     Horn     ", 
+            row=6, column=0, command=self.stopHorn, state = DISABLED)
         self.btHorn.bind("<Button>", self.startHorn)
         self.gifHorn = PhotoImage(file='..\\gifs\\horn.gif')
         self.btHorn.config(image=self.gifHorn,width="60",height="20")
 
 
         # Button mute
-        self.btMute = self.addButton(text="     Mute     ", row=6, column=1, command=self.changeMute, state = DISABLED)
+        self.btMute = self.addButton(text="     Mute     ", 
+            row=6, column=1, command=self.changeMute, state = DISABLED)
 
         # Button close next
-        self.btCloseNext = self.addButton(text="Close Next", row=7, column=0, command=self.closeNext, state = DISABLED)
+        self.btCloseNext = self.addButton(text="Close Next", 
+            row=7, column=0, command=self.closeNext, state = DISABLED)
 
         # Button throw next
-        self.btThrowNext = self.addButton(text="Throw Next", row=7, column=1, command=self.throwNext, state = DISABLED)
+        self.btThrowNext = self.addButton(text="Throw Next", 
+            row=7, column=1, command=self.throwNext, state = DISABLED)
 
         # Slider speed
         self.slSpeed = self.addScale(label = "Speed",
@@ -96,26 +100,34 @@ class GuiThrottle(EasyFrame):
         self.slSpeed.set(0)
 
         # Halt button
-        self.btHalt = self.addButton(text="     Halt     ", row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
+        self.btHalt = self.addButton(text="     Halt     ", 
+            row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
 
     def processMessageFromController(self, msg):
-        pass
-
+        if isinstance(msg, PutInitOutcomeMsg):
+            self.processPutInitOutcomeMsg(msg)
+        
     def initializeTrain(self):
-        physAdd, physSlot, virtAdd, virtSlot = self.throttle.doLocoInit(1111, [5, 1])
-        print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot)); sys.stdout.flush
-        if physSlot > 120:
-            self.messageBox(title = "ERROR", message = "Error code {0}".format(physAdd))
-        self.btDirection.config(state = NORMAL)
-        self.btBell.config(state = NORMAL)
-        self.btCloseNext.config(state = NORMAL)
-        self.btThrowNext.config(state = NORMAL)
-        self.btLight.config(state = NORMAL)
-        self.btHorn.config(state = NORMAL)
-        self.btMute.config(state = NORMAL)
-        self.btHalt.config(state = NORMAL)
-        self.slSpeed.config(command = self.changeSpeed)
-        self.btInitialize.config(state = DISABLED)
+        self.quToCon.put(DoLocoInitMsg(address=1111, sensors=[5, 1]))
+        
+    def processPutInitOutcomeMsg(self, msg):
+        print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
+            format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot)); sys.stdout.flush
+
+        if msg.physSlot > 120:
+            self.messageBox(title = "ERROR", message = "Error code {0}".format(msg.physAdd))
+        else:
+            self.throttle.setVirtSlot(msg.virtSlot)
+            self.btDirection.config(state = NORMAL)
+            self.btBell.config(state = NORMAL)
+            self.btCloseNext.config(state = NORMAL)
+            self.btThrowNext.config(state = NORMAL)
+            self.btLight.config(state = NORMAL)
+            self.btHorn.config(state = NORMAL)
+            self.btMute.config(state = NORMAL)
+            self.btHalt.config(state = NORMAL)
+            self.slSpeed.config(command = self.changeSpeed)
+            self.btInitialize.config(state = DISABLED)
 
     def flipToggle(self, key):
         if key == "direction":
@@ -169,11 +181,11 @@ class GuiThrottle(EasyFrame):
         self.slSpeed.set(0)
 
 class QuReaderThread(Thread):
-    def __init(self, theGui, quMessagesFromController):
+    def __init(self, theGui, quFromCon):
         print("Initializing a queue reader"); sys.stdout.flush()
         Thread.__init__(self)
         self.gui = theGui
-        self.qu = quMessagesFromController
+        self.qu = quFromCon
 
     def run(self):
         while True:

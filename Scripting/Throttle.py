@@ -1,13 +1,10 @@
 from MessageTranslationTypes import *
-from MessageTranslationLibrary import *
 from Log import printLog
-from TCP import *
-#from functools import partial
 
 class Throttle(object):
-    def __init__(self, sock):
+    def __init__(self, quToCon):
         printLog("Initializing Throttle      ...in Throttle")
-        self.sk = sock
+        self.quToCon = quToCon
         self.virtSlot = None
         self.direction = kForward
         self.lights = kOff
@@ -17,30 +14,22 @@ class Throttle(object):
         self.F5 = 0
         self.F6 = 0
 
-    def doLocoInit(self, locoAddress, sensors):
-        """
-        Won't work because throttle should not receive directly           <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        """
-        self.sk.send(DoLocoInitMsg(address=locoAddress, sensors=sensors))
-        msg = self.sk.receive()
-        while not isinstance(msg, PutInitOutcomeMsg):
-            msg = self.sk.receive()
-        self.virtSlot = msg.virtSlot
-        return msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot
+    def setVirtSlot(self, virtSlot):
+        self.virtSlot = virtSlot
 		
     def do(self, func, * args):
         func(self, * args)
 
     def sendDirf(self):
-        self.sk.send(LocoDirfMsg(slot=self.virtSlot, direction=self.direction,
+        self.quToCon.put(LocoDirfMsg(slot=self.virtSlot, direction=self.direction,
                      lights=self.lights, horn=self.horn, bell=self.bell))
 
     def sendSnd(self):
-        self.sk.send(LocoSndMsg(slot=self.virtSlot, mute=self.mute,
+        self.quToCon.put(LocoSndMsg(slot=self.virtSlot, mute=self.mute,
                      F5=self.F5, F6=self.F6))
 
     def setSpeed(self, speed):
-        self.sk.send(LocoSpdMsg(slot=self.virtSlot, speed=speed))
+        self.quToCon.put(LocoSpdMsg(slot=self.virtSlot, speed=speed))
 
     def setDirection(self, direction):
         self.direction = direction
@@ -77,7 +66,7 @@ class Throttle(object):
         self.sendSnd()
 
     def moveSwitch(self, id, direction):
-        self.sk.send(SwReqMsg(switch=id, direction=direction))
+        self.quToCon.put(SwReqMsg(switch=id, direction=direction))
 
 
 
