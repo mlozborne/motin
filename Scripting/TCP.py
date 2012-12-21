@@ -1,6 +1,6 @@
 
-from socket import *
-import time
+from socket import socket
+from time import sleep
 from Log import printLog
 
 from MessageTranslationLibrary import *
@@ -14,8 +14,8 @@ class RailSocket(object):
         printLog("Socket created = {0}                  ...in TCP".format(self.sock))
         while True:
             if not self.sock.connect_ex((host, port)): break
-            time.sleep(1)
-        printLog("Connected to IP = {0}, port = {1}        ...in TCP".format(host, port))
+            sleep(1)
+        printLog("Connected to IP = {0}, port = {1}     ...in TCP".format(host, port))
 		
     def send(self, msg):
         st = makeMsgStr(msg)
