@@ -9,16 +9,31 @@ from breezypythongui import N
 from breezypythongui import NORMAL
 from breezypythongui import W
 from tkinter import PhotoImage, LEFT
+from multiprocessing import Process, Queue
+import sys
 
+class ThrottleProcess(Process):
+    def __init__(self, skToRailroad):
+        print("Initializing ThrottleProcess"); sys.stdout.flush
+        self.skToRailroad = skToRailroad
+        Process.__init__(self)
+        
+    def run(self):
+        print("Running ThrottleProcess"); sys.stdout.flush()
+        GuiThrottle(self.skToRailroad).mainloop()
+        
 class GuiThrottle(EasyFrame):
 
-    def __init__(self, sk):
+    def __init__(self, skToRailroad, quMessagesFromController):
         EasyFrame.__init__(self, title="Throttle")
-        
-        self.sk = sk                        # socket to railroad
+        self.throttle = Throttle(skToRailroad)
+        self.quMessagesFromController = quMessagesFromController
+       
         self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 'mute': kOff, 'direction': kForward}
 
-        self.throttle = Throttle(sk)
+        
+        # Set up the queue reader for this window
+        quReaderThread = QuReaderThread(self, self.quMessagesFromController)
 
         # Label and field for train address
         self.addLabel(text="Train address", row=0, column=0)
@@ -79,6 +94,9 @@ class GuiThrottle(EasyFrame):
 
         # Halt button
         self.btHalt = self.addButton(text="     Halt     ", row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
+
+    def processMessageFromController(self, msg):
+        pass
 
     def initializeTrain(self):
         physAdd, physSlot, virtAdd, virtSlot = self.throttle.doLocoInit(1111, [5, 1])
@@ -148,5 +166,6 @@ class GuiThrottle(EasyFrame):
         self.throttle.setSpeed(1)
         self.slSpeed.set(0)
 
-
+class QuReaderThread(Thread):
+    def __init(self, theGui, quMessagesFromController):
 

@@ -113,8 +113,8 @@ if __name__ == "__main__":
 #    MessageApp(number, myPort, otherPort).mainloop()
 
 # Comment out one and run. Reverse comments and run again
-#    MessageApp(1, 5000, 5001).mainloop()
-    MessageApp(2, 5001, 5000).mainloop()
+    MessageApp(1, 5000, 5001).mainloop()
+#    MessageApp(2, 5001, 5000).mainloop()
 
 
     input("press enter to quit")

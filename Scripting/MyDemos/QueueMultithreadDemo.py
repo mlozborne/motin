@@ -1,6 +1,6 @@
 from queue import Queue
-
 from threading import Thread
+
 class Producer(Thread):
     def __init__(self, qu, nm):
         Thread.__init__(self)
@@ -24,16 +24,16 @@ class Consumer(Thread):
 
 def main():
     qu = Queue(5)            # This queue is shared by all producer and consumer processes
-    p1 = Producer(qu, "a")
-    p2 = Producer(qu, "b")
-    p3 = Producer(qu, "c")
-    c1 = Consumer(qu, "C")
-    c2 = Consumer(qu, "D")
-    c1.start()
-    c2.start()
-    p1.start()
-    p2.start()
-    p3.start()
+
+    numConsumers = 2
+    numProducers = 3
+    consumers = [Consumer(qu, chr(ord('A')+i)) for i in range(numConsumers)]
+    producers = [Producer(qu, chr(ord('a')+i)) for i in range(numProducers)]
+
+    for c in consumers:
+        c.start()
+    for p in producers:
+        p.start()
 
 main()
 

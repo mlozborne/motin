@@ -1,16 +1,24 @@
 from breezypythongui import EasyFrame
+from multiprocessing import Process, Queue
 from threading import Thread
-from queue import Queue
+import sys
 
-
-class GuiThread(Thread):
+class GuiProcess(Process):
     def __init__(self, number, quSend, quRead):
-        print("Starting thread {0}".format(number))
-        Thread.__init__(self)
-        TheGui(number, quSend, quRead).mainloop()
+        print("Initializing process {0}".format(number)); sys.stdout.flush
+        self.number = number
+        self.quSend = quSend
+        self.quRead = quRead
+        Process.__init__(self)
+        
+    def run(self):
+        print("Running process {0}".format(self.number)); sys.stdout.flush()
+        TheGui(self.number, self.quSend, self.quRead).mainloop()
+        
 
 class TheGui(EasyFrame):
     def __init__(self, number, quSend, quRead):
+        print("Initializing gui {0}".format(number)); sys.stdout.flush()
         self.number = number
         self.quSend = quSend
         self.quRead = quRead
@@ -27,7 +35,7 @@ class TheGui(EasyFrame):
         # The command button
         self.button = self.addButton(text = "Send", row = 2, column = 0, columnspan = 2, command = self.sendMessage)
 
-        # Set up and start the message server for this window
+        # Set up the queue reader for this window
         quReaderThread = QuReaderThread(self, self.quRead)
         quReaderThread.start()
 
@@ -42,20 +50,21 @@ class TheGui(EasyFrame):
 class QuReaderThread(Thread):
     
     def __init__(self, myGui, myQu):
+        print("Initializing a queue reader"); sys.stdout.flush()
         Thread.__init__(self)
         self.myGui = myGui
         self.myQu = myQu
 
     def run(self):
-        message = self.myQu.get()           # receive
-        self.myGui.printMessage(message)
+        while True:
+            message = self.myQu.get()
+            self.myGui.printMessage(message)
 
 if __name__ == "__main__":
     qu1 = Queue()
     qu2 = Queue()
-    GuiThread(1, qu1, qu2).start()
-    GuiThread(2, qu2, qu1).start()
-    print("qu1 size {0}".format(qu1.qsize()))
-    print("qu2 size {0}".format(qu2.qsize()))
+    GuiProcess(1, qu1, qu2).start()
+    GuiProcess(2, qu2, qu1).start()
+    
 
 
