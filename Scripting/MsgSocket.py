@@ -1,16 +1,47 @@
+from socket import socket
+from time import sleep
+from MessageTranslationLibary import makeMsgStr, splitMsgStr
+from Log import printLog
+from Threading import Thread
+
 class MsgSocket(object):
+    """
+    This class is a wrapper for the standard socket class.
+    1) Data is restricted to train messages as defined in the MessageTranslationType
+       module.
+    2) Train messages are automatically converted to ascii strings before being
+       sent, and these ascii strings are automatically converted back to train messages on receipt. The
+       ascii strings include a two byte prefix that indicates the length of the
+       rest of the string.
+    3) Usage pattern on the client side.
+           msk = MessageSocket()
+           msk.connect(serverSideHost, serverSidePort) # Tries for 10 seconds before throwing an exception
+           ...
+           msk.send(msg)
+           ...
+           msg = msk.receive()
+           ...
+           msk.close()
+    4) Usage pattern on the server side
+           define a clientHandlerFunction for use by the client handler
+           msk = MessageSocket()
+           msk.createMsgServerThread(serverSideHost, serverSidePort, clientHandlerFunction)
+
+    """
     def __init__(self):
         pass
 
-    def createMsgServerThread(self,address, clientHandlerRunFunction):
-        MessageServerThread(self, address, clientHandlerRunFunction).start
+    def createMsgServerThread(self, host, port, clientHandlerFunction):
+        MsgServerThread(self, host, port, clientHandlerFunction).start()
 
-    def connect(self):
+    def connect(self, host, port):
         self.inBuffer = []
         self.sock = socket()
-        while True:
-            if not self.sock.connect_ex((host, port)): break
+        for i in range(10):
+            if not self.sock.connect_ex((host, port)):
+                return
             sleep(1)
+        throw exception
 
     def setup(self, sock):
         self.sock = sock
@@ -63,6 +94,6 @@ class ClientHandlerThread(thread):
     def run(self):
         msgSocketToClient = MsgSocket()
         msgSocketToClient.setup(self.socketToClient)
-        clientHandlerRunFunction(msgSocketToClient)
+        clientHandlerFunction(msgSocketToClient)
         self.msgSocketToClient.close()
 
