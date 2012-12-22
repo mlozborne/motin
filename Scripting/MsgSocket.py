@@ -5,6 +5,41 @@ class MsgSocket(object):
     def createMsgServerThread(self,address, clientHandlerRunFunction):
         MessageServerThread(self, address, clientHandlerRunFunction).start
 
+    def connect(self):
+        self.inBuffer = []
+        self.sock = socket()
+        while True:
+            if not self.sock.connect_ex((host, port)): break
+            sleep(1)
+
+    def setup(self, sock):
+        self.sock = sock
+        self.inBuffer = []
+
+    def send(self, msg):
+        st = makeMsgStr(msg)
+        ba = bytes(st)
+        self.sock.sendall(ba)
+        printLog("<<< Sent message = {0}".format(msg))
+
+    def close(self):
+        self.sock.close()
+        printLog("Closed RailSocket                  ...in TCP")
+
+    def receive(self):
+        if len(self.inBuffer) < 2:
+            buf = self.sock.recv(1024)
+            self.inBuffer += buf
+        strSize = self.inBuffer[0] + 128 * self.inBuffer[1]
+        while strSize + 2 > len(self.inBuffer):
+            buf = self.sock.recv(1024)
+            self.inBuffer += buf
+        strMsg = self.inBuffer[2:2 + strSize]
+        self.inBuffer = self.inBuffer[2 + strSize:]
+        msg = splitMsgStr(strMsg)
+        printLog("    >>> Received {0}".format(msg))
+        return msg
+
 
 class MsgServerThread(Thread):
     def __init__(self, address, clientHandlerRunFunction):
@@ -26,13 +61,8 @@ class ClientHandlerThread(thread):
         self.clientHandlerRunFunction = clientHandlerRunFunction
 
     def run(self):
-        msgSocket = MsgSocket()
-        msgSocket.
-        clientHandlerRunFunction(self.socketToClient)
-        message = decode(self.client.recv(1024), "ascii")        # receive
-        if not message:
-            self.theGUI.printMessage('Client disconnected')
-        else:
-            self.theGUI.printMessage(message)
-        self.client.close()
+        msgSocketToClient = MsgSocket()
+        msgSocketToClient.setup(self.socketToClient)
+        clientHandlerRunFunction(msgSocketToClient)
+        self.msgSocketToClient.close()
 
