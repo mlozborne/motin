@@ -1,20 +1,57 @@
+"""
+This module contains
+    MsgQuPump
+    MsgSocket, MsgServerThread, ClientHandlerThread
+"""
 from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
 from Log import printLog
 from threading import Thread
 import sys
+import queue
+import multiprocessing
+import queue
+
+class MsgQuPump(Thread):
+    """
+    Removes messages from a message queue and sends them to the controller or
+    railroad via a MsgSocket
+    Usage
+        from MsgHandler import MsgQuPump
+        pump = MsgQuPump(nm = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
+        pump.start()
+    """
+    def __init__(self, nm = "1", sock = None, qu = None):
+        assert(isinstance(nm, str))
+        assert(isinstance(sock, MsgSocket))
+        assert(isinstance(qu, multiprocessing.queues.Queue))
+#        assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.Queue))
+        printLog("Creating MessageQueuePump {0}".format(nm))
+        Thread.__init__(self)
+        self.nm = nm
+        self.sk = sock
+        self.qu = qu
+
+    def run(self):
+        printLog("Starting MessageQueuePump {0}".format(self.nm))
+        while True:
+            self.sk.send(self.qu.get())
+
+################################################################################
 
 class MsgSocket(object):
     """
     This class is a wrapper for the standard socket class.
-    1) Data is restricted to train messages as defined in the MessageTranslationType
+    o  A socket object can be shared between threads in process but not by
+       different processes
+    o  Data is restricted to train messages as defined in the MessageTranslationType
        module.
-    2) Train messages are automatically converted to ascii strings before being
+    o  Train messages are automatically converted to ascii strings before being
        sent, and these ascii strings are automatically converted back to train messages on receipt. The
        ascii strings include a two byte prefix that indicates the length of the
        rest of the string.
-    3) Usage pattern on the client side.
+    o  Usage pattern on the client side.
            msk = MessageSocket()
            msk.connect(serverSideHost, serverSidePort) # Tries for 10 seconds before throwing an exception
            ...
@@ -23,7 +60,7 @@ class MsgSocket(object):
            msg = msk.receive()
            ...
            msk.close()
-    4) Usage pattern on the server side
+    o  Usage pattern on the server side
            define a clientHandlerFunction for use by the client handler
               this function should close its socket when done
            msk = MessageSocket()
@@ -31,29 +68,31 @@ class MsgSocket(object):
 
 
     """
-    def __init__(self):
-        printLog("Creating a MsgSocket")
+    def __init__(self, nm):
+        assert(isinstance(nm, str))
+        printLog("Creating MsgSocket {0}".format(nm))
+        self.nm = nm
 
     def createMsgServerThread(self, host, port, clientHandlerFunction):
         printLog("Starting a server at ({0}, {1})".format(host, port))
         MsgServerThread(host, port, clientHandlerFunction).start()
 
     def connect(self, host, port):
-        printLog("A client is trying to connect to ({0}, {1})".format(host, port))
+        printLog("Client socket {0} is trying to connect to ({1}, {2})".format(self.nm, host, port))
         self.inBuffer = []
         self.sock = socket()
         for i in range(10):
             if not self.sock.connect_ex((host, port)):
-                printLog("A client has connected to {0}".format(self.sock.getpeername()))
+                printLog("Client socket {0} has connected to {1}".format(self.nm, self.sock.getpeername()))
                 return
             sleep(1)
-        st = "EXCEPTION: A client FAILED to connected to ({0}, {1})".format(host, port)
+        st = "EXCEPTION: Client socket {0} FAILED to connected to ({1}, {2})".format(self.nm, host, port)
         printLog(st)
         print(st); sys.stdout.flush()
         raise
 
     def setup(self, sock):
-        printLog("Standard socket = {0} has being attached to a MsgSocket".format(sock.getpeername()))
+        printLog("Standard socket {0} is being attached to server socket {1}".format(sock.getpeername(), self.nm))
         self.sock = sock
         self.inBuffer = []
 

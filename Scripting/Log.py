@@ -1,32 +1,70 @@
+"""
+A log is a thread safe text file.
+A process can open at most one log.
+If a process attempts to open a second log before closing the first log, nothing happens.
+If a process has multiple threads, all threads share the same log.
+If a process doesn't open a log, then it's printLog commands are ignored.
+Usage
+    from Log import openLog, closeLog, flushLog, printLog
+    openLog(nm = <string>, flushFrequency = <positive integer>)
+    printLog(<string>)
+    flushLog()
+    closeLog()
+Where
+    o The name of a log file = "log_" + nm + ".txt"
+    o flushFrequence indicates how many lines are sent to the log before the log
+      is closed and reopened, thus allowing users to observe changes to the log
+      file.
+    o flushLog() closes and reopens the log file
+"""
 from threading import Condition
 
-logFile = None
-logFileName = None
-logCondition = Condition()
-logLineCount = None
-logFlushFrequency = None
+logFile = None                         # file object
+logFileName = None                     # name of log file
+logCondition = Condition()             # concurreny control
+logLineCount = None                    # number of lines since last flush
+logFlushFrequency = None               # number of lines between flushes
 
-def openLog(name, flushFrequency):
+def openLog(nm = "1", flushFrequency = 1):
+    
     global logFile
     global logFileName
     global logLineCount
     global logFlushFrequency
-    logFileName = "log_" + name + ".txt"
+    
+    if logFile != None: return
+
+    assert(isinstance(nm, str))
+    assert(isinstance(flushFrequency, int) and flushFrequency > 0)
+    
+    logFileName = "log_" + str(nm) + ".txt"
     logFile = open(logFileName, "w")
     logLineCount = 0
     logFlushFrequency = flushFrequency
-    printLog("Opening " + logFileName)
+
+    printLog("Opened " + logFileName)
 
 def closeLog():
+    
     global logFile
+    global logFileName
+    global logLineCount
+    global logFlushFrequency
+    
     if logFile == None: return
 
     printLog("Closing " + logFileName)
+
     logFile.close()
     logFile = None
 
 def flushLog():
+    
     global logFile
+    global logFileName
+    global logLineCount
+    global logFlushFrequency
+    
     if logFile == None: return
 
     logCondition.acquire()
@@ -37,9 +75,14 @@ def flushLog():
     logCondition.release()
 
 def printLog(st):
-    global logLineCount
     global logFile
+    global logFileName
+    global logLineCount
+    global logFlushFrequency
+    
     if logFile == None: return
+
+    assert(isinstance(st, str))
 
     logCondition.acquire()
 
@@ -52,6 +95,4 @@ def printLog(st):
 
     logCondition.notify()
     logCondition.release()
-    
-
     

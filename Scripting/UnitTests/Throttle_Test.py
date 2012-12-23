@@ -5,18 +5,21 @@ from MessageTranslationTypes import kOn, kOff, kClosed, kThrown
 from MessageTranslationLibrary import PutInitOutcomeMsg, DoLocoInitMsg, DoReadLayoutMsg, PutReadLayoutResponseMsg
 from Log import *
 from time import sleep
-from  MsgSocket import MsgSocket
+from  MsgHandler import MsgSocket, MsgQuPump
 from Throttle import Throttle
 from threading import Thread
-from queue import Queue
+from multiprocessing import Queue
 
-class MessageQueuePump(Thread):
-    def __init__(self, sock, qu):
+class MsgQuPump(Thread):
+    def __init__(self, nm = "1", sock = None, qu = None):
+        printLog("Creating MessageQueuePump {0}".format(id))
         Thread.__init__(self)
+        self.nm = nm
         self.sk = sock
         self.qu = qu
 
     def run(self):
+        printLog("Starting MessageQueuePump {0}".format(self.nm))
         while True:
             sk.send(self.qu.get())
 
@@ -94,7 +97,7 @@ if __name__ == "__main__":
     throt = Throttle(qu)
 
     # Create a thread that will send messages from the queue to the controller
-    MessageQueuePump(sk, qu).start
+    MsgQuPump(sk, qu).start()
 
     # Use the throttle to send messages to the controller
     throt.setBell(kOn)
