@@ -6,20 +6,22 @@ logCondition = Condition()
 logLineCount = None
 logFlushFrequency = None
 
-def openLog(name = "log.txt", flushFrequency = 20):
+def openLog(name, flushFrequency):
     global logFile
     global logFileName
     global logLineCount
     global logFlushFrequency
-    logFileName = name
+    logFileName = "log_" + name + ".txt"
     logFile = open(logFileName, "w")
     logLineCount = 0
     logFlushFrequency = flushFrequency
+    printLog("Opening " + logFileName)
 
 def closeLog():
     global logFile
     if logFile == None: return
 
+    printLog("Closing " + logFileName)
     logFile.close()
     logFile = None
 

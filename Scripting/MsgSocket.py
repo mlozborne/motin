@@ -1,8 +1,9 @@
 from socket import socket
 from time import sleep
-from MessageTranslationLibary import makeMsgStr, splitMsgStr
+from MessageTranslationLibrary import makeMsgStr, splitMsgStr
 from Log import printLog
-from Threading import Thread
+from threading import Thread
+import sys
 
 class MsgSocket(object):
     """
@@ -24,26 +25,35 @@ class MsgSocket(object):
            msk.close()
     4) Usage pattern on the server side
            define a clientHandlerFunction for use by the client handler
+              this function should close its socket when done
            msk = MessageSocket()
            msk.createMsgServerThread(serverSideHost, serverSidePort, clientHandlerFunction)
 
+
     """
     def __init__(self):
-        pass
+        printLog("Creating a MsgSocket")
 
     def createMsgServerThread(self, host, port, clientHandlerFunction):
-        MsgServerThread(self, host, port, clientHandlerFunction).start()
+        printLog("Starting a server at ({0}, {1})".format(host, port))
+        MsgServerThread(host, port, clientHandlerFunction).start()
 
     def connect(self, host, port):
+        printLog("A client is trying to connect to ({0}, {1})".format(host, port))
         self.inBuffer = []
         self.sock = socket()
         for i in range(10):
             if not self.sock.connect_ex((host, port)):
+                printLog("A client has connected to {0}".format(self.sock.getpeername()))
                 return
             sleep(1)
-        throw exception
+        st = "EXCEPTION: A client FAILED to connected to ({0}, {1})".format(host, port)
+        printLog(st)
+        print(st); sys.stdout.flush()
+        raise
 
     def setup(self, sock):
+        printLog("Standard socket = {0} has being attached to a MsgSocket".format(sock.getpeername()))
         self.sock = sock
         self.inBuffer = []
 
@@ -51,11 +61,11 @@ class MsgSocket(object):
         st = makeMsgStr(msg)
         ba = bytes(st)
         self.sock.sendall(ba)
-        printLog("<<< Sent message = {0}".format(msg))
+        printLog("<<< Sent message = {0}....to {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
+        printLog("Closing MsgSocket {0}".format(self.sock.getpeername()))
         self.sock.close()
-        printLog("Closed RailSocket                  ...in TCP")
 
     def receive(self):
         if len(self.inBuffer) < 2:
@@ -68,32 +78,39 @@ class MsgSocket(object):
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)
-        printLog("    >>> Received {0}".format(msg))
+        printLog("    >>> Received {0}....from {1}".format(msg, self.sock.getpeername()))
         return msg
 
 
 class MsgServerThread(Thread):
-    def __init__(self, address, clientHandlerRunFunction):
+    def __init__(self, host, port, clientHandlerFunction):
         Thread.__init__(self)
-        self.clientHandlerRunFunction = clientHandlerRunFunction
+        self.host = host
+        self.port = port
+        self.clientHandlerFunction = clientHandlerFunction
         self.serverSocket = socket()
-        self.serverSocket.bind(address)                          # bind
+        self.serverSocket.bind((host, port))                     # bind
         self.serverSocket.listen(5)                              # listen
+        printLog("Server socket now listening at ({0}, {1})".format(host, port))
 
     def run(self):
+        printLog("Entering server thread run method")
         while True:
             socketToClient, address = self.serverSocket.accept() # accept
-            ClientHandlerThread(socketToClient, self.clientHandlerRunFunction).start()
+            printLog("Server {0} just created a connection to client at {1}". \
+                      format((self.host, self.port), socketToClient.getpeername()))
+            ClientHandlerThread(socketToClient, self.clientHandlerFunction).start()
 
-class ClientHandlerThread(thread):
-    def __init__(self, socketToClient, clientHandlerRunFunction):
+class ClientHandlerThread(Thread):
+    def __init__(self, socketToClient, clientHandlerFunction):
+        printLog("Creating a handler to client at {0}".format(socketToClient.getpeername()))
         Thread.__init__(self)
         self.socketToClient = socketToClient
-        self.clientHandlerRunFunction = clientHandlerRunFunction
+        self.clientHandlerFunction = clientHandlerFunction
 
     def run(self):
         msgSocketToClient = MsgSocket()
         msgSocketToClient.setup(self.socketToClient)
-        clientHandlerFunction(msgSocketToClient)
-        self.msgSocketToClient.close()
+        printLog("Client handler calling {0}".format(self.clientHandlerFunction))
+        self.clientHandlerFunction(msgSocketToClient)
 

@@ -21,7 +21,7 @@ class PrintLine(threading.Thread):
         printLog("Ending " + self.st)
 
 if __name__ == "__main__":
-    openLog(name = "logzzz.txt", flushFrequency = 10)
+    openLog("", flushFrequency = 10)
     for i in range(9):
         PrintLine(str(i)).start()
     input("Pause until press enter")
@@ -31,3 +31,4 @@ if __name__ == "__main__":
     for i in range(10):
         PrintLine(str(i)+str(i)+str(i)).start()
     input("press enter to quit")
+    closeLog()

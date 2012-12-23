@@ -9,7 +9,7 @@ class Producer(Process):
         self.nm = nm
 
     def run(self):
-        print("running producer {0}".format(self.nm))
+        print("running producer {0}".format(self.nm)); sys.stdout.flush()
         for i in range(50):
             self.qu.put(str(self.nm) + str(i))
 
