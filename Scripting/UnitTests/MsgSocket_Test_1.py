@@ -51,7 +51,7 @@ class Server(Process):
 if __name__ == "__main__":
     openLog("main", 1)
     Client('localhost', 1234).start()
-#    Server('localhost', 1234, clientHandlerFunction).start()
+    Server('localhost', 1234, clientHandlerFunction).start()
     print("press enter to close the log")
     closeLog()
 
