@@ -21,7 +21,7 @@ Test2: MsgQuPump
     pause
     end the program
 """
-from MsgHandler import MsgSocket, MsgQuPump
+from MsgHandler import MsgSocket, MsgQuPump, MsgServerThread
 from multiprocessing import Process, Queue
 from MessageTranslationTypes import SwReqMsg, kThrown, kClosed, LocoSpdMsg
 import sys
@@ -47,7 +47,7 @@ class Client(Process):
 
     def run(self):
         openLog("Client", 1)
-        sk = MsgSocket()
+        sk = MsgSocket("1")
         sk.connect(self.host, self.port)
         for i in range(5):
             msg = SwReqMsg(switch = 11, direction = kThrown)
@@ -67,29 +67,30 @@ class Server(Process):
 
     def run(self):
         openLog("Server", 1)
-        sk = MsgSocket()
-        sk.createMsgServerThread(self.host, self.port, clientHandlerFunction)
+        MsgServerThread("1", self.host, self.port, clientHandlerFunction).start()
+#        sk = MsgSocket()
+#        sk.createMsgServerThread(self.host, self.port, clientHandlerFunction)
 
 if __name__ == "__main__":
     # Test 1
-#    openLog("main", 1)
-#    Client('localhost', 1234).start()
-#    Server('localhost', 1234, clientHandlerFunction).start()
-#    print("press enter to close the log")
-#    closeLog()
+    openLog("main", 1)
+    Client('localhost', 1234).start()
+    Server('localhost', 1234, clientHandlerFunction).start()
+    print("press enter to close the log")
+    closeLog()
 
     ###################################################
 
     # Test 2
-    openLog()
-    sak.start("simulator")
-    qu = Queue()
-    sk = MsgSocket(nm = "1")
-    sk.connect("localHost", 1234)
-    pump = MsgQuPump(nm = "1", sock = sk, qu = qu).start()
-    for i in range(1,10):
-        qu.put(SwReqMsg(switch=i, direction=kClosed))
-    sleep(4)
-    for i in range(1,10):
-        qu.put(SwReqMsg(switch=i, direction=kThrown))
-    input("press enter to quit")
+#    openLog()
+#    sak.start("simulator")
+#    qu = Queue()
+#    sk = MsgSocket(nm = "1")
+#    sk.connect("localHost", 1234)
+#    pump = MsgQuPump(nm = "1", sock = sk, qu = qu).start()
+#    for i in range(1,10):
+#        qu.put(SwReqMsg(switch=i, direction=kClosed))
+#    sleep(4)
+#    for i in range(1,10):
+#        qu.put(SwReqMsg(switch=i, direction=kThrown))
+#    input("press enter to quit")

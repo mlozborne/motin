@@ -68,14 +68,14 @@ class MsgSocket(object):
 
 
     """
-    def __init__(self, nm):
+    def __init__(self, nm = "1"):
         assert(isinstance(nm, str))
-        printLog("Creating MsgSocket {0}".format(nm))
+        printLog("msgSocket {0} created".format(nm))
         self.nm = nm
 
-    def createMsgServerThread(self, host, port, clientHandlerFunction):
-        printLog("Starting a server at ({0}, {1})".format(host, port))
-        MsgServerThread(host, port, clientHandlerFunction).start()
+#    def createMsgServerThread(self, host, port, clientHandlerFunction):
+#        printLog("Starting a server at ({0}, {1})".format(host, port))
+#        MsgServerThread(host, port, clientHandlerFunction).start()
 
     def connect(self, host, port):
         printLog("Client socket {0} is trying to connect to ({1}, {2})".format(self.nm, host, port))
@@ -91,8 +91,8 @@ class MsgSocket(object):
         print(st); sys.stdout.flush()
         raise
 
-    def setup(self, sock):
-        printLog("Standard socket {0} is being attached to server socket {1}".format(sock.getpeername(), self.nm))
+    def attach(self, sock):
+        printLog("msgSocket {0} has attached standard socket {1}".format(self.nm, sock.getpeername()))
         self.sock = sock
         self.inBuffer = []
 
@@ -100,10 +100,10 @@ class MsgSocket(object):
         st = makeMsgStr(msg)
         ba = bytes(st)
         self.sock.sendall(ba)
-        printLog("<<< Sent message = {0}....to {1}".format(msg, self.sock.getpeername()))
+        printLog("<<< Sent ...{0}....to {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
-        printLog("Closing MsgSocket {0}".format(self.sock.getpeername()))
+        printLog("msgSocket {0} closing ".format(self.sock.getpeername()))
         self.sock.close()
 
     def receive(self):
@@ -122,34 +122,37 @@ class MsgSocket(object):
 
 
 class MsgServerThread(Thread):
-    def __init__(self, host, port, clientHandlerFunction):
+    def __init__(self, nm = "1", host = None, port = None, clientHandlerFunction = None):
+        printLog("Creating message server {0} at ({1}, {2})".format(nm, host, port))
         Thread.__init__(self)
+        self.nm = nm
         self.host = host
         self.port = port
         self.clientHandlerFunction = clientHandlerFunction
-        self.serverSocket = socket()
-        self.serverSocket.bind((host, port))                     # bind
-        self.serverSocket.listen(5)                              # listen
-        printLog("Server socket now listening at ({0}, {1})".format(host, port))
 
     def run(self):
-        printLog("Entering server thread run method")
+        printLog("Entering server {0}'s run method".format(self.nm))
+        self.serverSocket = socket()
+        self.serverSocket.bind((self.host, self.port))           # bind
+        self.serverSocket.listen(5)                              # listen
+        printLog("Server {0} now listening at ({1}, {2})".format(self.nm, self.host, self.port))
         while True:
             socketToClient, address = self.serverSocket.accept() # accept
             printLog("Server {0} just created a connection to client at {1}". \
-                      format((self.host, self.port), socketToClient.getpeername()))
-            ClientHandlerThread(socketToClient, self.clientHandlerFunction).start()
+                      format(self.nm, socketToClient.getpeername()))
+            ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()
 
 class ClientHandlerThread(Thread):
-    def __init__(self, socketToClient, clientHandlerFunction):
-        printLog("Creating a handler to client at {0}".format(socketToClient.getpeername()))
+    def __init__(self, nm, socketToClient, clientHandlerFunction):
+        printLog("Creating client handler {0} to {1}".format(nm, socketToClient.getpeername()))
         Thread.__init__(self)
+        self.nm = nm
         self.socketToClient = socketToClient
         self.clientHandlerFunction = clientHandlerFunction
 
     def run(self):
         msgSocketToClient = MsgSocket()
-        msgSocketToClient.setup(self.socketToClient)
-        printLog("Client handler calling {0}".format(self.clientHandlerFunction))
+        msgSocketToClient.attach(self.socketToClient)
+        printLog("Client handler {0} calling {1}".format(self.nm, self.clientHandlerFunction))
         self.clientHandlerFunction(msgSocketToClient)
 
