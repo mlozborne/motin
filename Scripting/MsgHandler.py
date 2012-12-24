@@ -25,8 +25,7 @@ class MsgQuPump(Thread):
     def __init__(self, nm = "1", sock = None, qu = None):
         assert(isinstance(nm, str))
         assert(isinstance(sock, MsgSocket))
-        assert(isinstance(qu, multiprocessing.queues.Queue))
-#        assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.Queue))
+        assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
         printLog("Creating MessageQueuePump {0}".format(nm))
         Thread.__init__(self)
         self.nm = nm
@@ -98,12 +97,11 @@ class MsgSocket(object):
 
     def send(self, msg):
         st = makeMsgStr(msg)
-        ba = bytes(st)
-        self.sock.sendall(ba)
-        printLog("<<< Sent ...{0}....to {1}".format(msg, self.sock.getpeername()))
+        self.sock.sendall(st)
+        printLog("<<< Sent    {0}    to {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
-        printLog("msgSocket {0} closing ".format(self.sock.getpeername()))
+        printLog("msgSocket {0} closing ".format(self.nm))
         self.sock.close()
 
     def receive(self):
@@ -117,13 +115,17 @@ class MsgSocket(object):
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)
-        printLog("    >>> Received {0}....from {1}".format(msg, self.sock.getpeername()))
+        printLog("    >>> Received    {0}    from {1}".format(msg, self.sock.getpeername()))
         return msg
 
 
 class MsgServerThread(Thread):
     def __init__(self, nm = "1", host = None, port = None, clientHandlerFunction = None):
-        printLog("Creating message server {0} at ({1}, {2})".format(nm, host, port))
+        assert(isinstance(nm, str))
+        assert(isinstance(host, str))
+        assert(isinstance(port, int))
+        assert(clientHandlerFunction != None)
+        printLog("Message server {0} created at ({1}, {2})".format(nm, host, port))
         Thread.__init__(self)
         self.nm = nm
         self.host = host
@@ -131,20 +133,20 @@ class MsgServerThread(Thread):
         self.clientHandlerFunction = clientHandlerFunction
 
     def run(self):
-        printLog("Entering server {0}'s run method".format(self.nm))
+        printLog("Message server {0} running".format(self.nm))
         self.serverSocket = socket()
         self.serverSocket.bind((self.host, self.port))           # bind
         self.serverSocket.listen(5)                              # listen
-        printLog("Server {0} now listening at ({1}, {2})".format(self.nm, self.host, self.port))
+        printLog("Message server {0} now listening at ({1}, {2})".format(self.nm, self.host, self.port))
         while True:
             socketToClient, address = self.serverSocket.accept() # accept
-            printLog("Server {0} just created a connection to client at {1}". \
+            printLog("Message server {0} just created a connection to client at {1}". \
                       format(self.nm, socketToClient.getpeername()))
             ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()
 
 class ClientHandlerThread(Thread):
     def __init__(self, nm, socketToClient, clientHandlerFunction):
-        printLog("Creating client handler {0} to {1}".format(nm, socketToClient.getpeername()))
+        printLog("Client handler {0} created for {1}".format(nm, socketToClient.getpeername()))
         Thread.__init__(self)
         self.nm = nm
         self.socketToClient = socketToClient
@@ -153,6 +155,6 @@ class ClientHandlerThread(Thread):
     def run(self):
         msgSocketToClient = MsgSocket()
         msgSocketToClient.attach(self.socketToClient)
-        printLog("Client handler {0} calling {1}".format(self.nm, self.clientHandlerFunction))
+        printLog("Client handler {0} running and calling {1}".format(self.nm, self.clientHandlerFunction))
         self.clientHandlerFunction(msgSocketToClient)
 

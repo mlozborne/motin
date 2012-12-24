@@ -68,19 +68,15 @@ class Server(Process):
     def run(self):
         openLog("Server", 1)
         MsgServerThread("1", self.host, self.port, clientHandlerFunction).start()
-#        sk = MsgSocket()
-#        sk.createMsgServerThread(self.host, self.port, clientHandlerFunction)
 
 if __name__ == "__main__":
-    # Test 1
-    openLog("main", 1)
-    Client('localhost', 1234).start()
-    Server('localhost', 1234, clientHandlerFunction).start()
-    print("press enter to close the log")
-    closeLog()
 
     ###################################################
+    # Test 1
+    Client('localhost', 1234).start()
+    Server('localhost', 1234, clientHandlerFunction).start()
 
+    ###################################################
     # Test 2
 #    openLog()
 #    sak.start("simulator")
@@ -94,3 +90,4 @@ if __name__ == "__main__":
 #    for i in range(1,10):
 #        qu.put(SwReqMsg(switch=i, direction=kThrown))
 #    input("press enter to quit")
+

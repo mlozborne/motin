@@ -1,4 +1,11 @@
-
+"""
+Representation of messages.
+    o bytearray during transmition via sockets
+    o namedtupes internally
+Conversion operations
+    o makeMsgStr(msg)    namedtuple --> bytearray
+    o splitMsgStr(st)    bytearray  --> namedtuple
+"""
 from MessageTranslationTypes import *
 
 #######################################################################
@@ -35,8 +42,7 @@ def splitMsgStr(st):
     elif opcode == putTrainInformation: return splitPutTrainInformationStr(st)
     elif opcode == putPowerChangeComplete: return splitPutPowerChangeCompleteStr(st)
     else: return st
-#    else: return st.encode('utf-8')
-#    else: return st.encode("hex")
+
 
 #######################################################################
 # Utility routines
@@ -66,7 +72,7 @@ def makePowerStr(msg):
         st = [OPC_GPOFF]
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeLocoSpdStr(msg):
     #<0xA0><SLOT#><SPD><CHK>
@@ -76,7 +82,7 @@ def makeLocoSpdStr(msg):
     st.append(min(kSpeedMax, msg.speed))
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 
 def makeLocoDirfStr(msg):
     #<0xA1><SLOT#><DIR_STATE><CHK>
@@ -96,7 +102,7 @@ def makeLocoDirfStr(msg):
     st.append(dirf)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeLocoSndStr(msg):
     #<0xA2><SLOT#><SOUND><CHK>
@@ -114,7 +120,7 @@ def makeLocoSndStr(msg):
     st.append(snd)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeSwReqStr(msg):	
     #<0xB0><SW1><SW2><CHK>
@@ -127,7 +133,7 @@ def makeSwReqStr(msg):
         st.append(bitRequestThrow)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeMoveSlotsStr(msg):
     #<0xBA><slot#><slot#><chk>
@@ -137,7 +143,7 @@ def makeMoveSlotsStr(msg):
     st.append(msg.slot2)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeLocoAdrStr(msg):
     #<0xBF><adrhigh><adrlow><chk>
@@ -147,7 +153,7 @@ def makeLocoAdrStr(msg):
     st.append(msg.address % 128)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeWriteSlotDataToClearStr(msg):
     #<0xEF><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
@@ -159,7 +165,7 @@ def makeWriteSlotDataToClearStr(msg):
     st[3] = 0x0B            # status = 0000 1011
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeDoLocoInitStr(msg):
     #<0><8><physical loco address> <count> <sensor#>...<sensor#>      where address and sensor# are 2 bytes
@@ -178,7 +184,7 @@ def makeDoLocoInitStr(msg):
         st.append(lowByte)
         st.append(highByte)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 def makeDoReadLayoutStr(msg):
     #<0><10><count><XML file name>       where count is 1 byte
@@ -188,7 +194,7 @@ def makeDoReadLayoutStr(msg):
     st.append(len(msg.fileName))
     st += list(msg.fileName)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return [lowByte, highByte] + st
+    return bytes([lowByte, highByte] + st)
 	
 #######################################################################
 # Split routines

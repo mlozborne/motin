@@ -29,48 +29,48 @@ class TestMessageTranslationLibrary(unittest.TestCase):
 
     def testMakeMsgStr(self):
         msg = PowerMsg(setting=kOn)
-        self.assertEquals(utEx([0x83]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0x83])),makeMsgStr(msg))
         msg = PowerMsg(setting=kOff)
-        self.assertEquals(utEx([0x82]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0x82])), makeMsgStr(msg))
 
         msg = LocoSpdMsg(slot=1, speed=2)
-        self.assertEquals(utEx([0xA0,0x01,0x02]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xA0,0x01,0x02])), makeMsgStr(msg))
         msg = LocoSpdMsg(slot=1, speed=300)
-        self.assertEquals(utEx([0xA0,0x01,0x7F]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xA0,0x01,0x7F])), makeMsgStr(msg))
 
         msg = LocoDirfMsg(slot=1, direction=kBackward, lights=kOn, horn=kOn, bell=kOn)
-        self.assertEquals(utEx([0xA1,0x01,0x33]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xA1,0x01,0x33])), makeMsgStr(msg))
         msg = LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff)
-        self.assertEquals(utEx([0xA1,0x01,0x00]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xA1,0x01,0x00])), makeMsgStr(msg))
 
         msg = LocoSndMsg(slot=1, mute=kOn, F5=kOn, F6=kOn)
-        self.assertEquals(utEx([0xA2,0x01,0x0B]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xA2,0x01,0x0B])), makeMsgStr(msg))
         msg = LocoSndMsg(slot=1, mute=kOff, F5=kOff, F6=kOff)
-        self.assertEquals(utEx([0xA2,0x01,0x00]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xA2,0x01,0x00])), makeMsgStr(msg))
 
         msg = SwReqMsg(switch=1, direction=kClosed)
-        self.assertEquals(utEx([0xB0,0x00,0x30]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xB0,0x00,0x30])), makeMsgStr(msg))
         msg = SwReqMsg(switch=1, direction=kThrown)
-        self.assertEquals(utEx([0xB0,0x00,0x10]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xB0,0x00,0x10])), makeMsgStr(msg))
 
         msg = MoveSlotsMsg(slot1=1, slot2=2)
-        self.assertEquals(utEx([0xBA,0x01,0x02]), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx([0xBA,0x01,0x02])), makeMsgStr(msg))
 
         msg = LocoAdrMsg(address=1111)
         st = [0xBF, (1111 // 128), (1111 % 128)]
-        self.assertEquals(utEx(st), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx(st)), makeMsgStr(msg))
 
         msg = WriteSlotDataToClearMsg(slot=1)
         st = [0xEF,0x0E,0x01,0x0B,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
-        self.assertEquals(utEx(st), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx(st)), makeMsgStr(msg))
 
         msg = DoLocoInitMsg(address=1111, sensors=[1, 2, 3])
         st = [0, 8, (1111%128), (1111//128), 3, 1, 0, 2, 0, 3, 0]
-        self.assertEquals(utEx2(st), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx2(st)), makeMsgStr(msg))
 
         msg = DoReadLayoutMsg(fileName=b'abc')
         st = [0, 10, 3, ord('a'), ord('b'), ord('c')]
-        self.assertEquals(utEx2(st), makeMsgStr(msg))
+        self.assertEquals(bytes(utEx2(st)), makeMsgStr(msg))
 
     def testSplitMsgStr(self):
         pass
