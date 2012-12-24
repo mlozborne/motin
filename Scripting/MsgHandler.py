@@ -6,7 +6,7 @@ This module contains
 from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
-from Log import printLog
+from Log import printLog, openLog, closeLog
 from threading import Thread
 import sys
 import queue
@@ -35,7 +35,8 @@ class MsgQuPump(Thread):
     def run(self):
         printLog("Starting MessageQueuePump {0}".format(self.nm))
         while True:
-            self.sk.send(self.qu.get())
+            msg = self.qu.get()
+            self.sk.send(msg)
 
 ################################################################################
 
@@ -77,6 +78,8 @@ class MsgSocket(object):
 #        MsgServerThread(host, port, clientHandlerFunction).start()
 
     def connect(self, host, port):
+        assert(isinstance(host, str))
+        assert(port > 0)
         printLog("Client socket {0} is trying to connect to ({1}, {2})".format(self.nm, host, port))
         self.inBuffer = []
         self.sock = socket()
@@ -91,11 +94,13 @@ class MsgSocket(object):
         raise
 
     def attach(self, sock):
+        assert(isinstance(sock, socket))
         printLog("msgSocket {0} has attached standard socket {1}".format(self.nm, sock.getpeername()))
         self.sock = sock
         self.inBuffer = []
 
     def send(self, msg):
+        assert(isinstance(msg, tuple))
         st = makeMsgStr(msg)
         self.sock.sendall(st)
         printLog("<<< Sent    {0}    to {1}".format(msg, self.sock.getpeername()))
@@ -146,6 +151,9 @@ class MsgServerThread(Thread):
 
 class ClientHandlerThread(Thread):
     def __init__(self, nm, socketToClient, clientHandlerFunction):
+        assert(isinstance(nm, str))
+        assert(isinstance(socketToClient, socket))
+        assert(clientHandlerFunction != None)
         printLog("Client handler {0} created for {1}".format(nm, socketToClient.getpeername()))
         Thread.__init__(self)
         self.nm = nm
