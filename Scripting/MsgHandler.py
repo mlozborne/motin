@@ -63,8 +63,8 @@ class MsgInQuPump(Thread):
     def run(self):
         printLog("Starting MsgInQueuePump {0}".format(self.nm))
         while True:
-            msg = self.sk.receive(msg)
-            self.qu.put(splitMsgStr(msg))
+            st = self.sk.receive()
+            self.qu.put(makeMsgStr(st))
 
 ################################################################################
 

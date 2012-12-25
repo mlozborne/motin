@@ -1,9 +1,13 @@
 from MessageTranslationTypes import *
 from Log import printLog
+import queue
+import multiprocessing
 
 class Throttle(object):
-    def __init__(self, quToCon):
+    def __init__(self, nm, quToCon):
         printLog("Initializing Throttle      ...in Throttle")
+        assert(isinstance(nm, str))
+        assert(isinstance(quToCon, queue.Queue) or isinstance(quToCon, multiprocessing.queues.Queue))
         self.quToCon = quToCon
         self.virtSlot = None
         self.direction = kForward
