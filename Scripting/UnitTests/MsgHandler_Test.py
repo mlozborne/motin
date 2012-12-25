@@ -84,7 +84,6 @@ if __name__ == "__main__":
     qu = Queue()                                              #create queue
     sk = MsgSocket(nm = "1")                                  #create msgSocket
     sk.connect("localHost", 1234)                             #connect socket to simulator
-#    sleep(1)
     pump = MsgQuPump(nm = "1", sock = sk, qu = qu).start()    #create a message pump for queue-->simulator
     for i in range(1,10):                                     #put messages on queue
         qu.put(SwReqMsg(switch=i, direction=kClosed))

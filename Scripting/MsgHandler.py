@@ -13,30 +13,58 @@ import queue
 import multiprocessing
 import queue
 
-class MsgQuPump(Thread):
+class MsgOutQuPump(Thread):
     """
     Removes messages from a message queue and sends them to the controller or
     railroad via a MsgSocket
     Usage
-        from MsgHandler import MsgQuPump
-        pump = MsgQuPump(nm = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
+        from MsgHandler import MsgOutQuPump
+        pump = MsgOutQuPump(nm = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
         pump.start()
     """
     def __init__(self, nm = "1", sock = None, qu = None):
         assert(isinstance(nm, str))
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
-        printLog("Creating MessageQueuePump {0}".format(nm))
+        printLog("Creating MsgOutQueuePump {0}".format(nm))
         Thread.__init__(self)
         self.nm = nm
         self.sk = sock
         self.qu = qu
 
     def run(self):
-        printLog("Starting MessageQueuePump {0}".format(self.nm))
+        printLog("Starting MsgOutQueuePump {0}".format(self.nm))
         while True:
             msg = self.qu.get()
             self.sk.send(msg)
+
+################################################################################
+
+class MsgInQuPump(Thread):
+    """
+    Reads messages from the controller or railroad via a MsgSocket and puts
+    them in a queue
+
+    Usage
+        from MsgHandler import MsgInQuPump
+        pump = MsgInQuPump(nm = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
+        pump.start()
+    """
+    def __init__(self, nm = "1", sock = None, qu = None):
+        assert(isinstance(nm, str))
+        assert(isinstance(sock, MsgSocket))
+        assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
+        printLog("Creating MsgInQueuePump {0}".format(nm))
+        Thread.__init__(self)
+        self.nm = nm
+        self.sk = sock
+        self.qu = qu
+
+    def run(self):
+        printLog("Starting MsgInQueuePump {0}".format(self.nm))
+        while True:
+            msg = self.sk.receive(msg)
+            self.qu.put(splitMsgStr(msg))
 
 ################################################################################
 
