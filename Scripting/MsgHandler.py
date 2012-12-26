@@ -6,12 +6,28 @@ This module contains
 from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
-from Log import printLog, openLog, closeLog
+from MessageTranslationTypes import PutInitOutcomeMsg, PutReadLayoutResponseMsg
+from Log import printLog
 from threading import Thread
 import sys
 import queue
 import multiprocessing
 import queue
+
+def waitFor(qu, msg):
+    assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
+    assert(isinstance(msg, tuple))
+    done = False
+    while not done:
+        while True:
+            m = qu.get()
+            if type(m) == type(msg):
+                break
+        if isinstance(m, PutReadLayoutResponseMsg):
+            break
+        if isinstance(m, PutInitOutcomeMsg) and m.physAdd == msg.address:
+            break
+    return m
 
 class MsgOutQuPump(Thread):
     """
