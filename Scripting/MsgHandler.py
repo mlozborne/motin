@@ -15,6 +15,12 @@ import multiprocessing
 import queue
 
 def waitFor(qu, msg):
+    """
+    Get messages from the qu until one of the correct type is retrieved.
+    Type currently recognized are:
+        PutReadLayoutResponseMsg
+        PutInitOutcomeMsg -- must also match msg.address
+    """
     assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
     assert(isinstance(msg, tuple))
     done = False
