@@ -1,8 +1,7 @@
-from GuiThrottle import ThrottleProcess
+from GuiThrottle import GuiThrottleProcess
 from TCP import RailSocket
 import StartAndKill as sak
 import time
-from Layout import readLayoutFile
 from Log import openLog, closeLog, flushLog
 from multiprocessing import Queue
 
