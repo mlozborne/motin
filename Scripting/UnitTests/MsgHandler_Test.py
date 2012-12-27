@@ -21,9 +21,10 @@ Test2: MsgQuPump
     pause
     end the program
 """
-from MsgHandler import MsgSocket, MsgInQuPump, MsgOutQuPump, MsgServerThread
+from MsgHandler import MsgSocket, MsgInQuPump, MsgOutQuPump, MsgServerThread, waitFor
+
 from multiprocessing import Process, Queue
-from MessageTranslationTypes import SwReqMsg, kThrown, kClosed, LocoSpdMsg
+from MessageTranslationTypes import *
 import sys
 from Log import openLog, closeLog, printLog
 from time import sleep
@@ -81,7 +82,7 @@ class Consumer(Thread):
     def run(self):
         printLog("Consumer running")
         inQu = Queue()
-        pump = MsgInQuPump(nm = "in pump", sock = sk, qu = inQu).start()
+        pump = MsgInQuPump(nm = "in pump", sock = self.sk, qu = inQu).start()
         while True:
             msg = inQu.get()
             printLog("Received {0}".format(msg))
@@ -96,7 +97,7 @@ class Producer(Thread):
     def run(self):
         printLog("Producer running")
         outQu = Queue()
-        pump = MsgOutQuPump(nm = "out pump", sock = sk, qu = outQu).start()
+        pump = MsgOutQuPump(nm = "out pump", sock = self.sk, qu = outQu).start()
         for i in range(1,11):
             outQu.put(SwReqMsg(switch = i, direction = kThrown))
 
@@ -104,11 +105,13 @@ if __name__ == "__main__":
 
     ###################################################
     # Test 1
+    
 #    Client('localhost', 1200).start()
 #    Server('localhost', 1200, clientHandlerFunction).start()
 
     ###################################################
     # Test 2
+
     openLog("main")                                           #open log
     sak.start("simulator")                                    #start simulator
     sk = MsgSocket(nm = "1")                                  #create msgSocket
@@ -121,5 +124,37 @@ if __name__ == "__main__":
     input("press enter to quit")
     sak.kill("simulator")                                     #kill simulator
     closeLog()
+
+    ###################################################
+    # Test 3
+    
+#    openLog()
+#
+#    qu = Queue()
+#
+#    for i in range(1,6):
+#        qu.put(SwRepMsg(switch = i, direction = kClosed))
+#
+#    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))
+#
+#    for i in range(1,6):
+#        qu.put(SwRepMsg(switch = i, direction = kThrown))
+#
+#    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))
+#
+#    for i in range(1,6):
+#        qu.put(SwRepMsg(switch = i, direction = kClosed))
+#
+#    msg = waitFor(qu, PutReadLayoutResponseMsg(responseFlag=100, code=200))
+#    print(str(msg))
+#
+#    msg = waitFor(qu, PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
+#    print(str(msg))
+#
+#    print("qu contains {0} messages".format(qu.qsize()))
+
+
+
+
 
 

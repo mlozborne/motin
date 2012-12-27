@@ -11,7 +11,7 @@ if __name__ == "__main__":
     sak.start("simulator")
     sak.start("controller")
     time.sleep(3)
-    sk = RailSocket('localhost', 1235)
+    sk = RailSocket(name = "1", host = 'localhost', port = 1235)
 
     responseFlag, code = readLayoutFile(sk, b"../../runSoftware/Layout.xml")
     print("readLayoutFile: responseFlag = {0} and code ={1}".format(responseFlag, code))

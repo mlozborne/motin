@@ -5,7 +5,7 @@
 import threading
 from MyPrint import myPrint
 
-class PrintLine(threading.Thread):
+class ManyLinesToScreen(threading.Thread):
     def __init__(self, st):
         threading.Thread.__init__(self)
         self.st = st
@@ -23,5 +23,5 @@ class PrintLine(threading.Thread):
 
 if __name__ == "__main__":
     for i in range(9):
-        PrintLine(str(i)).start()
+        ManyLinesToScreen(str(i)).start()
     input("press enter to quit")

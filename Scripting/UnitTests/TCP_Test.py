@@ -5,7 +5,7 @@
 
 import time
 
-from Log import printLog1
+from Log import *
 from MessageTranslationLibrary import *
 from MessageTranslationTypes import *
 import StartAndKill as sak
@@ -24,7 +24,8 @@ def testSend():
     print("Entering function testSend")
     sak.setPath("../../runSoftware")
     sak.start("simulator")
-    sk = RailSocket('localhost', 1234)
+    time.sleep(3)
+    sk = RailSocket(name = "1", host = 'localhost', port = 1234)
     sk.send(LocoAdrMsg(address=1111))
     time.sleep(1)
     sk.send(MoveSlotsMsg(slot1=1, slot2=1))
@@ -52,7 +53,7 @@ def testReceive():
     print("Entering function testReceive\n")
     sak.setPath("../../runSoftware")
     sak.start("simulator")
-    sk = RailSocket('localhost', 1234)
+    sk = RailSocket(name = "1", host = 'localhost', port = 1234)
     process = TestBlinkLightsDirectly(sk)
     process.start()
     while True:
@@ -99,9 +100,9 @@ def testTalkingToController():
     sak.setPath("../../runSoftware")
     sak.start("simulator")
     sak.start("controller")
-    sk = RailSocket('localhost', 1235)
+    sk = RailSocket(name = "1", host = 'localhost', port = 1235)
     time.sleep(2)
-    sk.send(DoReadLayoutMsg(b'../../runSoftware/Layout.xml'))
+    sk.send(DoReadLayoutMsg('../../runSoftware/Layout.xml'))
     process = TestBlinkLightsViaController(sk)
     time.sleep(5)
     process.start()

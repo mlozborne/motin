@@ -6,16 +6,18 @@ from Log import printLog
 from MessageTranslationLibrary import *
 
 class RailSocket(object):
-    def __init__(self, host, port):
+    def __init__(self, name = "1", host = None, port = None):
+        printLog("RailSocket {0} initializing  ...in TCP".format(name))
+        assert(isinstance(name, str))
+        assert(isinstance(host, str))
+        assert(port > 1000)
+        self.nm = name
         self.inBuffer = []
-        printLog("Trying to create socket               ...in TCP")
         self.sock = socket()
-        #self.sock.setblocking(1)
-        printLog("Socket created = {0}                  ...in TCP".format(self.sock))
         while True:
             if not self.sock.connect_ex((host, port)): break
             sleep(1)
-        printLog("Connected to IP = {0}, port = {1}     ...in TCP".format(host, port))
+        printLog("RailSocket connected to host = {0}, port = {1}  ...in TCP".format(host, port))
 		
     def send(self, msg):
         st = makeMsgStr(msg)
@@ -25,7 +27,7 @@ class RailSocket(object):
 		
     def close(self):
         self.sock.close()
-        printLog("Closed RailSocket                  ...in TCP")
+        printLog("RailSocket {0} closed ...in TCP".format(self.nm))
 
     def receive(self):
         if len(self.inBuffer) < 2:

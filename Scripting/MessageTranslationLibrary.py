@@ -21,7 +21,7 @@ def makeMsgStr(msg):
     elif isinstance(msg, WriteSlotDataToClearMsg): return makeWriteSlotDataToClearStr(msg)
     elif isinstance(msg, DoLocoInitMsg): return makeDoLocoInitStr(msg)
     elif isinstance(msg, DoReadLayoutMsg): return makeDoReadLayoutStr(msg)
-    else: return None
+    else: return msg
 	
 def splitMsgStr(st):
     if st[0] != 0:
@@ -188,11 +188,12 @@ def makeDoLocoInitStr(msg):
 	
 def makeDoReadLayoutStr(msg):
     #<0><10><count><XML file name>       where count is 1 byte
-    assert(isinstance(msg.fileName, kFileNameType))
+    assert(isinstance(msg.fileName, str))
+    fileName = bytes(msg.fileName, 'ascii')
     st = [0]
     st.append(doReadLayout)
-    st.append(len(msg.fileName))
-    st += list(msg.fileName)
+    st.append(len(fileName))
+    st += list(fileName)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return bytes([lowByte, highByte] + st)
 	

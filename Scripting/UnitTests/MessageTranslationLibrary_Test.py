@@ -68,7 +68,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 8, (1111%128), (1111//128), 3, 1, 0, 2, 0, 3, 0]
         self.assertEquals(bytes(utEx2(st)), makeMsgStr(msg))
 
-        msg = DoReadLayoutMsg(fileName=b'abc')
+        msg = DoReadLayoutMsg(fileName='abc')
         st = [0, 10, 3, ord('a'), ord('b'), ord('c')]
         self.assertEquals(bytes(utEx2(st)), makeMsgStr(msg))
 

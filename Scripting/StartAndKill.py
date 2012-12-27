@@ -1,5 +1,6 @@
 from Log import printLog
 import platform
+from time import sleep
  
 # Comment this out during testing
 import subprocess
@@ -31,6 +32,7 @@ def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
     if name.lower()[:3] == "sim":
         startThis = "start " + gPath + "/RailroadBig.exe"
         subprocess.call(startThis, shell=True)
+        sleep(1)
 
     # start("controller", ip = "127.0.0.1", port = "1234", trace = "yes")
     elif name.lower()[:3] == "con":
@@ -45,6 +47,7 @@ def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
             " PORT " + port + \
             " TRACE " + trace
         subprocess.call(startThis, shell=True)
+        sleep(3)
 
     # start("ut4", ip = "127.0.0.1", port = "1234")
     elif name.lower()[:3] == "ut4":

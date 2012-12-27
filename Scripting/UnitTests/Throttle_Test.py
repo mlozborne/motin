@@ -1,11 +1,10 @@
 ##########################################################################################
 import StartAndKill as sak
 from Layout import readLayoutFile
-from MessageTranslationTypes import kOn, kOff, kClosed, kThrown
-from MessageTranslationLibrary import PutInitOutcomeMsg, DoLocoInitMsg, DoReadLayoutMsg, PutReadLayoutResponseMsg
+from MessageTranslationTypes import *
 from Log import *
 from time import sleep
-from  MsgHandler import MsgSocket, MsgQuPump
+from MsgHandler import MsgSocket, MsgInQuPump, MsgOutQuPump, waitFor
 from Throttle import Throttle
 from threading import Thread
 from multiprocessing import Queue
@@ -52,52 +51,39 @@ def tootHorn(self):
     self.setHorn(kOff)
 
 if __name__ == "__main__":
-    openLog("", 1)
+    openLog()
 
     #  Start the simulator and controller
     sak.start("simulator")
     sak.start("controller")
-    sleep(3)
-
+    
     # Connect a socket to the controller
     sk = MsgSocket()
     sk.connect('localhost', 1235)
+    
+    # Create two queues and start two message pumps
+    outQu = Queue()
+    inQu = Queue()
+    MsgOutQuPump(sock = sk, qu = outQu).start()
+    MsgInQuPump(sock = sk, qu = inQu).start()
 
-    # Tell controller to read the layout file
-    printLog("Reading layout file = ../../runSoftware/Layout.xml")
+    # Create a throttle       
+    throt = Throttle(nm = "1", inQu = inQu, outQu = outQu)
+
+    # Tell the throttle to read the layout file
+    printLog("Main reading layout")
+    msg = throt.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
-    sk.send(DoReadLayoutMsg(fileName= b"../../runSoftware/Layout.xml"))
-    msg = sk.receive()
-    while not isinstance(msg, PutReadLayoutResponseMsg):
-        msg = sk.receive()
-    sleep(3)
-    responseFlag, code = msg.responseFlag, msg.code
-    print("responseFlag = {0} and code ={1}".format(responseFlag, code))
-    if responseFlag != 1:
-        print("ABEND")
-        print("Error in XML file with flag = {0} and code = {1}".format(responseFlag, code))
-        print ("THE END")
+
+    # Tell the throttle to initialize train 1111
+    printLog("Main initializing train")
+    msg = throt.initTrain(1111, [5,1])
+    printLog("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
+              format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
+    if msg.physSlot > 120:
+        print("\nABEND: couldn't initialize the train. Response code = {0}".format(msg.physSlot))
         input("press enter to quit")
 
-    # Tell controller to initialize train 1111 at position (5,1)
-    sk.send(DoLocoInitMsg(address=1111, sensors=[5,1]))
-    msg = sk.receive()
-    while not isinstance(msg, PutInitOutcomeMsg):
-        msg = sk.receive()
-    physAdd, physSlot, virtAdd, virtSlot = msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot
-    print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".format(physAdd, physSlot, virtAdd, virtSlot))
-    if physSlot > 120:
-        print("\nABEND: couldn't initialize the train. Response code = {0}".format(physSlot))
-        input("press enter to quit")
-
-    # Create the throttle-to-controller message queue
-    qu = Queue()
-
-    # Create the throttle
-    throt = Throttle(qu)
-
-    # Create a thread that will send messages from the queue to the controller
-    MsgQuPump(sk, qu).start()
 
     # Use the throttle to send messages to the controller
     throt.setBell(kOn)
@@ -110,9 +96,10 @@ if __name__ == "__main__":
     throt.moveSwitch(12, kClosed)
     sleep(4)
     throt.moveSwitch(12, kThrown)
-    sleep(5)
-    throt.do(stopTrain)
 
+    # Stop the train when it reaches sensor 59
+    waitFor(inQu, PutSensorStateMsg(id = 59, state = kSensorOpen))
+    throt.do(stopTrain)
     flushLog()
     input("press enter to quit")
     sk.close()

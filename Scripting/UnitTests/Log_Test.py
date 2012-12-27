@@ -15,7 +15,7 @@ import threading
 from Log import *
 from time import sleep
 
-class PrintLine(threading.Thread):
+class ManyLinesToLog(threading.Thread):
     def __init__(self, st):
         threading.Thread.__init__(self)
         self.st = st
@@ -37,13 +37,13 @@ if __name__ == "__main__":
 #    openLog(1, 1)          # will cause an assertion error
 #    openLog("3", "cat")    # will cause an assertion error
     for i in range(10):
-        PrintLine(str(i)).start()
+        ManyLinesToLog(str(i)).start()
     input("Pause until press enter")
     printLog("...................... MIDPOINT.........................")
     flushLog()
     input("Pause until press enter")
     for i in range(10):
-        PrintLine(str(i)+str(i)+str(i)).start()
+        ManyLinesToLog(str(i)+str(i)+str(i)).start()
     input("press enter to quit")
     sleep(2)
     closeLog()

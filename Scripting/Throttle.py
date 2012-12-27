@@ -7,7 +7,7 @@ from time import sleep
 
 class Throttle(object):
     def __init__(self, nm = None, inQu = None, outQu = None):
-        printLog("Initializing Throttle      ...in Throttle")
+        printLog("Throttle {0} initializing".format(nm))
         assert(isinstance(nm, str))
         assert(isinstance(inQu, queue.Queue) or
                isinstance(outQu, multiprocessing.queues.Queue))
@@ -25,6 +25,7 @@ class Throttle(object):
         self.F6 = 0
 
     def readLayout(self, fileName):
+        printLog("Throttle sending DoReadLayoutMsg using file {0}".format(fileName))
         assert(self.outQu != None)
         assert(self.inQu != None)
         assert(isinstance(fileName, str))
@@ -34,6 +35,7 @@ class Throttle(object):
         return msg
 
     def initTrain(self, locoAddress, position):
+        printLog("Throttle sending DoLocoInitMsg")
         assert(self.outQu != None)
         assert(self.inQu != None)
         assert(0 <= locoAddress <= 9999)
@@ -67,7 +69,7 @@ class Throttle(object):
     def setSpeed(self, speed):
         assert(self.outQu != None)
         assert(self.virtSlot != None)
-        assert(speed > 0)
+        assert(speed >= 0)
         self.outQu.put(LocoSpdMsg(slot=self.virtSlot, speed=speed))
 
     def setDirection(self, direction):
