@@ -6,7 +6,7 @@ from MsgHandler import waitFor
 from time import sleep
 
 class Throttle(object):
-    def __init__(self, nm = None, inQu = None, outQu = None):
+    def __init__(self, nm = "1", inQu = None, outQu = None):
         printLog("Throttle {0} initializing".format(nm))
         assert(isinstance(nm, str))
         assert(isinstance(inQu, queue.Queue) or

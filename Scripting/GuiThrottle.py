@@ -1,38 +1,43 @@
+import multiprocessing.queues
 from MessageTranslationTypes import *
 from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W
 from tkinter import PhotoImage
 from multiprocessing import Process
-from threading import Thread
-import sys
 from Throttle import Throttle
+from Log import *
 
 class GuiThrottleProcess(Process):
-    def __init__(self, quFromCon, quToCon):
-        print("Initializing ThrottleProcess"); sys.stdout.flush()
-        self.quFromCon = quFromCon
-        self.quToCon = quToCon
+    def __init__(self, nm = "1", inQu = None, outQu = None):
         Process.__init__(self)
+
+#        assert(isinstance(nm, str))
+#        assert(isinstance(inQu, multiprocessing.queues.Queue))
+#        assert(isinstance(outQu, multiprocessing.queues.Queue))
+#
+        printLog("GuiThrottleProcess {0} initializing".format(nm))
+#        self.nm = nm
+#        self.inQu = inQu
+#        self.outQu = outQu
         
     def run(self):
-        print("Running GuiThrottleProcess"); sys.stdout.flush()
-        GuiThrottle(self.quFromCon, self.quToCon).mainloop()
+        openLog("GuiThrottleProcess")
+#        print("xxxxxxxxx")
+        printLog("xxxxxxxxx")
+        printLog("GuiThrottleProcess {0} running".format(self.nm))
+#        self.throttle = Throttle(nm = "1", inQu = self.inQu, outQu = self.outQu)
+#        GuiThrottle(self.inQu, self.outQu).mainloop()
         
 class GuiThrottle(EasyFrame):
 
-    def __init__(self, quFromCon, quToCon):
-        print("Initializing GuiThrottle"); sys.stdout.flush()
-        
+    def __init__(self, inQu, outQu):
         EasyFrame.__init__(self, title="Throttle")
         
-        self.quFromCon = quFromCon
-        self.quToCon = quToCon
-        self.throttle = Throttle(quToCon)
+        printLog("GuiThrottle initializing ")
+        
+        self.throttle = Throttle(nm = "1", inQu = inQu, outQu = outQu)
+        
         self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
                         'mute': kOff, 'direction': kForward}
-
-        # Set up the queue reader for this window
-        quReaderThread = QuReaderThread(self, self.quFromCon)
-        quReaderThread.start()
 
         # Label and field for train address
         self.addLabel(text="Train address", row=0, column=0)
@@ -48,7 +53,7 @@ class GuiThrottle(EasyFrame):
 
         # Button initialize 
         self.btInitialize = self.addButton(text="  Initialize  ", 
-            row=3, column=0, command=self.initializeTrain)
+            row=3, column=0, command=self.initTrain)
 
         # Button direction
         self.btDirection  = self.addButton(text="  Direction  ", 
@@ -103,16 +108,12 @@ class GuiThrottle(EasyFrame):
         self.btHalt = self.addButton(text="     Halt     ", 
             row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
 
-    def processMessageFromController(self, msg):
-        if isinstance(msg, PutInitOutcomeMsg):
-            self.processPutInitOutcomeMsg(msg)
-        
-    def initializeTrain(self):
-        self.quToCon.put(DoLocoInitMsg(address=1111, sensors=[5, 1]))
+    def initTrain(self):
+        msg = self.throttle.initTrain(address = 1111, position = [5, 1])
         
     def processPutInitOutcomeMsg(self, msg):
-        print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
-            format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot)); sys.stdout.flush
+        printLog("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
+            format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
 
         if msg.physSlot > 120:
             self.messageBox(title = "ERROR", message = "Error code {0}".format(msg.physAdd))
@@ -179,18 +180,6 @@ class GuiThrottle(EasyFrame):
     def haltTrain(self):
         self.throttle.setSpeed(1)
         self.slSpeed.set(0)
-
-class QuReaderThread(Thread):
-    def __init(self, theGui, quFromCon):
-        print("Initializing a queue reader"); sys.stdout.flush()
-        Thread.__init__(self)
-        self.gui = theGui
-        self.qu = quFromCon
-
-    def run(self):
-        while True:
-            msg = self.qu.get()
-            self.gui.processMessageFromController(msg)
 
 
 

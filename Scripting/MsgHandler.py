@@ -156,7 +156,7 @@ class MsgSocket(object):
         printLog("<<< Sent    {0}    to {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
-        printLog("msgSocket {0} closing ".format(self.nm))
+        printLog("MsgSocket {0} closing ".format(self.nm))
         self.sock.close()
 
     def receive(self):

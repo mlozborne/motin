@@ -57,7 +57,7 @@ if __name__ == "__main__":
     sak.start("simulator")
     sak.start("controller")
     
-    # Connect a socket to the controller
+    # Connect a message socket to the controller
     sk = MsgSocket()
     sk.connect('localhost', 1235)
     
