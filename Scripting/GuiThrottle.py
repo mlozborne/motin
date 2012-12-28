@@ -10,30 +10,27 @@ class GuiThrottleProcess(Process):
     def __init__(self, nm = "1", inQu = None, outQu = None):
         Process.__init__(self)
 
-#        assert(isinstance(nm, str))
-#        assert(isinstance(inQu, multiprocessing.queues.Queue))
-#        assert(isinstance(outQu, multiprocessing.queues.Queue))
-#
+        assert(isinstance(nm, str))
+        assert(isinstance(inQu, multiprocessing.queues.Queue))
+        assert(isinstance(outQu, multiprocessing.queues.Queue))
+
         printLog("GuiThrottleProcess {0} initializing".format(nm))
-#        self.nm = nm
-#        self.inQu = inQu
-#        self.outQu = outQu
+        self.nm = nm
+        self.inQu = inQu
+        self.outQu = outQu
         
     def run(self):
         openLog("GuiThrottleProcess")
-#        print("xxxxxxxxx")
-        printLog("xxxxxxxxx")
         printLog("GuiThrottleProcess {0} running".format(self.nm))
-#        self.throttle = Throttle(nm = "1", inQu = self.inQu, outQu = self.outQu)
-#        GuiThrottle(self.inQu, self.outQu).mainloop()
+        GuiThrottle(self.inQu, self.outQu).mainloop()
+        printLog("GuiThrottleProcess {0} finished running".format(self.nm))
         
 class GuiThrottle(EasyFrame):
 
     def __init__(self, inQu, outQu):
         EasyFrame.__init__(self, title="Throttle")
-        
         printLog("GuiThrottle initializing ")
-        
+
         self.throttle = Throttle(nm = "1", inQu = inQu, outQu = outQu)
         
         self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
@@ -110,8 +107,6 @@ class GuiThrottle(EasyFrame):
 
     def initTrain(self):
         msg = self.throttle.initTrain(address = 1111, position = [5, 1])
-        
-    def processPutInitOutcomeMsg(self, msg):
         printLog("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
             format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
 

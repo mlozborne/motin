@@ -1,6 +1,5 @@
 from MessageTranslationTypes import *
 from Log import printLog
-import queue
 import multiprocessing
 from MsgHandler import waitFor
 from time import sleep
@@ -9,10 +8,8 @@ class Throttle(object):
     def __init__(self, nm = "1", inQu = None, outQu = None):
         printLog("Throttle {0} initializing".format(nm))
         assert(isinstance(nm, str))
-        assert(isinstance(inQu, queue.Queue) or
-               isinstance(outQu, multiprocessing.queues.Queue))
-        assert(isinstance(outQu, queue.Queue) or
-               isinstance(outQu, multiprocessing.queues.Queue))
+        assert(isinstance(outQu, multiprocessing.queues.Queue))
+        assert(isinstance(outQu, multiprocessing.queues.Queue))
         self.inQu = inQu
         self.outQu = outQu
         self.virtSlot = None

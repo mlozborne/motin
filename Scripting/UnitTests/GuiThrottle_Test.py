@@ -7,6 +7,7 @@ from multiprocessing import Queue
 from Throttle import Throttle
 from MsgHandler import *
 
+#from GuiThrottle import GuiThrottle
 
 if __name__ == "__main__":
     openLog()
@@ -22,6 +23,9 @@ if __name__ == "__main__":
     # Create two queues and start two message pumps
     outQu = Queue()
     inQu = Queue()
+
+#    GuiThrottle(inQu, outQu).mainloop()
+
 #    MsgOutQuPump(sock = sk, qu = outQu).start()
 #    MsgInQuPump(sock = sk, qu = inQu).start()
 #
