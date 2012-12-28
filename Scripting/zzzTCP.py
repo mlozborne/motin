@@ -7,17 +7,17 @@ from MessageTranslationLibrary import *
 
 class RailSocket(object):
     def __init__(self, name = "1", host = None, port = None):
-        printLog("RailSocket {0} initializing  ...in TCP".format(name))
+        printLog("RailSocket {0}: initializing  ...in TCP".format(name))
         assert(isinstance(name, str))
         assert(isinstance(host, str))
         assert(port > 1000)
-        self.nm = name
+        self.name = name
         self.inBuffer = []
         self.sock = socket()
         while True:
             if not self.sock.connect_ex((host, port)): break
             sleep(1)
-        printLog("RailSocket connected to host = {0}, port = {1}  ...in TCP".format(host, port))
+        printLog("RailSocket {0}: connected to host = {1}, port = {2}  ...in TCP".format(self.name, host, port))
 		
     def send(self, msg):
         st = makeMsgStr(msg)
@@ -27,7 +27,7 @@ class RailSocket(object):
 		
     def close(self):
         self.sock.close()
-        printLog("RailSocket {0} closed ...in TCP".format(self.nm))
+        printLog("RailSocket {0}: closed ...in TCP".format(self.name))
 
     def receive(self):
         if len(self.inBuffer) < 2:

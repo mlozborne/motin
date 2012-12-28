@@ -82,7 +82,7 @@ class Consumer(Thread):
     def run(self):
         printLog("Consumer running")
         inQu = Queue()
-        pump = MsgInQuPump(nm = "in pump", sock = self.sk, qu = inQu).start()
+        pump = MsgInQuPump(name = "in pump", sock = self.sk, qu = inQu).start()
         while True:
             msg = inQu.get()
             printLog("Received {0}".format(msg))
@@ -97,7 +97,7 @@ class Producer(Thread):
     def run(self):
         printLog("Producer running")
         outQu = Queue()
-        pump = MsgOutQuPump(nm = "out pump", sock = self.sk, qu = outQu).start()
+        pump = MsgOutQuPump(name = "out pump", sock = self.sk, qu = outQu).start()
         for i in range(1,11):
             outQu.put(SwReqMsg(switch = i, direction = kThrown))
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     openLog("main")                                           #open log
     sak.start("simulator")                                    #start simulator
-    sk = MsgSocket(nm = "1")                                  #create msgSocket
+    sk = MsgSocket(name = "1")                                  #create msgSocket
     sk.connect("localHost", 1234)                             #connect socket to simulator
     sleep(3)
 

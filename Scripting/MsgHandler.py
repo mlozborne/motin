@@ -21,7 +21,7 @@ def waitFor(qu, msg):
         PutReadLayoutResponseMsg
         PutInitOutcomeMsg -- must also match msg.address
     """
-    printLog("waitFor msg = {0}".format(msg))
+    printLog("waitFor: msg = {0}".format(msg))
     assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
     assert(isinstance(msg, tuple))
     while True:
@@ -45,21 +45,21 @@ class MsgOutQuPump(Thread):
     railroad via a MsgSocket
     Usage
         from MsgHandler import MsgOutQuPump
-        pump = MsgOutQuPump(nm = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
+        pump = MsgOutQuPump(name = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
         pump.start()
     """
-    def __init__(self, nm = "1", sock = None, qu = None):
-        assert(isinstance(nm, str))
+    def __init__(self, name = "1", sock = None, qu = None):
+        assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
-        printLog("MsgOutQueuePump {0} initializing".format(nm))
+        printLog("MsgOutQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
-        self.nm = nm
+        self.name = name
         self.sk = sock
         self.qu = qu
 
     def run(self):
-        printLog("MsgOutQueuePump {0} starting".format(self.nm))
+        printLog("MsgOutQueuePump {0}: starting".format(self.name))
         while True:
             msg = self.qu.get()
             self.sk.send(msg)
@@ -73,21 +73,21 @@ class MsgInQuPump(Thread):
 
     Usage
         from MsgHandler import MsgInQuPump
-        pump = MsgInQuPump(nm = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
+        pump = MsgInQuPump(name = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
         pump.start()
     """
-    def __init__(self, nm = "1", sock = None, qu = None):
-        assert(isinstance(nm, str))
+    def __init__(self, name = "1", sock = None, qu = None):
+        assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
-        printLog("MsgInQueuePump {0} initializing".format(nm))
+        printLog("MsgInQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
-        self.nm = nm
+        self.name = name
         self.sk = sock
         self.qu = qu
 
     def run(self):
-        printLog("MsgInQueuePump {0} starting".format(self.nm))
+        printLog("MsgInQueuePump {0}: starting".format(self.name))
         while True:
             st = self.sk.receive()
             self.qu.put(makeMsgStr(st))
@@ -122,30 +122,30 @@ class MsgSocket(object):
 
 
     """
-    def __init__(self, nm = "1"):
-        assert(isinstance(nm, str))
-        printLog("MsgSocket {0} initializing".format(nm))
-        self.nm = nm
+    def __init__(self, name = "1"):
+        assert(isinstance(name, str))
+        printLog("MsgSocket {0}: initializing".format(name))
+        self.name = name
 
     def connect(self, host, port):
         assert(isinstance(host, str))
         assert(port > 0)
-        printLog("MsgSocket {0} is trying to connect to ({1}, {2})".format(self.nm, host, port))
+        printLog("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
         self.inBuffer = []
         self.sock = socket()
         for i in range(10):
             if not self.sock.connect_ex((host, port)):
-                printLog("MsgSocket {0} has connected to {1}".format(self.nm, self.sock.getpeername()))
+                printLog("MsgSocket {0}: has connected to {1}".format(self.name, self.sock.getpeername()))
                 return
             sleep(1)
-        st = "EXCEPTION: Socket {0} FAILED to connected to ({1}, {2})".format(self.nm, host, port)
+        st = "MsgSocket {0}: EXCEPTION: Socket FAILED to connected to ({1}, {2})".format(self.name, host, port)
         printLog(st)
         print(st); sys.stdout.flush()
         raise
 
     def attach(self, sock):
         assert(isinstance(sock, socket))
-        printLog("MsgSocket {0} has attached standard socket {1}".format(self.nm, sock.getpeername()))
+        printLog("MsgSocket {0}: has attached standard socket {1}".format(self.name, sock.getpeername()))
         self.sock = sock
         self.inBuffer = []
 
@@ -156,7 +156,7 @@ class MsgSocket(object):
         printLog("<<< Sent    {0}    to {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
-        printLog("MsgSocket {0} closing ".format(self.nm))
+        printLog("MsgSocket {0}: closing ".format(self.name))
         self.sock.close()
 
     def receive(self):
@@ -175,44 +175,44 @@ class MsgSocket(object):
 
 
 class MsgServerThread(Thread):
-    def __init__(self, nm = "1", host = None, port = None, clientHandlerFunction = None):
-        assert(isinstance(nm, str))
+    def __init__(self, name = "1", host = None, port = None, clientHandlerFunction = None):
+        assert(isinstance(name, str))
         assert(isinstance(host, str))
         assert(isinstance(port, int))
         assert(clientHandlerFunction != None)
-        printLog("Message server {0} initializing at ({1}, {2})".format(nm, host, port))
+        printLog("Message server {0}: initializing at ({1}, {2})".format(name, host, port))
         Thread.__init__(self)
-        self.nm = nm
+        self.name = name
         self.host = host
         self.port = port
         self.clientHandlerFunction = clientHandlerFunction
 
     def run(self):
-        printLog("Message server {0} running".format(self.nm))
+        printLog("Message server {0}: running".format(self.name))
         self.serverSocket = socket()
         self.serverSocket.bind((self.host, self.port))           # bind
         self.serverSocket.listen(5)                              # listen
-        printLog("Message server {0} now listening at ({1}, {2})".format(self.nm, self.host, self.port))
+        printLog("Message server {0}: now listening at ({1}, {2})".format(self.name, self.host, self.port))
         while True:
             socketToClient, address = self.serverSocket.accept() # accept
-            printLog("Message server {0} just created a connection to client at {1}". \
-                      format(self.nm, socketToClient.getpeername()))
+            printLog("Message server {0}: just created a connection to client at {1}". \
+                      format(self.name, socketToClient.getpeername()))
             ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()
 
 class ClientHandlerThread(Thread):
-    def __init__(self, nm, socketToClient, clientHandlerFunction):
-        assert(isinstance(nm, str))
+    def __init__(self, name, socketToClient, clientHandlerFunction):
+        assert(isinstance(name, str))
         assert(isinstance(socketToClient, socket))
         assert(clientHandlerFunction != None)
-        printLog("Client handler {0} created for {1}".format(nm, socketToClient.getpeername()))
+        printLog("Client handler {0}: created for {1}".format(name, socketToClient.getpeername()))
         Thread.__init__(self)
-        self.nm = nm
+        self.name = name
         self.socketToClient = socketToClient
         self.clientHandlerFunction = clientHandlerFunction
 
     def run(self):
         msgSocketToClient = MsgSocket()
         msgSocketToClient.attach(self.socketToClient)
-        printLog("Client handler {0} running and calling {1}".format(self.nm, self.clientHandlerFunction))
+        printLog("Client handler {0}: running and calling {1}".format(self.name, self.clientHandlerFunction))
         self.clientHandlerFunction(msgSocketToClient)
 

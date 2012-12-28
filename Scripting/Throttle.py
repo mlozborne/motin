@@ -5,11 +5,12 @@ from MsgHandler import waitFor
 from time import sleep
 
 class Throttle(object):
-    def __init__(self, nm = "1", inQu = None, outQu = None):
-        printLog("Throttle {0} initializing".format(nm))
-        assert(isinstance(nm, str))
+    def __init__(self, name = "1", inQu = None, outQu = None):
+        printLog("Throttle {0}: initializing".format(name))
+        assert(isinstance(name, str))
         assert(isinstance(outQu, multiprocessing.queues.Queue))
         assert(isinstance(outQu, multiprocessing.queues.Queue))
+        self.name = name
         self.inQu = inQu
         self.outQu = outQu
         self.virtSlot = None
@@ -22,7 +23,7 @@ class Throttle(object):
         self.F6 = 0
 
     def readLayout(self, fileName):
-        printLog("Throttle sending DoReadLayoutMsg using file {0}".format(fileName))
+        printLog("Throttle {0}: sending DoReadLayoutMsg using file {1}".format(self.name, fileName))
         assert(self.outQu != None)
         assert(self.inQu != None)
         assert(isinstance(fileName, str))
@@ -31,14 +32,14 @@ class Throttle(object):
         sleep(3)
         return msg
 
-    def initTrain(self, locoAddress, position):
-        printLog("Throttle sending DoLocoInitMsg")
+    def initTrain(self, address, position):
+        printLog("Throttle {0}: sending DoLocoInitMsg".format(self.name))
         assert(self.outQu != None)
         assert(self.inQu != None)
-        assert(0 <= locoAddress <= 9999)
+        assert(0 <= address <= 9999)
         assert(isinstance(position, list) or isinstance(position, tuple))
-        self.outQu.put(DoLocoInitMsg(address = locoAddress, sensors = position))
-        msg = waitFor(self.inQu, PutInitOutcomeMsg(physAdd = locoAddress, physSlot = 0, virtAdd = 0, virtSlot = 0))
+        self.outQu.put(DoLocoInitMsg(address = address, sensors = position))
+        msg = waitFor(self.inQu, PutInitOutcomeMsg(physAdd = address, physSlot = 0, virtAdd = 0, virtSlot = 0))
         if msg.physSlot > 120:
             self.virtSlot = None
         else:

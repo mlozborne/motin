@@ -2,23 +2,28 @@ from breezypythongui import EasyFrame
 from multiprocessing import Process, Queue
 from threading import Thread
 import sys
+from Log import *
 
 class GuiProcess(Process):
     def __init__(self, number, quSend, quRead):
         print("Initializing process {0}".format(number)); sys.stdout.flush
+        printLog("Initializing process {0}".format(number))
         self.number = number
         self.quSend = quSend
         self.quRead = quRead
         Process.__init__(self)
         
     def run(self):
+        openLog(str(self.number))
         print("Running process {0}".format(self.number)); sys.stdout.flush()
+        printLog("Running process {0}".format(self.number))
         TheGui(self.number, self.quSend, self.quRead).mainloop()
         
 
 class TheGui(EasyFrame):
     def __init__(self, number, quSend, quRead):
         print("Initializing gui {0}".format(number)); sys.stdout.flush()
+        printLog("Initializing gui {0}".format(number))
         self.number = number
         self.quSend = quSend
         self.quRead = quRead
@@ -51,6 +56,7 @@ class QuReaderThread(Thread):
     
     def __init__(self, myGui, myQu):
         print("Initializing a queue reader"); sys.stdout.flush()
+        printLog("Initializing a queue reader")
         Thread.__init__(self)
         self.myGui = myGui
         self.myQu = myQu
@@ -61,6 +67,7 @@ class QuReaderThread(Thread):
             self.myGui.printMessage(message)
 
 if __name__ == "__main__":
+    openLog("main")
     qu1 = Queue()
     qu2 = Queue()
     GuiProcess(1, qu1, qu2).start()

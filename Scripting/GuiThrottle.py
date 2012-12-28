@@ -7,32 +7,34 @@ from Throttle import Throttle
 from Log import *
 
 class GuiThrottleProcess(Process):
-    def __init__(self, nm = "1", inQu = None, outQu = None):
+    def __init__(self, name = "1", inQu = None, outQu = None):
         Process.__init__(self)
 
-        assert(isinstance(nm, str))
+        assert(isinstance(name, str))
         assert(isinstance(inQu, multiprocessing.queues.Queue))
         assert(isinstance(outQu, multiprocessing.queues.Queue))
 
-        printLog("GuiThrottleProcess {0} initializing".format(nm))
-        self.nm = nm
+        printLog("GuiThrottleProcess {0}: initializing".format(name))
+        self.name = name
         self.inQu = inQu
         self.outQu = outQu
         
     def run(self):
         openLog("GuiThrottleProcess")
-        printLog("GuiThrottleProcess {0} running".format(self.nm))
+        printLog("GuiThrottleProcess {0}: running".format(self.name))
         GuiThrottle(self.inQu, self.outQu).mainloop()
-        printLog("GuiThrottleProcess {0} finished running".format(self.nm))
+        printLog("GuiThrottleProcess {0}: finished running".format(self.name))
         
 class GuiThrottle(EasyFrame):
 
     def __init__(self, inQu, outQu):
         EasyFrame.__init__(self, title="Throttle")
-        printLog("GuiThrottle initializing ")
+        printLog("GuiThrottle: initializing ")
 
-        self.throttle = Throttle(nm = "1", inQu = inQu, outQu = outQu)
-        
+        self.throttle = Throttle(name = "1", inQu = inQu, outQu = outQu)
+
+        imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"
+
         self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
                         'mute': kOff, 'direction': kForward}
 
@@ -55,27 +57,27 @@ class GuiThrottle(EasyFrame):
         # Button direction
         self.btDirection  = self.addButton(text="  Direction  ", 
             row=3, column=1, command=self.changeDirection, state = DISABLED)
-        self.gifTrainRight = PhotoImage(file='..\\gifs\\TrainRight.gif')
-        self.gifTrainLeft = PhotoImage(file='..\\gifs\\TrainLeft.gif')
+        self.gifTrainRight = PhotoImage(file = imageFolder + 'TrainRight.gif')
+        self.gifTrainLeft = PhotoImage(file = imageFolder + 'TrainLeft.gif')
         self.btDirection.config(image=self.gifTrainRight,width="60",height="20")
 
         # Button lights
         self.btLight = self.addButton(text="    Lights    ", 
             row=5, column=0, command=self.changeLights, state = DISABLED)
-        self.gifLight = PhotoImage(file='..\\gifs\\Light.gif')
+        self.gifLight = PhotoImage(file = imageFolder + 'Light.gif')
         self.btLight.config(image=self.gifLight,width="60",height="20")
 
         # Button bell
         self.btBell = self.addButton(text="      Bell      ", 
             row=5, column=1, command=self.changeBell, state = DISABLED)
-        self.gifBell = PhotoImage(file='..\\gifs\\bell.gif')
+        self.gifBell = PhotoImage(file = imageFolder + 'bell.gif')
         self.btBell.config(image=self.gifBell,width="60",height="20")
 
         # Button horn
         self.btHorn = self.addButton(text="     Horn     ", 
             row=6, column=0, command=self.stopHorn, state = DISABLED)
         self.btHorn.bind("<Button>", self.startHorn)
-        self.gifHorn = PhotoImage(file='..\\gifs\\horn.gif')
+        self.gifHorn = PhotoImage(file= imageFolder + 'horn.gif')
         self.btHorn.config(image=self.gifHorn,width="60",height="20")
 
 
@@ -107,7 +109,7 @@ class GuiThrottle(EasyFrame):
 
     def initTrain(self):
         msg = self.throttle.initTrain(address = 1111, position = [5, 1])
-        printLog("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
+        printLog("GuiThrottle: physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
             format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
 
         if msg.physSlot > 120:
@@ -177,4 +179,5 @@ class GuiThrottle(EasyFrame):
         self.slSpeed.set(0)
 
 
-
+if __name__ == "__main__":
+    GuiThrottleProcess().start()

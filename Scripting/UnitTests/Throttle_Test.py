@@ -10,15 +10,15 @@ from threading import Thread
 from multiprocessing import Queue
 
 class MsgQuPump(Thread):
-    def __init__(self, nm = "1", sock = None, qu = None):
+    def __init__(self, name = "1", sock = None, qu = None):
         printLog("Creating MessageQueuePump {0}".format(id))
         Thread.__init__(self)
-        self.nm = nm
+        self.name = name
         self.sk = sock
         self.qu = qu
 
     def run(self):
-        printLog("Starting MessageQueuePump {0}".format(self.nm))
+        printLog("Starting MessageQueuePump {0}".format(self.name))
         while True:
             sk.send(self.qu.get())
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     MsgInQuPump(sock = sk, qu = inQu).start()
 
     # Create a throttle       
-    throt = Throttle(nm = "1", inQu = inQu, outQu = outQu)
+    throt = Throttle(name = "1", inQu = inQu, outQu = outQu)
 
     # Tell the throttle to read the layout file
     printLog("Main reading layout")

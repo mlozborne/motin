@@ -6,12 +6,12 @@ If a process has multiple threads, all threads share the same log.
 If a process doesn't open a log, then it's printLog commands are ignored.
 Usage
     from Log import openLog, closeLog, flushLog, printLog
-    openLog(nm = <string>, flushFrequency = <positive integer>)
+    openLog(name = <string>, flushFrequency = <positive integer>)
     printLog(<string>)
     flushLog()
     closeLog()
 Where
-    o The name of a log file = "log_" + nm + ".txt"
+    o The name of a log file = "log_" + name + ".txt"
     o flushFrequence indicates how many lines are sent to the log before the log
       is closed and reopened, thus allowing users to observe changes to the log
       file.
@@ -25,7 +25,7 @@ logCondition = Condition()             # concurreny control
 logLineCount = None                    # number of lines since last flush
 logFlushFrequency = None               # number of lines between flushes
 
-def openLog(nm = "1", flushFrequency = 1):
+def openLog(name = "1", flushFrequency = 1):
     
     global logFile
     global logFileName
@@ -34,10 +34,10 @@ def openLog(nm = "1", flushFrequency = 1):
     
     if logFile != None: return
 
-    assert(isinstance(nm, str))
+    assert(isinstance(name, str))
     assert(isinstance(flushFrequency, int) and flushFrequency > 0)
     
-    logFileName = "log_" + str(nm) + ".txt"
+    logFileName = "log_" + str(name) + ".txt"
     logFile = open(logFileName, "w")
     logLineCount = 0
     logFlushFrequency = flushFrequency

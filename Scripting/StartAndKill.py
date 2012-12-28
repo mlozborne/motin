@@ -17,7 +17,7 @@ gPath = "../../runSoftware"
 def setPath(st):
     global gPath
     gPath = st
-    printLog("Path is {0}                    ...in StartAndKill".format(st))
+    printLog("sak: path is {0}  ".format(st))
 
 def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
     """
@@ -89,7 +89,7 @@ def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
         subprocess.call(startThis , shell=True)
         
     # Log it
-    printLog(startThis + "                    ...in StartAndKill")
+    printLog("sak: " + startThis )
 
 def kill(name = "all"):
     """
@@ -116,7 +116,7 @@ def kill(name = "all"):
         else:
             killThis = "taskkill /T /IM " + name
             subprocess.call(killThis, shell=True)
-        printLog(killThis + "             ...in StartAndKill")
+        printLog("sak: " + killThis)
     else:
         if "XP" in platform.platform():
             subprocess.call("tskill RailroadBig", shell=True)
@@ -124,13 +124,13 @@ def kill(name = "all"):
             subprocess.call("tskill Throttle", shell=True)
             subprocess.call("tskill RBLDisplay", shell=True)
             subprocess.call("tskill adminthrottle", shell=True)
-            printLog("tskill RailroadBig, StartController, Throttle, RBLDisplay, AdminThrottle      ...in StartAndKill")
+            printLog("sak: tskill RailroadBig, StartController, Throttle, RBLDisplay, AdminThrottle")
         else:
             subprocess.call("taskkill /T /IM RailroadBig", shell=True)
             subprocess.call("taskkill /T /IM StartController", shell=True)
             subprocess.call("taskkill /T /IM Throttle", shell=True)
             subprocess.call("taskkill /T /IM RBLDisplay", shell=True)
             subprocess.call("taskkill /T /IM adminthrottle", shell=True)
-            printLog("taskkill /T /IM RailroadBig, StartController, Throttle, RBLDisplay, AdminThrottle    ...in StartAndKill")
+            printLog("sak: taskkill /T /IM RailroadBig, StartController, Throttle, RBLDisplay, AdminThrottle ")
 
     

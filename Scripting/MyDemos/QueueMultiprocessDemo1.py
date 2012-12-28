@@ -2,29 +2,29 @@ from multiprocessing import Process, Queue
 import sys
 
 class Producer(Process):
-    def __init__(self, qu, nm):
+    def __init__(self, qu, name):
         Process.__init__(self)
         print("creating {0}".format(self.name)); sys.stdout.flush()
         self.qu = qu
-        self.nm = nm
+        self.name = name
 
     def run(self):
-        print("running producer {0}".format(self.nm)); sys.stdout.flush()
+        print("running producer {0}".format(self.name)); sys.stdout.flush()
         for i in range(50):
-            self.qu.put(str(self.nm) + str(i))
+            self.qu.put(str(self.name) + str(i))
 
 class Consumer(Process):
-    def __init__(self, qu, nm):
+    def __init__(self, qu, name):
         Process.__init__(self)
         print("creating {0}".format(self.name)); sys.stdout.flush()
         self.qu = qu
-        self.nm = nm
+        self.name = name
 
     def run(self):
-        print("running consumer {0}".format(self.nm)); sys.stdout.flush()
+        print("running consumer {0}".format(self.name)); sys.stdout.flush()
         while True:
             item = self.qu.get()
-            print(self.nm + " " + item); sys.stdout.flush()
+            print(self.name + " " + item); sys.stdout.flush()
 
 if __name__ == "__main__":
     qu = Queue(5)            # This queue is shared by all producer and consumer processes
