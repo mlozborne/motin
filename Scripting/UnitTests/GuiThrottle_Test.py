@@ -47,8 +47,8 @@ if __name__ == "__main__":
     printLog("Main: starting GuiThrottleProcess")
     gtp.start()
     flushLog()
-    sleep(1)
-
+    sleep(1)          ##### WEIRD If sleep is omitted, then the input statement
+                      ##### blocks the gui from being displayed.
     input("press enter to quit")
     
     sk.close()
