@@ -1,6 +1,5 @@
 ##########################################################################################
 import StartAndKill as sak
-from Layout import readLayoutFile
 from MessageTranslationTypes import *
 from Log import *
 from time import sleep
@@ -64,8 +63,10 @@ if __name__ == "__main__":
     # Create two queues and start two message pumps
     outQu = Queue()
     inQu = Queue()
+    inQuList = []
+    inQuList.append(inQu)
     MsgOutQuPump(sock = sk, qu = outQu).start()
-    MsgInQuPump(sock = sk, qu = inQu).start()
+    MsgInQuPump(sock = sk, inQuList = inQuList).start()
 
     # Create a throttle       
     throt = Throttle(name = "1", inQu = inQu, outQu = outQu)

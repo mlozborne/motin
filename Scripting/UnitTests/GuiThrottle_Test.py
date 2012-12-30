@@ -22,12 +22,14 @@ if __name__ == "__main__":
     
     # Create two queues and start two message pumps
     outQu = Queue()
-    inQu = Queue()
+    inQuList = []
+    for i in range(3):
+        inQuList.append(Queue())
     MsgOutQuPump(sock = sk, qu = outQu).start()
-    MsgInQuPump(sock = sk, qu = inQu).start()
+    MsgInQuPump(sock = sk, inQuList = inQuList).start()
 
     # Create a throttle
-    throttle = Throttle(name = "1", inQu = inQu, outQu = outQu)
+    throttle = Throttle(name = "1", inQu = inQuList[0], outQu = outQu)
 
     # Tell the throttle to read the layout file and check response
     printLog("Main: read layout file")
@@ -41,11 +43,11 @@ if __name__ == "__main__":
         print ("THE END")
         input("press enter to quit")
 
-    # Create a GuiThrottleProcess and pass inQu and outQu
-    printLog("Main: initializing GuiThrottleProcess")
-    gtp = GuiThrottleProcess(name = "1", inQu = inQu, outQu = outQu)
-    printLog("Main: starting GuiThrottleProcess")
-    gtp.start()
+    # Create three GuiThrottleProcess and pass inQu and outQu
+    printLog("Main: begin start three GuiThrottleProcess")
+    for i in range(3):
+        GuiThrottleProcess(name = str(i+1), inQu = inQuList[i], outQu = outQu).start()
+    printLog("Main: end start three GuiThrottleProcess")
     flushLog()
     sleep(1)          ##### WEIRD If sleep is omitted, then the input statement
                       ##### blocks the gui from being displayed.

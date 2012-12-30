@@ -10,9 +10,7 @@ from MessageTranslationTypes import *
 from Log import printLog
 from threading import Thread
 import sys
-import queue
 import multiprocessing
-import queue
 
 def waitFor(qu, msg):
     """
@@ -22,7 +20,7 @@ def waitFor(qu, msg):
         PutInitOutcomeMsg -- must also match msg.address
     """
     printLog("waitFor: msg = {0}".format(msg))
-    assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
+    assert(isinstance(qu, multiprocessing.queues.Queue))
     assert(isinstance(msg, tuple))
     while True:
         while True:
@@ -51,7 +49,7 @@ class MsgOutQuPump(Thread):
     def __init__(self, name = "1", sock = None, qu = None):
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
-        assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
+        assert(isinstance(qu, multiprocessing.queues.Queue))
         printLog("MsgOutQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
@@ -73,24 +71,27 @@ class MsgInQuPump(Thread):
 
     Usage
         from MsgHandler import MsgInQuPump
-        pump = MsgInQuPump(name = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
+        pump = MsgInQuPump(name = <string>, sock = <MsgSocket>, inQuList = <list of queues>)
         pump.start()
     """
-    def __init__(self, name = "1", sock = None, qu = None):
+    def __init__(self, name = "1", sock = None, inQuList = None):
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
-        assert(isinstance(qu, queue.Queue) or isinstance(qu, multiprocessing.queues.Queue))
+        assert(isinstance(inQuList, list))
+        for x in inQuList:
+            assert(isinstance(x, multiprocessing.queues.Queue))
         printLog("MsgInQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
         self.sk = sock
-        self.qu = qu
+        self.inQuList = inQuList
 
     def run(self):
         printLog("MsgInQueuePump {0}: starting".format(self.name))
         while True:
             st = self.sk.receive()
-            self.qu.put(makeMsgStr(st))
+            for q in self.inQuList:
+                q.put(makeMsgStr(st))
 
 ################################################################################
 

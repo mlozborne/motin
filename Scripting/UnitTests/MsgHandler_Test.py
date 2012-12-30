@@ -29,7 +29,6 @@ import sys
 from Log import openLog, closeLog, printLog
 from time import sleep
 import StartAndKill as sak
-from queue import Queue
 from threading import Thread
 
 def clientHandlerFunction(socketToClient):
@@ -73,33 +72,29 @@ class Server(Process):
         MsgServerThread("1", self.host, self.port, clientHandlerFunction).start()
 
 class Consumer(Thread):
-    def __init__(self, msgSocket):
-        printLog("Consumer created")
-        assert(isinstance(msgSocket,MsgSocket))
+    def __init__(self, name, inQu):
+        printLog("Consumer {0} created".format(name))
         Thread.__init__(self)
-        self.sk = msgSocket
+        self.inQu = inQu
+        self.name = name
 
     def run(self):
-        printLog("Consumer running")
-        inQu = Queue()
-        pump = MsgInQuPump(name = "in pump", sock = self.sk, qu = inQu).start()
+        printLog("Consumer {0} running".format(self.name))
         while True:
-            msg = inQu.get()
-            printLog("Received {0}".format(msg))
+            msg = self.inQu.get()
+            printLog("Consumer {0} received {1}".format(self.name, msg))
 
 class Producer(Thread):
-    def __init__(self, msgSocket):
-        printLog("Producer created")
-        assert(isinstance(msgSocket,MsgSocket))
+    def __init__(self, name, outQu):
+        printLog("Producer {0} created".format(name))
         Thread.__init__(self)
-        self.sk = msgSocket
+        self.outQu = outQu
+        self.name = name
 
     def run(self):
-        printLog("Producer running")
-        outQu = Queue()
-        pump = MsgOutQuPump(name = "out pump", sock = self.sk, qu = outQu).start()
+        printLog("Producer {0} running".format(self.name))
         for i in range(1,11):
-            outQu.put(SwReqMsg(switch = i, direction = kThrown))
+            self.outQu.put(SwReqMsg(switch = i, direction = kThrown))
 
 if __name__ == "__main__":
 
@@ -117,9 +112,18 @@ if __name__ == "__main__":
     sk = MsgSocket(name = "1")                                  #create msgSocket
     sk.connect("localHost", 1234)                             #connect socket to simulator
     sleep(3)
+    
+    inQuList = []
+    for i in range(3):
+        inQuList.append(Queue())
+    MsgInQuPump(name = "in pump", sock = sk, inQuList = inQuList).start()
 
-    Producer(sk).start()
-    Consumer(sk).start()
+    outQu = Queue()
+    MsgOutQuPump(name = "out pump", sock = sk, qu = outQu).start()
+
+    Producer("1", outQu).start()
+    for i in range(3):
+        Consumer(str(i+1), inQuList[i]).start()
 
     input("press enter to quit")
     sak.kill("simulator")                                     #kill simulator

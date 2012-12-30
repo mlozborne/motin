@@ -39,12 +39,13 @@ class Throttle(object):
         assert(0 <= address <= 9999)
         assert(isinstance(position, list) or isinstance(position, tuple))
         self.outQu.put(DoLocoInitMsg(address = address, sensors = position))
-        msg = waitFor(self.inQu, PutInitOutcomeMsg(physAdd = address, physSlot = 0, virtAdd = 0, virtSlot = 0))
-        if msg.physSlot > 120:
-            self.virtSlot = None
-        else:
-            self.virtSlot = msg.virtSlot
-        return msg
+        if position != []:
+            msg = waitFor(self.inQu, PutInitOutcomeMsg(physAdd = address, physSlot = 0, virtAdd = 0, virtSlot = 0))
+            if msg.physSlot > 120:
+                self.virtSlot = None
+            else:
+                self.virtSlot = msg.virtSlot
+            return msg
 
     def setVirtSlot(self, virtSlot):
         self.virtSlot = virtSlot

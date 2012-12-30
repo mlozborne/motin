@@ -32,6 +32,7 @@ class GuiThrottle(EasyFrame):
         printLog("GuiThrottle: initializing ")
 
         self.throttle = Throttle(name = "1", inQu = inQu, outQu = outQu)
+        self.throttleReady = False
 
         imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"
 
@@ -40,11 +41,11 @@ class GuiThrottle(EasyFrame):
 
         # Label and field for train address
         self.addLabel(text="Train address", row=0, column=0)
-        self.addressField = self.addIntegerField(value=0, row=0, column=1, sticky = N+W)
+        self.addressField = self.addIntegerField(value=1111, row=0, column=1, sticky = N+W)
 
         # Label and field for train position
         self.addLabel(text="Position", row=1, column=0)
-        self.positionField = self.addTextField(text="[...]", row=1, column=1, sticky = N+W)
+        self.positionField = self.addTextField(text="5,1", row=1, column=1, sticky = N+W)
 
         # Label and field for train state
         self.addLabel(text="State", row=2, column=0)
@@ -108,14 +109,61 @@ class GuiThrottle(EasyFrame):
             row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
 
     def initTrain(self):
-        msg = self.throttle.initTrain(address = 1111, position = [5, 1])
+        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
+                        'mute': kOff, 'direction': kForward}
+        if self.throttleReady:
+            self.throttle.setSpeed(1)
+            self.throttle.setDirection(kForward)
+            self.throttle.setHorn(kOff)
+            self.throttle.setBell(kOff)
+            self.throttle.setMute(kOff)
+            self.throttle.setLights(kOff)
+            self.throttle.setVirtSlot(None)
+            self.throttleReady = False
+       
+        self.btDirection.config(state = DISABLED)
+        self.btBell.config(state = DISABLED)
+        self.btCloseNext.config(state = DISABLED)
+        self.btThrowNext.config(state = DISABLED)
+        self.btLight.config(state = DISABLED)
+        self.btHorn.config(state = DISABLED)
+        self.btMute.config(state = DISABLED)
+        self.btHalt.config(state = DISABLED)
+        self.slSpeed.config(command = None)
+        self.slSpeed.set(0)
+        
+        try:
+            address = self.addressField.getNumber()
+            if not (0 <= address <= 9999):
+                raise
+        except:
+            self.messageBox("ERROR", "For address enter an integer in range 0..9999")
+            return
+
+        txtPosition = self.positionField.getText()
+        try:
+            if txtPosition.strip() == "":
+                position = []
+            else:
+                position = [int(x) for x in txtPosition.split(",")]
+                if len(position) == 1:
+                    raise
+        except:
+            self.messageBox("ERROR", "For position enter comma delimited integers or blank.\n\n"
+                            + "List sensors from front to back of train or leave blank to unregister a train.")
+            return
+        
+        msg = self.throttle.initTrain(address = address, position = position)
         printLog("GuiThrottle: physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
             format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
 
         if msg.physSlot > 120:
-            self.messageBox(title = "ERROR", message = "Error code {0}".format(msg.physAdd))
+            self.messageBox(title = "ERROR", message = "Invalid position: error code {0}".format(msg.physSlot))
         else:
+            # Enable buttons and make throttle ready
+            self.btDirection.config(image=self.gifTrainRight,width="60",height="20")
             self.throttle.setVirtSlot(msg.virtSlot)
+            self.throttleReady = True
             self.btDirection.config(state = NORMAL)
             self.btBell.config(state = NORMAL)
             self.btCloseNext.config(state = NORMAL)
@@ -125,7 +173,6 @@ class GuiThrottle(EasyFrame):
             self.btMute.config(state = NORMAL)
             self.btHalt.config(state = NORMAL)
             self.slSpeed.config(command = self.changeSpeed)
-            self.btInitialize.config(state = DISABLED)
 
     def flipToggle(self, key):
         if key == "direction":
