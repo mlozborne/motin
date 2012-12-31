@@ -1,0 +1,9 @@
+http://stackoverflow.com/questions/8850329/python-tkinter-text-widget-with-auto-custom-scroll
+
+http://stackoverflow.com/questions/6284532/running-a-loop-alongside-a-tkinter-application
+
+https://groups.google.com/forum/?fromgroups=#!topic/comp.lang.python/NHb9ML7BI2c
+
+http://stackoverflow.com/questions/7141509/tkinter-wait-for-item-in-queue
+
+http://code.activestate.com/recipes/82965-threads-tkinter-and-asynchronous-io/

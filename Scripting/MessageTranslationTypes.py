@@ -30,6 +30,7 @@ kError                = 3
 kBeginChangeDirection = 4
 kBeginWaiting         = 5
 kBeginHalted          = 6
+kTrainStateList = ["Moving", "Waiting", "Halted", "Error", "BeginChangeDirection", "BeginWaiting", "BeginHalted"]
 
 kFree                 = 0        # For section states
 kReserved             = 1
