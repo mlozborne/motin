@@ -18,13 +18,13 @@ class GuiThrottleProcess(Process):
         self.name = name
         self.inQu = inQu
         self.outQu = outQu
-        
+
     def run(self):
         openLog("GuiThrottleProcess")
         printLog("GuiThrottleProcess {0}: running".format(self.name))
         GuiThrottle(self.name, self.inQu, self.outQu).mainloop()
         printLog("GuiThrottleProcess {0}: finished running".format(self.name))
-        
+
 class GuiThrottle(EasyFrame):
 
     def __init__(self, name, inQu, outQu):
@@ -41,7 +41,7 @@ class GuiThrottle(EasyFrame):
 
         imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"
 
-        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
+        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff,
                         'mute': kOff, 'direction': kForward}
 
         # Compute default values for address and position fields
@@ -73,31 +73,31 @@ class GuiThrottle(EasyFrame):
         self.addLabel(text="State", row=2, column=0)
         self.stateField = self.addTextField("Halted", row=2, column=1, sticky = N+W)
 
-        # Button initialize 
-        self.btInitialize = self.addButton(text="  Initialize  ", 
+        # Button initialize
+        self.btInitialize = self.addButton(text="  Initialize  ",
             row=3, column=0, command=self.initTrain)
 
         # Button direction
-        self.btDirection  = self.addButton(text="  Direction  ", 
+        self.btDirection  = self.addButton(text="  Direction  ",
             row=3, column=1, command=self.changeDirection, state = DISABLED)
         self.gifTrainRight = PhotoImage(file = imageFolder + 'TrainRight.gif')
         self.gifTrainLeft = PhotoImage(file = imageFolder + 'TrainLeft.gif')
         self.btDirection.config(image=self.gifTrainRight,width="60",height="20")
 
         # Button lights
-        self.btLight = self.addButton(text="    Lights    ", 
+        self.btLight = self.addButton(text="    Lights    ",
             row=5, column=0, command=self.changeLights, state = DISABLED)
         self.gifLight = PhotoImage(file = imageFolder + 'Light.gif')
         self.btLight.config(image=self.gifLight,width="60",height="20")
 
         # Button bell
-        self.btBell = self.addButton(text="      Bell      ", 
+        self.btBell = self.addButton(text="      Bell      ",
             row=5, column=1, command=self.changeBell, state = DISABLED)
         self.gifBell = PhotoImage(file = imageFolder + 'bell.gif')
         self.btBell.config(image=self.gifBell,width="60",height="20")
 
         # Button horn
-        self.btHorn = self.addButton(text="     Horn     ", 
+        self.btHorn = self.addButton(text="     Horn     ",
             row=6, column=0, command=self.stopHorn, state = DISABLED)
         self.btHorn.bind("<Button>", self.startHorn)
         self.gifHorn = PhotoImage(file= imageFolder + 'horn.gif')
@@ -105,15 +105,15 @@ class GuiThrottle(EasyFrame):
 
 
         # Button mute
-        self.btMute = self.addButton(text="     Mute     ", 
+        self.btMute = self.addButton(text="     Mute     ",
             row=6, column=1, command=self.changeMute, state = DISABLED)
 
         # Button close next
-        self.btCloseNext = self.addButton(text="Close Next", 
+        self.btCloseNext = self.addButton(text="Close Next",
             row=7, column=0, command=self.closeNext, state = DISABLED)
 
         # Button throw next
-        self.btThrowNext = self.addButton(text="Throw Next", 
+        self.btThrowNext = self.addButton(text="Throw Next",
             row=7, column=1, command=self.throwNext, state = DISABLED)
 
         # Slider speed
@@ -127,13 +127,13 @@ class GuiThrottle(EasyFrame):
         self.slSpeed.set(0)
 
         # Halt button
-        self.btHalt = self.addButton(text="     Halt     ", 
+        self.btHalt = self.addButton(text="     Halt     ",
             row=10, column=0, command=self.haltTrain, columnspan = 2, state = DISABLED)
 
 
     def initTrain(self):
         self.readyToReadFromQueue = False
-        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
+        self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff,
                         'mute': kOff, 'direction': kForward}
         if self.throttleReady:
             self.throttle.setSpeed(1)
@@ -145,7 +145,7 @@ class GuiThrottle(EasyFrame):
             self.throttle.setVirtSlot(None)
             self.virtSlot = None
             self.throttleReady = False
-       
+
         self.btDirection.config(state = DISABLED)
         self.btBell.config(state = DISABLED)
         self.btCloseNext.config(state = DISABLED)
@@ -156,7 +156,7 @@ class GuiThrottle(EasyFrame):
         self.btHalt.config(state = DISABLED)
         self.slSpeed.config(command = None)
         self.slSpeed.set(0)
-        
+
         try:
             address = self.addressField.getNumber()
             if not (0 <= address <= 9999):
@@ -177,7 +177,7 @@ class GuiThrottle(EasyFrame):
             self.messageBox("ERROR", "For position enter comma delimited integers or blank.\n\n"
                             + "List sensors from front to back of train or leave blank to unregister a train.")
             return
-        
+
         msg = self.throttle.initTrain(address = address, position = position)
         printLog("GuiThrottle: physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
             format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))

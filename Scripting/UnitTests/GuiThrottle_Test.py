@@ -6,6 +6,7 @@ from Log import openLog, closeLog, flushLog
 from multiprocessing import Queue
 from Throttle import Throttle
 from MsgHandler import *
+from MessageTranslationLibrary import PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg, PutReadLayoutResponseMsg
 
 #from GuiThrottle import GuiThrottle
 
@@ -20,18 +21,21 @@ if __name__ == "__main__":
     sk = MsgSocket()
     sk.connect('localhost', 1235)
     
-    # Create two queues and start two message pumps
+    # Create out queue
     outQu = Queue()
+
+    # Create in queues
     inQuList = []
-    for i in range(3):
-        inQuList.append(Queue())
+    for i in range(4):               # 4 queues for 4 gui throttles
+        inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg)))
+    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutReadLayoutResponseMsg,)))  # 1 queue for throttle
+
+    # Start the message pumps
     MsgOutQuPump(sock = sk, qu = outQu).start()
     MsgInQuPump(sock = sk, inQuList = inQuList).start()
 
-    # Create a throttle
-    throttle = Throttle(name = "1", inQu = inQuList[0], outQu = outQu)
-
-    # Tell the throttle to read the layout file and check response
+    # Start a throttle to read the layout file
+    throttle = Throttle(name = "1", inQu = inQuList[4].qu, outQu = outQu)
     printLog("Main: read layout file")
     msg = throttle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
@@ -43,11 +47,12 @@ if __name__ == "__main__":
         print ("THE END")
         input("press enter to quit")
 
-    # Create three GuiThrottleProcess and pass inQu and outQu
-    printLog("Main: begin start three GuiThrottleProcess")
-    for i in range(3):
-        GuiThrottleProcess(name = str(i+1), inQu = inQuList[i], outQu = outQu).start()
-    printLog("Main: end start three GuiThrottleProcess")
+    # Start four gui throttles and pass inQu and outQu
+    printLog("Main: begin start four GuiThrottleProcess")
+    for i in range(4):
+        GuiThrottleProcess(name = str(i+1), inQu = inQuList[i].qu, outQu = outQu).start()
+        sleep(1)
+    printLog("Main: end start four GuiThrottleProcess")
     flushLog()
     sleep(1)          ##### WEIRD If sleep is omitted, then the input statement
                       ##### blocks the gui from being displayed.

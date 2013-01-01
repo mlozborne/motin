@@ -21,7 +21,7 @@ Test2: MsgQuPump
     pause
     end the program
 """
-from MsgHandler import MsgSocket, MsgInQuPump, MsgOutQuPump, MsgServerThread, waitFor
+from MsgHandler import *
 
 from multiprocessing import Process, Queue
 from MessageTranslationTypes import *
@@ -109,13 +109,16 @@ if __name__ == "__main__":
 
     openLog("main")                                           #open log
     sak.start("simulator")                                    #start simulator
-    sk = MsgSocket(name = "1")                                  #create msgSocket
+    sk = MsgSocket(name = "1")                                #create msgSocket
     sk.connect("localHost", 1234)                             #connect socket to simulator
     sleep(3)
     
     inQuList = []
-    for i in range(3):
-        inQuList.append(Queue())
+    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = ()))# qu 0 all messages
+    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (SwRepMsg,)))# qu 1 only one kind of message
+    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg, SwRepMsg)))# qu 2 two kinds of messages
+    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg,)))# qu 3 only one kind of messagte
+
     MsgInQuPump(name = "in pump", sock = sk, inQuList = inQuList).start()
 
     outQu = Queue()
@@ -123,7 +126,7 @@ if __name__ == "__main__":
 
     Producer("1", outQu).start()
     for i in range(3):
-        Consumer(str(i+1), inQuList[i]).start()
+        Consumer(str(i), inQuList[i].qu).start()
 
     input("press enter to quit")
     sak.kill("simulator")                                     #kill simulator

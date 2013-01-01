@@ -11,6 +11,9 @@ from Log import printLog
 from threading import Thread
 import sys
 import multiprocessing
+from collections import namedtuple
+
+InQuListEntry  = namedtuple('InQuListEntry', 'qu, msgTypes')
 
 def waitFor(qu, msg):
     """
@@ -71,15 +74,26 @@ class MsgInQuPump(Thread):
 
     Usage
         from MsgHandler import MsgInQuPump
-        pump = MsgInQuPump(name = <string>, sock = <MsgSocket>, inQuList = <list of queues>)
+        pump = MsgInQuPump(name = <string>, sock = <MsgSocket>, inQuList = <list of InQuListEntry>)
         pump.start()
     """
     def __init__(self, name = "1", sock = None, inQuList = None):
+        """
+        Each entry in inQuList consists of a pair:
+            a queue
+            a list of the messsages the queue is interested in.
+        If the queue is interested in all messages, then the list is empty.
+        For instance,
+            (qu, (PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg))
+                                    or
+            (qu, ())
+        """
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(inQuList, list))
         for x in inQuList:
-            assert(isinstance(x, multiprocessing.queues.Queue))
+            assert(isinstance(x.qu, multiprocessing.queues.Queue))
+            assert(isinstance(x.msgTypes, tuple))
         printLog("MsgInQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
@@ -90,8 +104,13 @@ class MsgInQuPump(Thread):
         printLog("MsgInQueuePump {0}: starting".format(self.name))
         while True:
             st = self.sk.receive()
-            for q in self.inQuList:
-                q.put(makeMsgStr(st))
+            msg = makeMsgStr(st)
+            for x in self.inQuList:
+                q = x.qu
+                messageTypes = x.msgTypes
+                if messageTypes == () or type(msg) in messageTypes:
+#                    printLog("msg = {0}, messageTypes = {1}".format(msg, messageTypes))
+                    q.put(msg)
 
 ################################################################################
 
