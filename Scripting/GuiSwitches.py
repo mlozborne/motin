@@ -6,6 +6,10 @@ from multiprocessing import Process
 from Throttle import Throttle
 from Log import *
 
+see imagedemo.py in chapter 2
+    mousedemo1.py in chapter 12
+    mousedemo4.py in chapter 12
+
 class GuiThrottleProcess(Process):
     def __init__(self, name = "1", inQu = None, outQu = None):
         Process.__init__(self)

@@ -1,7 +1,8 @@
 """
-This module contains
-    MsgQuPump
-    MsgSocket, MsgServerThread, ClientHandlerThread
+MsgSocket: a socket for communicationg with the railroad/controller
+MsgInQuPump: A thread that receives messages from the railroad/controller and forwards them to interested processes.
+MsgOutQuPump: A thread that forwards messages from processes to either the railroad/controller or
+Msg
 """
 from socket import socket
 from time import sleep
@@ -13,7 +14,20 @@ import sys
 import multiprocessing
 from collections import namedtuple
 
-InQuListEntry  = namedtuple('InQuListEntry', 'qu, msgTypes')
+#InQuListEntry  = namedtuple('InQuListEntry', 'qu, msgTypes')
+InQuListEntry     = namedtuple('InQuListEntry', 'owner, qu, interests')
+AddQuMsg          = namedtuple('AddQuMsg', 'owner, qu')
+RemoveQuMsg       = namedtuple('RemoveQuMsg', 'owner')
+AddInterestMsg    = namedtuple('AddInterestMsg', 'owner, interest')
+RemoveInterestMsg = namedtuple('RemoveInterestMsg', 'owner, interest')
+# Where
+#    owner               str name of the process requesting an inQu
+#    qu                  multiprocessing.queueus.Queue
+#    interest            a message type, e.g. PutInitOutcomeMsg
+
+
+
+
 
 def waitFor(qu, msg):
     """

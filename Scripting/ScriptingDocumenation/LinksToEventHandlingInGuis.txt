@@ -7,3 +7,7 @@ https://groups.google.com/forum/?fromgroups=#!topic/comp.lang.python/NHb9ML7BI2c
 http://stackoverflow.com/questions/7141509/tkinter-wait-for-item-in-queue
 
 http://code.activestate.com/recipes/82965-threads-tkinter-and-asynchronous-io/
+
+http://www.valuedlessons.com/2008/04/events-in-python.html
+http://stackoverflow.com/questions/1092531/event-system-in-python
+http://www.emptypage.jp/notes/pyevent.en.html
