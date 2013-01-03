@@ -15,16 +15,18 @@ import multiprocessing
 from collections import namedtuple
 
 #InQuListEntry  = namedtuple('InQuListEntry', 'qu, msgTypes')
-InQuListEntry     = namedtuple('InQuListEntry', 'owner, qu, interests')
-AddQuMsg          = namedtuple('AddQuMsg', 'owner, qu')
-RemoveQuMsg       = namedtuple('RemoveQuMsg', 'owner')
-AddInterestMsg    = namedtuple('AddInterestMsg', 'owner, interest')
-RemoveInterestMsg = namedtuple('RemoveInterestMsg', 'owner, interest')
-# Where
-#    owner               str name of the process requesting an inQu
-#    qu                  multiprocessing.queueus.Queue
-#    interest            a message type, e.g. PutInitOutcomeMsg
+InQuListEntry       = namedtuple('InQuListEntry', 'owner, inQu, interests')
+AddInQuMsg          = namedtuple('AddQuMsg', 'owner, qu')
+RemoveInQuMsg       = namedtuple('RemoveQuMsg', 'owner')
+AddInterestMsg      = namedtuple('AddInterestMsg', 'owner, interest')
+RemoveInterestMsg   = namedtuple('RemoveInterestMsg', 'owner, interest')
+InQuListMsgs = (InQuListEntry, AddInQuMsg, RemoveInQuMsg, AddInterestMsg, RemoveInterestMsg)
 
+# Where
+#    owner                 str name of the process requesting an inQu
+#    inQu                  multiprocessing.queueus.Queue
+#    interest              a message type, e.g. PutInitOutcomeMsg
+#    interests             a list of message types
 
 
 
@@ -54,60 +56,71 @@ def waitFor(qu, msg):
             break
     return m
 
-class MsgOutQuPump(Thread):
-    """
-    Removes messages from a message queue and sends them to the controller or
-    railroad via a MsgSocket
-    Usage
-        from MsgHandler import MsgOutQuPump
-        pump = MsgOutQuPump(name = <string>, sock = <MsgSocket>, qu = <queue.Queue or multiprocessing.Queue>)
-        pump.start()
-    """
-    def __init__(self, name = "1", sock = None, qu = None):
+################################################################################
+
+class MsgInternalQuPump(Thread):
+    def __init__(self, name = "1", internalQu = None, inQuList = None):
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
-        assert(isinstance(qu, multiprocessing.queues.Queue))
+        assert(isinstance(internalQu, multiprocessing.queues.Queue))
+        assert(isinstance(inQuList, list))
+        for x in inQuList:
+            assert(isinstance(x.owner, str))
+            assert(isinstance(x.inQu, multiprocessing.queues.Queue))
+            assert(isinstance(x.interests, list))
+            for y in x.interests:
+                assert(isinstance(y, InQuListMsgs) or isinstance(y, ControllerOutMsgs))
         printLog("MsgOutQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
         self.sk = sock
-        self.qu = qu
+        self.outQu = outQu
+        self.internalQu = internalQu
 
     def run(self):
         printLog("MsgOutQueuePump {0}: starting".format(self.name))
         while True:
             msg = self.qu.get()
-            self.sk.send(msg)
+            if msg in InQuListMsgs:
+                self.internalQu.put(msg)
+            else:
+                self.sk.send(msg)
+
+################################################################################
+
+class MsgOutQuPump(Thread):
+    def __init__(self, name = "1", sock = None, outQu = None, internalQu = None):
+        assert(isinstance(name, str))
+        assert(isinstance(sock, MsgSocket))
+        assert(isinstance(outQu, multiprocessing.queues.Queue))
+        assert(isinstance(internalQu, multiprocessing.queues.Queue))
+        printLog("MsgOutQueuePump {0}: initializing".format(name))
+        Thread.__init__(self)
+        self.name = name
+        self.sk = sock
+        self.outQu = outQu
+        self.internalQu = internalQu
+
+    def run(self):
+        printLog("MsgOutQueuePump {0}: starting".format(self.name))
+        while True:
+            msg = self.qu.get()
+            if msg in InQuListMsgs:
+                self.internalQu.put(msg)
+            else:
+                self.sk.send(msg)
 
 ################################################################################
 
 class MsgInQuPump(Thread):
-    """
-    Reads messages from the controller or railroad via a MsgSocket and puts
-    them in a queue
-
-    Usage
-        from MsgHandler import MsgInQuPump
-        pump = MsgInQuPump(name = <string>, sock = <MsgSocket>, inQuList = <list of InQuListEntry>)
-        pump.start()
-    """
     def __init__(self, name = "1", sock = None, inQuList = None):
-        """
-        Each entry in inQuList consists of a pair:
-            a queue
-            a list of the messsages the queue is interested in.
-        If the queue is interested in all messages, then the list is empty.
-        For instance,
-            (qu, (PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg))
-                                    or
-            (qu, ())
-        """
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(inQuList, list))
         for x in inQuList:
-            assert(isinstance(x.qu, multiprocessing.queues.Queue))
-            assert(isinstance(x.msgTypes, tuple))
+            assert(isinstance(x.owner, str))
+            assert(isinstance(x.inQu, multiprocessing.queues.Queue))
+            assert(isinstance(x.interests, list))
         printLog("MsgInQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
@@ -120,10 +133,9 @@ class MsgInQuPump(Thread):
             st = self.sk.receive()
             msg = makeMsgStr(st)
             for x in self.inQuList:
-                q = x.qu
-                messageTypes = x.msgTypes
-                if messageTypes == () or type(msg) in messageTypes:
-#                    printLog("msg = {0}, messageTypes = {1}".format(msg, messageTypes))
+                q = x.inQu
+                messageTypes = x.interests
+                if type(msg) in messageTypes:
                     q.put(msg)
 
 ################################################################################

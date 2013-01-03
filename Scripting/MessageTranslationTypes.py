@@ -79,7 +79,7 @@ putTrainInformation    = 21
 putPowerChangeComplete = 26
 
 #######################################################################
-# Sent message formats
+# Constants used in messages
 kDirectionValues = (kForward, kBackward)
 kSetRequestValues = (kThrown, kClosed)
 kPowerValues = (kOn, kOff)
@@ -95,6 +95,8 @@ kSwitchMin = 1; kSwitchMax = 128
 kLocoAddressMin = 1; kLocoAddressMax = 9999
 kSensorMin = 1; kSensorMax = 16383
 
+#######################################################################
+# Sent message formats
 PowerMsg                   = namedtuple('PowerMsg', 'setting')
 LocoSpdMsg                 = namedtuple('LocoSpdMsg', 'slot, speed')
 LocoDirfMsg                = namedtuple('LocoDirfMsg', 'slot, direction, lights, horn, bell')
@@ -121,3 +123,7 @@ PutInitOutcomeMsg           = namedtuple('PutInitOutcomeMsg', 'physAdd, physSlot
 PutReadLayoutResponseMsg    = namedtuple('PutReadLayoutResponseMsg', 'responseFlag, code')
 PutTrainInformationMsg      = namedtuple('PutTrainInformationMsg', 'slot, speed, direction, lights, bell, horn, mute')
 PutPowerChangeCompleteMsg   = namedtuple('PutPowerChangeCompleteMsg', 'dummy')
+
+ControllerOutMsgs = (PowerMsg, LocoSpdMsg, LocoDirfMsg, LocoSndMsg, SwReqMsg,
+                     MoveSlotsMsg, LocoAdrMsg, WriteSlotDataToClearMsg,
+                     DoLocoInitMsg, DoReadLayoutMsg)

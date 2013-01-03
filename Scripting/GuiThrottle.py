@@ -1,3 +1,4 @@
+import Throttle
 import multiprocessing.queues
 from MessageTranslationTypes import *
 from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W
