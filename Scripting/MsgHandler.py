@@ -1,3 +1,4 @@
+from multiprocessing.queues import Queue
 from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
@@ -22,16 +23,9 @@ InQuListMsgs = (AddInQuMsg, RemoveInQuMsg, AddInterestMsg, RemoveInterestMsg)
 #    interest              a message type, e.g. PutInitOutcomeMsg
 #    interests             a list of message types
 
-
-
+################################################################################
 
 def waitFor(qu, msg):
-    """
-    Get messages from the qu until one of the correct type is retrieved.
-    Type currently recognized are:
-        PutReadLayoutResponseMsg
-        PutInitOutcomeMsg -- must also match msg.address
-    """
     printLog("waitFor: msg = {0}".format(msg))
     assert(isinstance(qu, multiprocessing.queues.Queue))
     assert(isinstance(msg, tuple))
@@ -49,6 +43,28 @@ def waitFor(qu, msg):
         if isinstance(m, PutSensorStateMsg) and m == msg:
             break
     return m
+
+################################################################################
+
+class MsgPumpHandler(object):
+    def __init__(self, name = None, host = None, port = None, outQu = None):
+        assert(isinstance(name, str))
+        assert(isinstance(host, str))
+        assert(port > 1000)
+        assert(isinstance(outQu, multiprocessing.queues.Queue))
+        self.name = name
+        self.host = host
+        self.port = port
+        self.outQu = outQu
+
+    def startPump(self):
+        inQuList = []
+        internalQu = Queue()
+        msgSock = MsgSocket(name = self.name)
+        msgSock.connect(self.host, self.port)
+        MsgInternalQuPump(name = self.name, internalQu = internalQu, inQuList = inQuList).start()
+        MsgInQuPump(name = self.name, sock = msgSock, inQuList = inQuList).start()
+        MsgOutQuPump(name = self.name, sock = msgSock, outQu = self.outQu, internalQu = internalQu).start()
 
 ################################################################################
 
@@ -70,17 +86,57 @@ class MsgInternalQuPump(Thread):
         self.inQuList = inQuList
 
     def run(self):
+        def getListEntryForOwner(ow):
+            for x in self.inQuList:
+                if x.owner == ow:
+                    return x
+            return None
+            
+        def interestInListEntry(entry, int):
+            return int in entry.interests
+            
         printLog("MsgOutQueuePump {0}: starting".format(self.name))
         while True:
             msg = self.internalQu.get()  
             if isinstance(msg, AddInQuMsg):
-                pass
+                # if there is already a qu for this owner raise an exception
+                # else add a inQuListEntry for this owner
+                if getListEntryForOwner(msg.owner) == None:
+                    self.inQuList.append(InQuListEntry(owner = msg.owner, qu = msg.qu))
+                else:
+                    raise Exception("MsgInternalQuPump: Can't add inQu. {0} already has one.".format(msg.owner))
             elif isinstance(msg, RemoveInQuMsg):
-                pass
+                # if there is no entry for this owner raise an exception
+                # else remove an inQuListEntry for this owner
+                x = getListEntryForOwner(msg.owner)
+                if x == None:
+                    raise Exception("MsgInternalQuPump: Can't remove inQu. {0} doesn't have one.".format(msg.owner))
+                else:
+                    self.inQuList.remove(x)
             elif isinstance(msg, AddInterestMsg):
-                pass
+                # if there is no entry for this owner raise an exception
+                # elif the owner already has this interest raise an exception
+                # else add an interest for this owner
+                x = getListEntryForOwner(msg.owner)
+                if x == None:
+                    raise Exception("MsgInternalQuPump: Can't add interest. {0} doesn't have an inQu".format(msg.owner))
+                else:
+                    if interestInListEntry(x, msg.interest):
+                        raise Exception("MsgInternalQuPump: Can't add interest. {0} already has {1}".format(msg.owner, msg.interest))
+                    else:
+                        x.interests.append(msg.interest)
             elif isinstance(msg, RemoveInterestMsg):
-                pass
+                # if there is no entry for this owner raise an exception
+                # elif there is no matching interest raise an exception
+                # else remove an interest for this owner
+                x = getListEntryForOwner(msg.owner)
+                if x == None:
+                    raise Exception("MsgInternalQuPump: Can't remove interest. {0} doesn't have an inQu".format(msg.owner))
+                else:
+                    if not interestInListEntry(x, msg.interest):
+                        raise Exception("MsgInternalQuPump: Can't remove interest. {0} doesn't have {1}".format(msg.owner, msg.interest))
+                    else:
+                        x.interests.remove(msg.interest)
 
 ################################################################################
 
@@ -163,8 +219,6 @@ class MsgSocket(object):
               this function should close its socket when done
            msk = MessageSocket()
            msk.createMsgServerThread(serverSideHost, serverSidePort, clientHandlerFunction)
-
-
     """
     def __init__(self, name = "1"):
         assert(isinstance(name, str))
