@@ -1,9 +1,3 @@
-"""
-MsgSocket: a socket for communicationg with the railroad/controller
-MsgInQuPump: A thread that receives messages from the railroad/controller and forwards them to interested processes.
-MsgOutQuPump: A thread that forwards messages from processes to either the railroad/controller or
-Msg
-"""
 from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
@@ -20,7 +14,7 @@ AddInQuMsg          = namedtuple('AddQuMsg', 'owner, qu')
 RemoveInQuMsg       = namedtuple('RemoveQuMsg', 'owner')
 AddInterestMsg      = namedtuple('AddInterestMsg', 'owner, interest')
 RemoveInterestMsg   = namedtuple('RemoveInterestMsg', 'owner, interest')
-InQuListMsgs = (InQuListEntry, AddInQuMsg, RemoveInQuMsg, AddInterestMsg, RemoveInterestMsg)
+InQuListMsgs = (AddInQuMsg, RemoveInQuMsg, AddInterestMsg, RemoveInterestMsg)
 
 # Where
 #    owner                 str name of the process requesting an inQu
@@ -61,7 +55,6 @@ def waitFor(qu, msg):
 class MsgInternalQuPump(Thread):
     def __init__(self, name = "1", internalQu = None, inQuList = None):
         assert(isinstance(name, str))
-        assert(isinstance(sock, MsgSocket))
         assert(isinstance(internalQu, multiprocessing.queues.Queue))
         assert(isinstance(inQuList, list))
         for x in inQuList:
@@ -69,22 +62,25 @@ class MsgInternalQuPump(Thread):
             assert(isinstance(x.inQu, multiprocessing.queues.Queue))
             assert(isinstance(x.interests, list))
             for y in x.interests:
-                assert(isinstance(y, InQuListMsgs) or isinstance(y, ControllerOutMsgs))
+                assert((y in InQuListMsgs) or (y in ControllerOutMsgs))
         printLog("MsgOutQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
-        self.sk = sock
-        self.outQu = outQu
         self.internalQu = internalQu
+        self.inQuList = inQuList
 
     def run(self):
         printLog("MsgOutQueuePump {0}: starting".format(self.name))
         while True:
-            msg = self.qu.get()
-            if msg in InQuListMsgs:
-                self.internalQu.put(msg)
-            else:
-                self.sk.send(msg)
+            msg = self.internalQu.get()  
+            if isinstance(msg, AddInQuMsg):
+                pass
+            elif isinstance(msg, RemoveInQuMsg):
+                pass
+            elif isinstance(msg, AddInterestMsg):
+                pass
+            elif isinstance(msg, RemoveInterestMsg):
+                pass
 
 ################################################################################
 
@@ -121,6 +117,8 @@ class MsgInQuPump(Thread):
             assert(isinstance(x.owner, str))
             assert(isinstance(x.inQu, multiprocessing.queues.Queue))
             assert(isinstance(x.interests, list))
+            for y in x.interests:
+                assert((y in InQuListMsgs) or (y in ControllerOutMsgs))
         printLog("MsgInQueuePump {0}: initializing".format(name))
         Thread.__init__(self)
         self.name = name
