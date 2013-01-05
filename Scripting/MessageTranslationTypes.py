@@ -127,3 +127,8 @@ PutPowerChangeCompleteMsg   = namedtuple('PutPowerChangeCompleteMsg', 'dummy')
 ControllerOutMsgs = (PowerMsg, LocoSpdMsg, LocoDirfMsg, LocoSndMsg, SwReqMsg,
                      MoveSlotsMsg, LocoAdrMsg, WriteSlotDataToClearMsg,
                      DoLocoInitMsg, DoReadLayoutMsg)
+
+ControllerInMsgs = (PutTrainStateMsg, PutTrainPositionMsg, PutSectionStateMsg,
+                    PutSwitchStateMsg, PutSensorStateMsg, PutInitOutcomeMsg,
+                    PutReadLayoutResponseMsg, PutTrainInformationMsg,
+                    PutPowerChangeCompleteMsg)

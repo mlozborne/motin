@@ -1,17 +1,15 @@
 from MessageTranslationTypes import *
 from Log import printLog
 import multiprocessing
-from MsgHandler import waitFor
+from MsgHandler import *
 from time import sleep
 
 class Throttle(object):
-    def __init__(self, name = "1", inQu = None, outQu = None):
+    def __init__(self, name = "1", outQu = None):
         printLog("Throttle {0}: initializing".format(name))
         assert(isinstance(name, str))
         assert(isinstance(outQu, multiprocessing.queues.Queue))
-        assert(isinstance(outQu, multiprocessing.queues.Queue))
         self.name = name
-        self.inQu = inQu
         self.outQu = outQu
         self.virtSlot = None
         self.direction = kForward
@@ -21,31 +19,84 @@ class Throttle(object):
         self.mute = kOff
         self.F5 = 0
         self.F6 = 0
+        self.msgHandler = MsgHandler(name = self.name, outQu = self.outQu)
+
+    def addInterest(self, interest):
+        printLog("Throttle {0}: adding interest {1}".format(self.name, interest))
+        assert(interest in ControllerInMsgs)
+        self.msgHandler.addInterest(interest)
+
+    def removeInterest(self, interest):
+        printLog("Throttle {0}: removing interest {1}".format(self.name, interest))
+        assert(interest in ControllerInMsgs)
+        self.msgHandler.removeInterest(interest)
+
+    def close(self):
+        printLog("Throttle {0}: closing".format(self.name))
+        self.msgHadler.close()
+
+    def getBlocking(self):
+        msg = self.msgHandler.getBlocking()
+        printLog("Throttle {0}: getBlocking msg {1}".format(self.name, msg))
+        return msg
+
+    def getNonblocking(self):
+        try:
+            msg = self.msgHandler.getNonblocking()
+            printLog("Throttle {0}: getNonlocking msg {1}".format(self.name, msg))
+            return msg
+        except multiprocessing.queues.Empty:
+            printLog("Throttle {0}: getNonlocking empty qu exception".format(self.name))
+            raise multiprocessing.queues.Empty
+
+    def waitFor(self, msg):
+        printLog("waitFor: msg = {0}".format(msg))
+        assert(isinstance(msg, tuple))
+        while True:
+            while True:
+                printLog("waitFor: about to getBlocking")
+                m = self.msgHandler.getBlocking()
+                printLog("waitFor: back from getBlocking".format(m))
+                if type(m) == type(msg):
+                    break
+            if isinstance(m, PutReadLayoutResponseMsg):
+                break
+            if isinstance(m, InputRepMsg) and m.sensor == msg.sensor:
+                break
+            if isinstance(m, PutInitOutcomeMsg) and m.physAdd == msg.physAdd:
+                break
+            if isinstance(m, PutSensorStateMsg) and m == msg:
+                break
+        printLog("waitFor: waiting over, got message {1}".format(m))
+        return m
+
+################################################################################
 
     def readLayout(self, fileName):
         printLog("Throttle {0}: sending DoReadLayoutMsg using file {1}".format(self.name, fileName))
-        assert(self.outQu != None)
-        assert(self.inQu != None)
         assert(isinstance(fileName, str))
-        self.outQu.put(DoReadLayoutMsg(fileName = fileName))
-        msg = waitFor(self.inQu, PutReadLayoutResponseMsg(responseFlag = 0, code = 0))
+        self.msgHandler.addInterest(PutReadLayoutResponseMsg)
+        self.msgHandler.put(DoReadLayoutMsg(fileName = fileName))
+        msg = self.waitFor(PutReadLayoutResponseMsg(responseFlag = 0, code = 0))
+        self.msgHandler.removeInterest(PutReadLayoutResponseMsg)
         sleep(3)
         return msg
 
     def initTrain(self, address, position):
         printLog("Throttle {0}: sending DoLocoInitMsg".format(self.name))
-        assert(self.outQu != None)
-        assert(self.inQu != None)
         assert(0 <= address <= 9999)
         assert(isinstance(position, list) or isinstance(position, tuple))
-        self.outQu.put(DoLocoInitMsg(address = address, sensors = position))
+        self.msgHandler.put(DoLocoInitMsg(address = address, sensors = position))
+        responseMsg = None
         if position != []:
-            msg = waitFor(self.inQu, PutInitOutcomeMsg(physAdd = address, physSlot = 0, virtAdd = 0, virtSlot = 0))
-            if msg.physSlot > 120:
+            self.msgHandler.addInterest(PutInitOutcomeMsg)
+            responseMsg = self.waitFor(PutInitOutcomeMsg(physAdd = address, physSlot = 0, virtAdd = 0, virtSlot = 0))
+            self.msgHandler.removeInterest(PutInitOutcomeMsg)
+            if responseMsg.physSlot > 120:
                 self.virtSlot = None
             else:
-                self.virtSlot = msg.virtSlot
-            return msg
+                self.virtSlot = responseMsg.virtSlot
+        return responseMsg
 
     def setVirtSlot(self, virtSlot):
         self.virtSlot = virtSlot
@@ -54,22 +105,19 @@ class Throttle(object):
         func(self, * args)
 
     def sendDirf(self):
-        assert(self.outQu != None)
         assert(self.virtSlot != None)
-        self.outQu.put(LocoDirfMsg(slot=self.virtSlot, direction=self.direction,
+        self.msgHandler.put(LocoDirfMsg(slot=self.virtSlot, direction=self.direction,
                         lights=self.lights, horn=self.horn, bell=self.bell))
 
     def sendSnd(self):
-        assert(self.outQu != None)
         assert(self.virtSlot != None)
-        self.outQu.put(LocoSndMsg(slot=self.virtSlot, mute=self.mute,
+        self.msgHandler.put(LocoSndMsg(slot=self.virtSlot, mute=self.mute,
                         F5=self.F5, F6=self.F6))
 
     def setSpeed(self, speed):
-        assert(self.outQu != None)
         assert(self.virtSlot != None)
         assert(speed >= 0)
-        self.outQu.put(LocoSpdMsg(slot=self.virtSlot, speed=speed))
+        self.msgHandler.put(LocoSpdMsg(slot=self.virtSlot, speed=speed))
 
     def setDirection(self, direction):
         assert(direction == kForward or direction == kBackward)
@@ -111,10 +159,9 @@ class Throttle(object):
         self.sendSnd()
 
     def moveSwitch(self, id, direction):
-        assert(self.outQu != None)
         assert(id > 0)
         assert(direction == kForward or direction == kBackward)
-        self.outQu.put(SwReqMsg(switch=id, direction=direction))
+        self.msgHandler.put(SwReqMsg(switch=id, direction=direction))
 
 
 
