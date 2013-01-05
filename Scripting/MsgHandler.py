@@ -39,13 +39,13 @@ class MsgHandler(object):
     def addInterest(self, msgType):
         printLog("MsgHandler {0}: adding interest {1}".format(self.name, msgType))
         assert(msgType in ControllerInMsgs)
-        self.outQu.put(AddInterestMsg(owner = self.name, interest = msgType))
-        printLog("MsgHandler {0}: finished adding interest {1}".format(self.name, msgType))
+        self.outQu.put(AddInterestMsg(inQuNum = self.inQuNum, interest = msgType))
+        #printLog("MsgHandler {0}: finished adding interest {1}".format(self.name, msgType))
 
     def removeInterest(self, msgType):
         printLog("MsgHandler {0}: removing interest {1}".format(self.name, msgType))
         assert(msgType in ControllerInMsgs)
-        self.outQu.put(RemoveInterestMsg(owner = self.name, interest = msgType))
+        self.outQu.put(RemoveInterestMsg(inQuNum = self.inQuNum, interest = msgType))
 
     def close(self):
         printLog("MsgHandler {0}: removing all interests".format(self.name))
@@ -53,70 +53,78 @@ class MsgHandler(object):
 
     def getBlocking(self):
         msg = self.inQu.get()
-        printLog("MsgHandler {0}: getBlocking message {1)".format(self.name, msg))
+        #printLog("MsgHandler {0}: getBlocking message {1}".format(self.name, msg))
         return msg
 
     def getNonblocking(self):
         try:
             msg = self.inQu.get(False) # non-blocking
-            printLog("MsgHandler {0}: getNonblocking message {1)".format(self.name, msg))
+            #printLog("MsgHandler {0}: getNonblocking message {1}".format(self.name, msg))
             return msg
         except multiprocessing.queues.Empty:
             printLog("MsgHandler {0}: getNonblocking empty qu exception)".format(self.name))
             raise multiprocessing.queues.Empty
 
     def put(self, msg):
-        printLog("MsgHandler {0}: putting message {1}".format(self.name, msg))
+        #printLog("MsgHandler {0}: putting message {1}".format(self.name, msg))
         self.outQu.put(msg)
 
 ################################################################################
+InQuListEntry       = namedtuple('InQuListEntry', 'inQu, interests')
 
 class MsgPumpHandler(object):
-    def __init__(self, name = None, host = None, port = None, outQu = None):
+    def __init__(self, name = None, host = None, port = None, inQuList = None, outQu = None):
         printLog("MsgPumpHandler {0}: initializing".format(name))
         assert(isinstance(name, str))
         assert(isinstance(host, str))
         assert(port > 1000)
+        assert(isinstance(inQuList, list))
+        for x in inQuList:
+            assert(isinstance(x, InQuListEntry))
+            assert(isinstance(x.inQu, multiprocessing.queues.Queue))
+            assert(isinstance(x.interests, list))
+            #print(str(x))
+            for y in x.interests:
+                assert(y in ControllerInMsgs)
         assert(isinstance(outQu, multiprocessing.queues.Queue))
         self.name = name
         self.host = host
         self.port = port
+        self.inQuList = inQuList
         self.outQu = outQu
 
     def startPumps(self):
-        printLog("MsgHandler {0}: trying to start pumps".format(self.name))
-        inQuList = []
+        #printLog("MsgHandler {0}: trying to start pumps".format(self.name))
         internalQu = Queue()
         msgSock = MsgSocket(name = self.name)
         msgSock.connect(self.host, self.port)
-        MsgInternalQuPump(name = self.name, internalQu = internalQu, inQuList = inQuList).start()
-        MsgInQuPump(name = self.name, sock = msgSock, inQuList = inQuList).start()
+        MsgInternalQuPump(name = self.name, internalQu = internalQu, inQuList = self.inQuList).start()
+        MsgInQuPump(name = self.name, sock = msgSock, inQuList = self.inQuList).start()
         MsgOutQuPump(name = self.name, sock = msgSock, outQu = self.outQu, internalQu = internalQu).start()
         printLog("MsgHandler {0}: has started pumps".format(self.name))
 
 ################################################################################
 
 class MsgInternalQuPump(Thread):
-    def __init__(self, name = "1", internalQu = None, inQuList = None):
+    def __init__(self, name = None, internalQu = None, inQuList = None):
         Thread.__init__(self)
         assert(isinstance(name, str))
         assert(isinstance(internalQu, multiprocessing.queues.Queue))
         assert(isinstance(inQuList, list))
         for x in inQuList:
-            assert(isinstance(x.owner, str))
+            assert(isinstance(x, InQuListEntry))
             assert(isinstance(x.inQu, multiprocessing.queues.Queue))
             assert(isinstance(x.interests, list))
+            #print(str(x.interests))
             for y in x.interests:
-                assert((y in InQuListMsgs) or (y in ControllerOutMsgs))
+                #print("..." + str(y))
+                assert(y in ControllerInMsgs)
         printLog("MsgInternalQuPump {0}: initializing".format(name))
         self.name = name
         self.internalQu = internalQu
         self.inQuList = inQuList
 
-    def run(self):
-        def xinterestInListEntry(entry, int):
-            return int in entry.interests
-            
+    def run(self):           
         printLog("MsgInternalQuPump {0}: starting".format(self.name))
         while True:
             msg = self.internalQu.get()  
@@ -130,35 +138,36 @@ class MsgInternalQuPump(Thread):
                     self.inQuList[msg.inQuNum].interests = []
             elif isinstance(msg, AddInterestMsg):
                 printLog("MsgInternalQuPump {0}: adding interest {1} for inQuNum {2}".format(self.name, msg.interest, msg.inQuNum))
-                # if there is no entry for this owner raise an exception
-                # elif the owner already has this interest raise an exception
-                # else add an interest for this owner
+                # if there is no entry for this inQuNum raise an exception
+                # elif the inQuNum already has this interest raise an exception
+                # else add an interest for this inQuNum
                 if len(self.inQuList) <= msg.inQuNum:
                     raise Exception("MsgInternalQuPump {0}: inQuNum {1} is too large.".format(self.name, msg.inQuNum))
                 else:
                     x = self.inQuList[msg.inQuNum]
                     if msg.interest in x.interests:
-                        raise Exception("MsgInternalQuPump {0}: Can't add. inQuNum {1} already has {2}".format(self.name, msg.name, msg.interest))
+                        pass    # The interest could have been have added at a higher level
+                        #raise Exception("MsgInternalQuPump {0}: Can't add. inQuNum {1} already has {2}".format(self.name, msg.inQuNum, msg.interest))
                     else:
                         x.interests.append(msg.interest)
             elif isinstance(msg, RemoveInterestMsg):
-                printLog("MsgInternalQuPump {0}: removing interest {1} for {2}".format(self.name, msg.interest, msg.owner))
-                # if there is no entry for this owner raise an exception
+                printLog("MsgInternalQuPump {0}: removing interest {1} for inQuNum {2}".format(self.name, msg.interest, msg.inQuNum))
+                # if there is no entry for this inQuNum raise an exception
                 # elif there is no matching interest raise an exception
-                # else remove an interest for this owner
-                x = getListEntryForOwner(msg.owner)
-                if x == None:
-                    raise Exception("MsgInternalQuPump: Can't remove interest. {0} doesn't have an inQu".format(msg.owner))
+                # else remove an interest for this inQuNum
+                if len(self.inQuList) <= msg.inQuNum:
+                    raise Exception("MsgInternalQuPump {0}: inQuNum {1} is too large.".format(self.name, msg.inQuNum))
                 else:
-                    if not interestInListEntry(x, msg.interest):
-                        raise Exception("MsgInternalQuPump: Can't remove interest. {0} doesn't have {1}".format(msg.owner, msg.interest))
+                    x = self.inQuList[msg.inQuNum]
+                    if not msg.interest in x.interests:
+                        raise Exception("MsgInternalQuPump {0}: Can't remove. inQuNum {1} doesn't have {2}".format(self.name, msg.name, msg.interest))
                     else:
                         x.interests.remove(msg.interest)
 
 ################################################################################
 
 class MsgOutQuPump(Thread):
-    def __init__(self, name = "1", sock = None, outQu = None, internalQu = None):
+    def __init__(self, name = None, sock = None, outQu = None, internalQu = None):
         Thread.__init__(self)
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
@@ -174,25 +183,27 @@ class MsgOutQuPump(Thread):
         printLog("MsgOutQuPump {0}: starting".format(self.name))
         while True:
             msg = self.outQu.get()
-            if msg in InQuListMsgs:
+            if type(msg) in InQuListMsgs:
+                #printLog("MsgOutQuPump {0}: getting ready to put {1}".format(self.name, msg))
                 self.internalQu.put(msg)
             else:
+                #printLog("MsgOutQuPump {0}: getting ready to send {1}".format(self.name, msg))
                 self.sk.send(msg)
 
 ################################################################################
 
 class MsgInQuPump(Thread):
-    def __init__(self, name = "1", sock = None, inQuList = None):
+    def __init__(self, name = None, sock = None, inQuList = None):
         Thread.__init__(self)
         assert(isinstance(name, str))
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(inQuList, list))
         for x in inQuList:
-            assert(isinstance(x.owner, str))
+            assert(isinstance(x, InQuListEntry))
             assert(isinstance(x.inQu, multiprocessing.queues.Queue))
             assert(isinstance(x.interests, list))
             for y in x.interests:
-                assert((y in InQuListMsgs) or (y in ControllerOutMsgs))
+                assert(y in ControllerInMsgs)
         printLog("MsgInQuPump {0}: initializing".format(name))
         self.name = name
         self.sk = sock

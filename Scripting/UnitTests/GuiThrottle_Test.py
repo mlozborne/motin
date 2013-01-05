@@ -8,34 +8,34 @@ from Throttle import Throttle
 from MsgHandler import *
 from MessageTranslationLibrary import PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg, PutReadLayoutResponseMsg
 
-#from GuiThrottle import GuiThrottle
+from GuiThrottle import GuiThrottle
 
 if __name__ == "__main__":
-    openLog("main")
+    openLog()
+
+    name = "Bill"
 
     #  Start the simulator and controller
     sak.start("simulator")
     sak.start("controller")
-    
-    # Connect a message socket to the controller
-    sk = MsgSocket()
-    sk.connect('localhost', 1235)
-    
-    # Create out queue
+
+    # 1 outQu
     outQu = Queue()
 
-    # Create in queues
+    #5 inQus
     inQuList = []
-    for i in range(4):               # 4 queues for 4 gui throttles
-        inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg)))
-    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutReadLayoutResponseMsg,)))  # 1 queue for throttle
+    # 4 queues for 4 gui throttles
+    for i in range(4):
+        inQuList.append(InQuListEntry(inQu = Queue(), interests = [PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg]))
+    # 1 queue for throttle
+    inQuList.append(InQuListEntry(inQu = Queue(), interests = [PutReadLayoutResponseMsg]))
 
-    # Start the message pumps
-    MsgOutQuPump(sock = sk, qu = outQu).start()
-    MsgInQuPump(sock = sk, inQuList = inQuList).start()
+    # Start msgPumpHandler
+    msgPumpHandler = MsgPumpHandler(name = name, host = 'localhost', port = 1235, inQuList = inQuList, outQu = outQu)
+    msgPumpHandler.startPumps()
 
     # Start a throttle to read the layout file
-    throttle = Throttle(name = "1", inQu = inQuList[4].qu, outQu = outQu)
+    throttle = Throttle(name = name, inQu = inQuList[4].inQu, inQuNum = 4, outQu = outQu)
     printLog("Main: read layout file")
     msg = throttle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
@@ -46,19 +46,21 @@ if __name__ == "__main__":
         print("Error in XML file with flag = {0} and code = {1}".format(responseFlag, code))
         print ("THE END")
         input("press enter to quit")
+    throttle.close()                              <<<<<<<<<<<<<<<<<<<   doesn't work unless commented out
 
     # Start four gui throttles and pass inQu and outQu
     printLog("Main: begin start four GuiThrottleProcess")
     for i in range(4):
-        GuiThrottleProcess(name = str(i+1), inQu = inQuList[i].qu, outQu = outQu).start()
+        GuiThrottleProcess(name = str(i+1), inQu = inQuList[i].inQu, inQuNum = i, outQu = outQu).start()
         sleep(1)
     printLog("Main: end start four GuiThrottleProcess")
     flushLog()
+    
     sleep(1)          ##### WEIRD If sleep is omitted, then the input statement
                       ##### blocks the gui from being displayed.
+
     input("press enter to quit")
-    
-    sk.close()
+
     sak.kill("controller")
     sak.kill("simulator")
     closeLog()

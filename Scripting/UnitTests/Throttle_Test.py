@@ -44,9 +44,11 @@ if __name__ == "__main__":
     
     # Set up the message pumps and a throttle
     outQu = Queue()
-    msgPumpHandler = MsgPumpHandler(name = 'for Throttle Test', host = 'localhost', port = 1235, outQu = outQu)
+    inQu = Queue()
+    inQuList = [InQuListEntry(inQu = inQu, interests = [])]
+    msgPumpHandler = MsgPumpHandler(name = 'for Throttle Test', host = 'localhost', port = 1235, inQuList = inQuList, outQu = outQu)
     msgPumpHandler.startPumps()
-    throt = Throttle(name = 'Bill', outQu = outQu)
+    throt = Throttle(name = 'Bill', inQu = inQu, inQuNum = 0, outQu = outQu)
     
     # Tell the throttle to read the layout file
     printLog("Main reading layout")
@@ -82,6 +84,7 @@ if __name__ == "__main__":
     throt.do(stopTrain)
     flushLog()
     input("press enter to quit")
+    throt.close()
     sak.kill("controller")
     sak.kill("simulator")
     closeLog()

@@ -8,37 +8,41 @@ from Throttle import Throttle
 from Log import *
 
 class GuiThrottleProcess(Process):
-    def __init__(self, name = "1", inQu = None, outQu = None):
+    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
         Process.__init__(self)
-
+        printLog("GuiThrottleProcess {0}: initializing".format(name))
         assert(isinstance(name, str))
         assert(isinstance(inQu, multiprocessing.queues.Queue))
+        assert(inQuNum >= 0)
         assert(isinstance(outQu, multiprocessing.queues.Queue))
 
-        printLog("GuiThrottleProcess {0}: initializing".format(name))
         self.name = name
         self.inQu = inQu
+        self.inQuNum = inQuNum
         self.outQu = outQu
         
     def run(self):
-        openLog("GuiThrottleProcess")
+        openLog("GuiThrottleProcess {0}".format(self.name))
         printLog("GuiThrottleProcess {0}: running".format(self.name))
-        GuiThrottle(self.name, self.inQu, self.outQu).mainloop()
+        GuiThrottle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu).mainloop()
         printLog("GuiThrottleProcess {0}: finished running".format(self.name))
         
 class GuiThrottle(EasyFrame):
 
-    def __init__(self, name, inQu, outQu):
+    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
         EasyFrame.__init__(self, title="Throttle")
-        printLog("GuiThrottle: initializing ")
+        printLog("GuiThrottle {0}: initializing".format(name))
 
-        self.throttle = Throttle(name = "1", inQu = inQu, outQu = outQu)
-        self.throttleReady = False
-        self.readyToReadFromQueue = False
+        self.name = name
         self.inQu = inQu
+        self.inQuNum = inQuNum
         self.outQu = outQu
         self.virtSlot = None
-        self.name = name
+        
+        self.readyToReadFromQueue = False
+
+        self.throttle = Throttle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu)
+        self.throttleReady = False
 
         imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"
 

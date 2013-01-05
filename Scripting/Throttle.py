@@ -5,11 +5,15 @@ from MsgHandler import *
 from time import sleep
 
 class Throttle(object):
-    def __init__(self, name = "1", outQu = None):
+    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
         printLog("Throttle {0}: initializing".format(name))
         assert(isinstance(name, str))
+        assert(isinstance(inQu, multiprocessing.queues.Queue))
+        assert(inQuNum >= 0)
         assert(isinstance(outQu, multiprocessing.queues.Queue))
         self.name = name
+        self.inQu = inQu
+        self.inQuNum = inQuNum
         self.outQu = outQu
         self.virtSlot = None
         self.direction = kForward
@@ -19,7 +23,7 @@ class Throttle(object):
         self.mute = kOff
         self.F5 = 0
         self.F6 = 0
-        self.msgHandler = MsgHandler(name = self.name, outQu = self.outQu)
+        self.msgHandler = MsgHandler(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu)
 
     def addInterest(self, interest):
         printLog("Throttle {0}: adding interest {1}".format(self.name, interest))
@@ -33,17 +37,17 @@ class Throttle(object):
 
     def close(self):
         printLog("Throttle {0}: closing".format(self.name))
-        self.msgHadler.close()
+        self.msgHandler.close()
 
     def getBlocking(self):
         msg = self.msgHandler.getBlocking()
-        printLog("Throttle {0}: getBlocking msg {1}".format(self.name, msg))
+        #printLog("Throttle {0}: getBlocking msg {1}".format(self.name, msg))
         return msg
 
     def getNonblocking(self):
         try:
             msg = self.msgHandler.getNonblocking()
-            printLog("Throttle {0}: getNonlocking msg {1}".format(self.name, msg))
+            #printLog("Throttle {0}: getNonlocking msg {1}".format(self.name, msg))
             return msg
         except multiprocessing.queues.Empty:
             printLog("Throttle {0}: getNonlocking empty qu exception".format(self.name))
@@ -54,9 +58,9 @@ class Throttle(object):
         assert(isinstance(msg, tuple))
         while True:
             while True:
-                printLog("waitFor: about to getBlocking")
+                #printLog("waitFor: about to getBlocking")
                 m = self.msgHandler.getBlocking()
-                printLog("waitFor: back from getBlocking".format(m))
+                #printLog("waitFor: back from getBlocking".format(m))
                 if type(m) == type(msg):
                     break
             if isinstance(m, PutReadLayoutResponseMsg):
@@ -67,7 +71,7 @@ class Throttle(object):
                 break
             if isinstance(m, PutSensorStateMsg) and m == msg:
                 break
-        printLog("waitFor: waiting over, got message {1}".format(m))
+        #printLog("waitFor: waiting over, got message {0}".format(m))
         return m
 
 ################################################################################
