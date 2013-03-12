@@ -157,16 +157,16 @@ PACKAGE BODY CommandQueueManager IS
          ent   : lookupEntry;
       begin
          myPutLine(" ");
-         myPutLine("        virtAddr virtSlot hasVirtSlot phyAddr phySlot hasPhySlot inUse");
+         myPutLine("        (virtAddr virtSlot hasVirtSlot) (phyAddr phySlot hasPhySlot) inUse");
          for i in lookupTable'range loop
             ent := lookupTable(I);
-            myPutLine("        " & 
+            myPutLine("        (" & 
                      integer'image(ent.virtTrainAddr) &
-                     integer'image(ent.virtSlotNum) &
-                     boolean'image(ent.hasVirtSlot) &
+                     integer'image(ent.virtSlotNum) & " " & 
+                     boolean'image(ent.hasVirtSlot) & ") (" &
                      integer'image(ent.physTrainAddr) &
-                     integer'image(ent.physSlotNum) &
-                     boolean'image(ent.hasPhySlot) &
+                     integer'image(ent.physSlotNum) & " " &
+                     boolean'image(ent.hasPhySlot) & ") " &
                      boolean'image(ent.inuse));
          end loop;
          myPutLine(" ");

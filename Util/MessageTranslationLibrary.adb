@@ -1323,11 +1323,11 @@ package body MessageTranslationLibrary is
 					return "OPC_SW_STATE switch" & natural'image(switchId);
 				when OPC_LOCO_SPD =>
                splitLocoSpdMsg(msg, trainId, speed);
-               return "OPC_LOCO_SPD slot/speed " & natural'image(trainId) & " " & natural'image(speed);
+               return "OPC_LOCO_SPD [(trainId or slot)/speed] [" & natural'image(trainId) & "/" & natural'image(speed) & "]";
             when OPC_LOCO_DIRF =>
                 splitLocoDirfMsg(msg, trainId, direction, light, horn, bell);
                 return "OPC_LOCO_DIRF"
-                       & " slot" & natural'image(trainId) 
+                       & " (trainId or slot)" & natural'image(trainId) 
                        & " dir "  & directionType'image(direction)
                        & " l " & onOffType'image(light) 
                        & " b " & onOffType'image(bell) 
@@ -1336,7 +1336,7 @@ package body MessageTranslationLibrary is
             when OPC_LOCO_SND =>
                 splitLocoSndMsg(msg, trainId, F5, F6, mute);
                 return "OPC_LOCO_SND"
-                       & " slot" & natural'image(trainId) 
+                       & " (trainId or slot)" & natural'image(trainId) 
                        & " F5 " & onOffType'image(F5) 
                        & " F6 " & onOffType'image(F6) 
                        & " mute " & onOffType'image(mute);                                             
@@ -1396,12 +1396,12 @@ package body MessageTranslationLibrary is
 				return "putPowerChangeComplete";
          when putTrainState =>
             splitPutTrainStateMsg(msg, slotNum, trainState);
-            return "putTrainState: slot/state" & natural'image(slotNum) & " " & trainStateType'image(trainState);
+            return "putTrainState: [(trainId or slot)/state] [" & natural'image(slotNum) & "/" & trainStateType'image(trainState) & "]";
          when putTrainPosition =>
             splitPutTrainPositionMsg(msg, slotNum, sensors);
 				count := getCount(sensors);
 				makeEmpty(sensors);
-            return "putTrainPosition: slot/num sensors" & natural'image(slotNum) & " " & natural'image(count);
+            return "putTrainPosition: [(trainId or slot)/num sensors] [" & natural'image(slotNum) & "/" & natural'image(count) & "]";
          when putSectionState =>
             splitPutSectionStateMsg(msg, sectionId, sectionState);
             return "putSectionState: sectionId/state" & natural'image(sectionId) & " " & sectionStateType'image(sectionState);
@@ -1451,9 +1451,10 @@ package body MessageTranslationLibrary is
             return "msgLoseReservation for train " & natural'image(trainId);
          when putTrainInformation =>
             splitPutTrainInformationMsg(msg, slotNum, speed, direction, light, bell, horn, mute);
-            return "putTrainInfo: sl sp dir l b h m" &
-                   natural'image(slotNum) & natural'image(speed) & " " & directionType'image(direction) &
-                   onOffType'image(light) & onOffType'image(bell) & onOffType'image(horn) & onOffType'image(mute);
+            return "putTrainInfo: [(trainId or slot) sp dir l b h m] [" &
+                   natural'image(slotNum) & natural'image(speed) & " " & directionType'image(direction) & 
+                   " " & onOffType'image(light) & " " & onOffType'image(bell) & 
+						 " " & onOffType'image(horn) & " " &onOffType'image(mute) & "]";
          when getSwitchStates =>
             return "getSwitchStates";
          when getFirstSwitch =>
