@@ -60,7 +60,6 @@ PACKAGE LayoutPkg IS
    ---- End declarations of types used by LayoutManager 
    ------------------------- 1 --------------------------------
 
-
 	-------------------------- 2 -------------------------------------
 	-------------------- Begin LayoutManager -------------------------
    PROTECTED TYPE LayoutManager IS
@@ -170,8 +169,8 @@ PACKAGE LayoutPkg IS
 			--          return
 
 
-		PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
-		PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
+		-- PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
+		-- PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
       PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;

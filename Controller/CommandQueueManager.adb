@@ -341,7 +341,7 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       END IsPhysAddrInTable;
 
-      function addressToVirtSlotNum(address : natural) return slotType is  -- mo 1/14/12   xxx
+      function addressToVirtSlotNum(address : natural) return slotType is  -- mo 1/14/12   
       begin
          for i in lookupTable'range loop
             if lookupTable(i).hasVirtSlot and lookupTable(i).hasPhySlot and
