@@ -79,7 +79,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in AreTrainSensorsLegal: " & Exception_Information(Error));
-            myPutLine("    count" & integer'image(count));
+            put_line("    count" & integer'image(count));
             raise;
       END AreTrainSensorsLegal;
 
@@ -125,7 +125,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in ChangeDirectionOf: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END ChangeDirectionOf;
 
@@ -145,7 +145,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in freeAllSectionsOccupiedOrReservedByTrain: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       end freeAllSectionsOccupiedOrReservedByTrain;
 		
@@ -653,7 +653,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in IdentifyTrainV1: " & Exception_Information(Error));
-            myPutLine("    sensor id #" & Positive'Image(sensorId));
+            put_line("    sensor id #" & Positive'Image(sensorId));
             RAISE;
       END IdentifyTrainV1;
 		
@@ -694,7 +694,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MakeReservation: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END MakeReservation;
 
@@ -753,7 +753,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MoveNextSwitch: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END MoveNextSwitch;
 
@@ -800,7 +800,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MoveSwitch: " & Exception_Information(Error));
-            myPutLine("    switchId" & integer'image(switchId));
+            put_line("    switchId" & integer'image(switchId));
             raise;
       END MoveSwitch;
 
@@ -845,7 +845,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in PositionTrain: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END PositionTrain;
 
@@ -868,7 +868,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in ReleaseReservation: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END ReleaseReservation;
 
@@ -894,7 +894,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in removeFromTrainList: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END removeFromTrainList;            
 
@@ -909,7 +909,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in repositionTrain: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       end repositionTrain;
 
@@ -954,8 +954,8 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            myPutLine(" **************** EXCEPTION Layout pkg in SwitchFinishedMoving:" & Exception_Information(Error));
-            myPutLine("    switchId" & integer'image(switchId));
+            put_line(" **************** EXCEPTION Layout pkg in SwitchFinishedMoving:" & Exception_Information(Error));
+            put_line("    switchId" & integer'image(switchId));
             raise;
       END SwitchFinishedMoving;
 		
@@ -1234,7 +1234,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in FindSwitch: " & Exception_Information(Error));
-            myPutLine("    Looking for switch # " & Positive'Image(SwitchId));
+            put_line("    Looking for switch # " & Positive'Image(SwitchId));
             RAISE;
       END FindSwitch;
 
@@ -1271,7 +1271,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in AddSwitch: " & Exception_Information(Error));
-            myPutLine("    adding switch #" & Positive'Image(Id));
+            put_line("    adding switch #" & Positive'Image(Id));
             RAISE;
       END AddSwitch;
 
@@ -1292,7 +1292,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in UpdateSwitch: " & Exception_Information(Error));
-            myPutLine("    switch #" & Positive'Image(Id));
+            put_line("    switch #" & Positive'Image(Id));
             RAISE;
       END UpdateSwitch;
 
@@ -1322,7 +1322,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in UpdateSwitchNarrow: " & Exception_Information(Error));
-            myPutLine("    narrow id #" & Positive'Image(narrowId));
+            put_line("    narrow id #" & Positive'Image(narrowId));
             RAISE;
       END UpdateSwitchNarrow;
 
@@ -1352,7 +1352,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in UpdateSwitchClosed: " & Exception_Information(Error));
-            myPutLine("    closed id #" & Positive'Image(closedId));
+            put_line("    closed id #" & Positive'Image(closedId));
             RAISE;
       END UpdateSwitchClosed;
 
@@ -1378,7 +1378,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in UpdateSwitchThrown: " & Exception_Information(Error));
-            myPutLine("    thrown id #" & Positive'Image(thrownId));
+            put_line("    thrown id #" & Positive'Image(thrownId));
             RAISE;
       END UpdateSwitchThrown;
 
@@ -1412,7 +1412,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in AddSensor: " & Exception_Information(Error));
-            myPutLine("    sensor id #" & Positive'Image(Id));
+            put_line("    sensor id #" & Positive'Image(Id));
             RAISE;
       END AddSensor;
 
@@ -1432,7 +1432,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in AddBlocking: " & Exception_Information(Error));
-            myPutLine("    id #" & Positive'Image(Id));
+            put_line("    id #" & Positive'Image(Id));
             RAISE;
       END AddBlocking;
 		
@@ -1618,7 +1618,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in FindSensor: " & Exception_Information(Error));
-            myPutLine("    Looking for sensor #" & Positive'Image(SensorId));
+            put_line("    Looking for sensor #" & Positive'Image(SensorId));
             RAISE;
       END FindSensor;
 
@@ -1690,7 +1690,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in AddNewSensorToFront: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
       END AddNewSensorToFront;
          
@@ -1789,7 +1789,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in getUnbockedUsableSectionsContainingSensor: " & Exception_Information(Error));
-            myPutLine("    sensor id #" & Positive'Image(sensorId));
+            put_line("    sensor id #" & Positive'Image(sensorId));
             RAISE;
       END getUnbockedUsableSectionsContainingSensor;
 
@@ -1844,7 +1844,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetOccResSections: " & Exception_Information(Error));
-            myPutLine("    sensor id #" & Positive'Image(sensorId));
+            put_line("    sensor id #" & Positive'Image(sensorId));
             RAISE;
       END GetOccResSections;
 
@@ -1876,7 +1876,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in RemoveLastSensor: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
       END RemoveLastSensor;
 
@@ -1901,7 +1901,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in sensorUnderTrain: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end sensorUnderTrain;
 		
@@ -1921,7 +1921,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in sensorIsNextToLast: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end sensorIsNextToLast;
 		
@@ -1941,7 +1941,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in getSensorAtFrontOfReservedSectionPtr: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end getSensorAtFrontOfReservedSectionPtr;
 
@@ -1960,7 +1960,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in getSensorAtFrontOfReservedSection: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end getSensorAtFrontOfReservedSection;
 
@@ -1980,7 +1980,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetFrontSensorPtr: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end GetFrontSensorPtr;
 		
@@ -2000,7 +2000,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetBackSensorPtr: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end GetBackSensorPtr;
 		
@@ -2021,7 +2021,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetFrontSensor: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end GetFrontSensor;
 
@@ -2042,7 +2042,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetBackSensor: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
 		end GetBackSensor;
 
@@ -2060,7 +2060,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetBackSensor: " & Exception_Information(Error));
-            myPutLine("    train id #" & Positive'Image(trainId));
+            put_line("    train id #" & Positive'Image(trainId));
             RAISE;
       END GetBackSensor;
 		
@@ -2075,7 +2075,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in flipSensor: " & Exception_Information(Error));
-            myPutLine("    sensor id #" & Positive'Image(SensorPtr.Sensor.Id));
+            put_line("    sensor id #" & Positive'Image(SensorPtr.Sensor.Id));
             RAISE;
 		end flipSensor;
 
@@ -2086,7 +2086,7 @@ PACKAGE BODY LayoutPkg IS
          TrainPtr : TrainObjPtr := TrainList;
       BEGIN
          myPutLine("      " & toEnglish(cmd) & "       LayoutPkg to train queue");
-        WHILE TrainPtr /= NULL LOOP
+         WHILE TrainPtr /= NULL LOOP
             IF TrainPtr.TrainId = Id THEN
                TrainPtr.Queue.putMessage(Cmd);
                RETURN;
@@ -2224,7 +2224,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in FindSection: " & Exception_Information(Error));
-            myPutLine("    firstId" & integer'image(firstId) & " secondId" & integer'image(secondId));
+            put_line("    firstId" & integer'image(firstId) & " secondId" & integer'image(secondId));
             raise;
       END FindSection;
 
@@ -2266,7 +2266,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in PlaceTrainInSections: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END PlaceTrainInSections;
 
@@ -2285,7 +2285,7 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            myPutLine(" **************** EXCEPTION Layout pkg in BlockSections:" & Exception_Information(Error));
+            put_line(" **************** EXCEPTION Layout pkg in BlockSections:" & Exception_Information(Error));
             raise;
       END BlockSections;
 
@@ -2304,7 +2304,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetSensor: " & Exception_Information(Error));
-            myPutLine("    sensorId" & integer'image(sensorId));
+            put_line("    sensorId" & integer'image(sensorId));
             raise;
       END GetSensor;
 
@@ -2322,7 +2322,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in isNewTrain: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       end isNewTrain;
   
@@ -2343,7 +2343,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in IsIn: " & Exception_Information(Error));
-            myPutLine("    Id" & integer'image(Id));
+            put_line("    Id" & integer'image(Id));
             raise;
       END IsIn;
 
@@ -2383,7 +2383,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetTrainSensorList: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END GetTrainSensorList;
 
@@ -2429,7 +2429,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetSection: " & Exception_Information(Error));
-            myPutLine("    frontSensorId" & integer'image(frontSensorId) & " backSensorId" & integer'image(backSensorId));
+            put_line("    frontSensorId" & integer'image(frontSensorId) & " backSensorId" & integer'image(backSensorId));
             raise;
       END GetSection;
 
@@ -2467,7 +2467,7 @@ PACKAGE BODY LayoutPkg IS
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MoveSwitchPossible: " & Exception_Information(Error));
-            myPutLine("    trainId" & integer'image(trainId));
+            put_line("    trainId" & integer'image(trainId));
             raise;
       END MoveSwitchPossible;
 
@@ -2621,7 +2621,7 @@ PACKAGE BODY LayoutPkg IS
 		EXCEPTION
 			WHEN Error : OTHERS =>
 				put_line("**************** EXCEPTION Layout pkg in updateTrainSensors: " & Exception_Information(Error));
-				myPutLine("    trainId" & integer'image(trainId));
+				put_line("    trainId" & integer'image(trainId));
 				raise;
 		 end updateTrainSensors;
 	 
@@ -2659,7 +2659,7 @@ PACKAGE BODY LayoutPkg IS
 		EXCEPTION
 			WHEN Error : OTHERS =>
 				put_line("**************** EXCEPTION Layout pkg in AddNewTrain: " & Exception_Information(Error));
-				myPutLine("    trainId" & integer'image(trainId));
+				put_line("    trainId" & integer'image(trainId));
 				raise;
 		END AddNewTrain;
 	

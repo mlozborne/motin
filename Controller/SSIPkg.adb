@@ -22,7 +22,7 @@ PACKAGE BODY SSIPkg IS
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("**************** EXCEPTION SSI pkg in SendToOutQueue: " & Exception_Information(Error));
-         myPutLine("    opcode" & integer'image(integer(message.ByteArray(1))));
+         put_line("    opcode" & integer'image(integer(message.ByteArray(1))));
          raise;
    END SendToOutQueue;
 
@@ -61,7 +61,7 @@ PACKAGE BODY SSIPkg IS
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("**************** EXCEPTION SSI pkg in unregisterOneTrainAndClearItsDCS200Slot: " & Exception_Information(Error));
-         myPutLine("    PhysAddr" & integer'image(PhysAddr));
+         put_line("    PhysAddr" & integer'image(PhysAddr));
          raise;
    end unregisterOneTrainAndClearItsDCS200Slot;
    
