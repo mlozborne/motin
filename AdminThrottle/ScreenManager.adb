@@ -12,8 +12,10 @@ PACKAGE BODY ScreenManager IS
 
       PROCEDURE MyPut(Col : Integer; Row : Integer; S : String) IS
       BEGIN
-         MoveCursor(Col,Row);
-         Put(S);
+			if col + S'length <= ScreenWidth  then
+				MoveCursor(Col,Row);
+				Put(S);
+			end if;
       exception
          when error: others =>
             put_line("UNPLANNED EXCEPTION in ScreenManager.MyPut --" & kLFString & Exception_Information (error));
@@ -52,7 +54,7 @@ PACKAGE BODY ScreenManager IS
 				MyPut(1,8,"Last msg received: ");
 			end if;
 
-         MyPut(1,10,"SWTICHES");
+         MyPut(1,10,"SWITCHES");
          MyPut(1,11,"  0 1 2 3 4 5 6 7 8 9");
          MyPut(1,12,"0");
          MyPut(1,13,"1");
