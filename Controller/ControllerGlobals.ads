@@ -8,9 +8,10 @@ with tcpip; use tcpip;
 
 PACKAGE ControllerGlobals IS
 
-   KNumSwitches : CONSTANT Natural := 26;
-   KNumSegments : CONSTANT Natural := 128;
-   KMaxLenError : CONSTANT Natural := 80;
+   kNumSwitches   : CONSTANT Natural := 26;
+   kNumSegments   : CONSTANT Natural := 128;
+   kMaxLenError   : CONSTANT Natural := 80;
+   kMaxTrainLngth : constant natural := 9; -- measured in sections
    
    kSpeedAbruptStop : constant natural := 1;      -- mo 1/9/12   0/1 = gradual/abrupt stopping
    kSpeedSlowStop   : constant natural := 1;      -- mo 1/9/12   0/1 = gradual/abrupt stopping

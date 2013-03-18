@@ -129,7 +129,7 @@ PACKAGE BODY TrainPkg IS
                               SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                               delay WaitTime;    -- during BeginHalted-Halted transition
                               State := Halted;                                   -- mo 12/29/11;
-                              myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
+                              myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) because entering Halted State in TrainPkg"); 
                               LayoutPtr.ReleaseReservation(TrainId);             -- mo 12/29/11
                               SendToOutQueue(makePutTrainStateMsg(TrainId, State)); -- mo 12/29/11               
                           WHEN Waiting =>
@@ -152,7 +152,7 @@ PACKAGE BODY TrainPkg IS
                                     SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                  ELSE
                                     state := waiting;                             -- mo 12/29/11  
-                                    myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
+                                    myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) because entering Waiting State in TrainPkg"); 
                                     LayoutPtr.ReleaseReservation(TrainId);        -- mo 12/29/11                                    
                                     SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                  END IF;
@@ -225,7 +225,7 @@ PACKAGE BODY TrainPkg IS
                                        ELSE
                                           State := Waiting;
                                           SendToOutQueue(makePutTrainStateMsg(TrainId, State));
-                                          myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
+                                          myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) because entering Waiting State in TrainPkg"); 
                                           LayoutPtr.ReleaseReservation(TrainId);
                                        END IF;
                                     END;
@@ -312,7 +312,7 @@ PACKAGE BODY TrainPkg IS
                                           SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                           delay waitTime;   --  during BeginWaiting-Waiting transition
                                           State := Waiting;                                  -- mo 12/29/11
-                                          myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
+                                          myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) because entering Waiting State in TrainPkg"); 
                                           LayoutPtr.ReleaseReservation(TrainId);             -- mo 12/29/11
                                           SendToOutQueue(makePutTrainStateMsg(TrainId, State)); -- mo 12/29/11
                                        END IF;
@@ -328,6 +328,8 @@ PACKAGE BODY TrainPkg IS
                                     NULL;
                                  WHEN OTHERS =>
                                     State := Error;
+                                    myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) because entering Error State in TrainPkg"); 
+                                    LayoutPtr.ReleaseReservation(TrainId);            
                                     SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                     SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedAbruptStop));      -- mo 1/9/12
 												for i in 1..3 loop
@@ -344,7 +346,7 @@ PACKAGE BODY TrainPkg IS
                                  SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                  delay waitTime;     -- during BeginWaiting-Waiting transition
                                  State := Waiting;                                  -- mo 12/29/11
-                                 myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) in TrainPkg"); 
+                                 myPutLine("        .........call LayoutPtr.ReleaseReservation(TrainId) because entering Waiting State in TrainPkg"); 
                                  LayoutPtr.ReleaseReservation(TrainId);             -- mo 12/29/11
                                  SendToOutQueue(makePutTrainStateMsg(TrainId, State)); -- mo 12/29/11
                               END IF;
