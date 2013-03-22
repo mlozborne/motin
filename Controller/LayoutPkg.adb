@@ -537,16 +537,14 @@ PACKAGE BODY LayoutPkg IS
 							else
 								addNewSensorToFront(trainId, nextFreeSection.sensorList.head.sensor);
 							end if;
-                     -- zzz needed further down as well
-							-- if train is now too long then  
-							--    error message
-							--    send train msgSensorError
-							-- else 
-							--    send msgFrontSensorFired
-							-- end if
-							-- send train position msg
-							SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
-							PutTrainPositionMsg(TrainId);                                 -- Put train position
+                     if countSensors(trainId) > kMaxTrainLength + 1 then
+                        myPutLine("      -------------IdentifyTrainV1: C2 ERROR train " & integer'image(trainId) & 
+                                  " too long. Error stop train");	
+                        sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
+                     else   
+                        SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
+                     end if;
+                     PutTrainPositionMsg(TrainId);                                    -- Put train position
 						end if;
 					end if;
 				else
@@ -643,10 +641,15 @@ PACKAGE BODY LayoutPkg IS
 							AddNewSensorToFront(section2.TrainId, section2.SensorList.Head.Sensor);
 						END IF;
 					END IF;
-               -- zzz
-					SendToTrainQueue(makeFrontSensorFiredMsg(section1.TrainId), section1.TrainId);
-			  
-					putTrainPositionMsg(section1.TrainId);		
+               trainId := section1.trainId;
+               if countSensors(trainId) > kMaxTrainLength + 1 then
+                  myPutLine("      -------------IdentifyTrainV1: C5 ERROR train " & integer'image(trainId) & 
+                            " too long. Error stop train");	
+                  sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
+               else   
+                  SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
+               end if;
+               PutTrainPositionMsg(TrainId);                                    -- Put train position
 				end if;
 			end if;
 			return;
@@ -1726,7 +1729,7 @@ PACKAGE BODY LayoutPkg IS
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in GetSensorPtrs: " & Exception_Information(Error));
             raise;
-      END GetSensorPtrs;
+      END GetSensorPtrs;    
 
       FUNCTION GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess IS
          TrainPtr  : TrainObjPtr       := TrainList;
@@ -1762,7 +1765,23 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END GetSensors;
 
-      -- Get the two sections surrounding the sensor 
+      function countSensors(trainId : trainIdType) return natural is
+         TrainPtr  : TrainObjPtr       := TrainList;
+      BEGIN
+         WHILE TrainPtr /= NULL LOOP
+            IF TrainPtr.TrainId = TrainId THEN
+               return trainPtr.sensorCount;
+            END IF;
+            TrainPtr := TrainPtr.Next;
+         END LOOP;
+         return 0;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in countSensors: " & Exception_Information(Error));
+            raise;
+      END countSensors;
+
+        -- Get the two sections surrounding the sensor 
       PROCEDURE getUnbockedUsableSectionsContainingSensor (
             SensorID      :        Positive;
             FirstSection  :    OUT SectionObjPtr;

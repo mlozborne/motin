@@ -106,8 +106,13 @@ PACKAGE LayoutPkg IS
 			--                 SAFETY set s1 open
 			--                 add sf to front of train  (one end of nextFreeSection)
 			--                 add sf+1 to front of train (other end of nextFreeSection)
-			--                 tell train front sensor has fired
-			--                 put train position
+         --                 if train is now too long then
+         --                    display "C2 ERROR train" + trainId + "is too long"
+         --                    error stop train
+         --                 else
+			--                   tell train front sensor has fired
+			--                   put train position
+         --                 end if
 			--              end if
 			--            end if
 			--          else 
@@ -165,6 +170,13 @@ PACKAGE LayoutPkg IS
 			--          else front train leaving sensor
 			--            display "C5 NORMAL front of train leaving sensor s1"
 			--            change reserved section to occupied, tell train, etc...
+         --            if train is now too long then
+         --               display "C5 ERROR train" + trainId + "is too long"
+         --               error stop train
+         --            else
+			--               tell train front sensor has fired
+			--               put train position
+         --            end if
 			--          end if
 			--          return
 
@@ -311,6 +323,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE AddNewSensorToFront(TrainId : TrainIdType; Sensor : SensorObjPtr);
       FUNCTION  GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType;
       FUNCTION  GetSensors    (TrainId : TrainIdType) RETURN SensorArrayAccess; 
+      function  countSensors(trainId : trainIdType) return natural;
 		procedure getUnbockedUsableSectionsContainingSensor(SensorID : Positive;
                                   FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
       PROCEDURE GetOccResSections(SensorID : Positive;
