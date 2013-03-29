@@ -106,7 +106,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0xE7,0x0E,0x01,0x30, \
             1111 % 128, 0x00,0x00,0x00,0x00, 1111 // 128, \
             0x00, 0x00, 0x00]
-        st.append(utMakeCheckSumByte(st)) 
+        st.append(utMakeCheckSumByte(st))
         self.assertEquals(SlRdDataMsg(address=1111, isAddressAlreadyInUse=True, slot=1), \
                           splitMsgStr(st))
 
@@ -147,4 +147,3 @@ if __name__ == "__main__":
     unittest.TextTestRunner().run(suite)
     #unittest.main()
     #input("press enter")
-    
