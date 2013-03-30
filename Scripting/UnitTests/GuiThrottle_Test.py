@@ -46,7 +46,7 @@ if __name__ == "__main__":
         print("Error in XML file with flag = {0} and code = {1}".format(responseFlag, code))
         print ("THE END")
         input("press enter to quit")
-    throttle.close()                              <<<<<<<<<<<<<<<<<<<   doesn't work unless commented out
+    throttle.close()                              <<<<<<<<<<<<<<<<<<<   doesn't work unless commented out 
 
     # Start four gui throttles and pass inQu and outQu
     printLog("Main: begin start four GuiThrottleProcess")
