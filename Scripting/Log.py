@@ -70,6 +70,7 @@ def flushLog():
     logCondition.acquire()
     logFile.close()
     logFile = open(logFileName, "a")
+    logLineCount = 0
 
     logCondition.notify()
     logCondition.release()

@@ -33,17 +33,17 @@ class ManyLinesToLog(threading.Thread):
         printLog("Ending " + self.st)
 
 if __name__ == "__main__":
-    openLog()
-#    openLog(1, 1)          # will cause an assertion error
-#    openLog("3", "cat")    # will cause an assertion error
+    openLog("1", 40)
+#    openLog(1, 1)          # should cause an assertion error
+#    openLog("3", "cat")    # should cause an assertion error
     for i in range(10):
         ManyLinesToLog(str(i)).start()
-    input("Pause until press enter")
+    raw_input("Pause until press enter")
     printLog("...................... MIDPOINT.........................")
     flushLog()
-    input("Pause until press enter")
+    raw_input("Pause until press enter")
     for i in range(10):
         ManyLinesToLog(str(i)+str(i)+str(i)).start()
-    input("press enter to quit")
-    sleep(2)
+    raw_input("press enter to quit")
+    sleep(5)
     closeLog()

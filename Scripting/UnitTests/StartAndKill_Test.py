@@ -8,9 +8,10 @@ After testing
    Comment out class subprocess at top of StartAndKill.py
 """
 from Log import openLog, closeLog
-from StartAndKill import start, kill
+from StartAndKill import start, kill, setTestingMode
 
 if __name__ == "__main__":
+    setTestingMode()
     openLog()
     start("simulator")
     start("controller", ip = "127.0.0.1", port = "1234", trace = "yes")
@@ -30,5 +31,5 @@ if __name__ == "__main__":
     kill("admin")
     kill()
     kill("all")
+    raw_input("press enter to quit")
     closeLog()
-    input("press enter to quit")

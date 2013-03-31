@@ -24,4 +24,4 @@ class ManyLinesToScreen(threading.Thread):
 if __name__ == "__main__":
     for i in range(9):
         ManyLinesToScreen(str(i)).start()
-    input("press enter to quit")
+    raw_input("press enter to quit")

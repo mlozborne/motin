@@ -2,17 +2,21 @@ from Log import printLog
 import platform
 from time import sleep
  
-# Comment this out during testing
-import subprocess
-
-# Comment this out during production
-#class Subprocess:
-#    def call(self, st, shell = ""):
-#        print (st)
-#subprocess = Subprocess()
-
+import subprocess    # This gives access to shell commands via the "call" function
 
 gPath = "../../runSoftware"
+
+#vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+# This class and the subsequent function are used to shadow out the
+# imported "subprocess" during unit testing
+class Subprocess:
+    def call(self, st, shell = ""):
+        print (st)
+
+def setTestingMode():         # the unit test needs to call this function
+    global subprocess
+    subprocess = Subprocess()
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 def setPath(st):
     global gPath
@@ -75,17 +79,21 @@ def start(name, ip = "", port = "", trace = "", logs = "", layoutFile = ""):
             mode = "controller"                                 # default to controller mode
         else:
             mode = "standalone"                                 # default to standalone mode
-        if layoutFile == "": layoutFile = "layout.xml"  # default to layout.xml
+        if layoutFile == "": layoutFile = "layout.xml"          # default to layout.xml
         if logs == "" or logs.lower()[:1] == "n":
             logs = "no"                                         # default to logs off
         else:
             logs = "yes"
+            
         startThis = "start " + gPath + "/adminthrottle.exe" + \
             " IP " + ip + \
             " PORT " + port + \
             " MODE " + mode + \
             " KEYBOARDLOG " + logs + \
             " ADMINLOG " + logs
+        if mode == "controller":
+            startThis = startThis + " LAYOUTFILE " + layoutFile
+
         subprocess.call(startThis , shell=True)
         
     # Log it
