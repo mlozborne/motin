@@ -25,13 +25,14 @@ def testSend():
     sak.setPath("../../runSoftware")
     sak.start("simulator")
     time.sleep(3)
-    sk = MsgSocket(name = "1")
+    sk = MsgSocket(name = "1")                # sk is the socket to the simulator
     sk.connect('localhost', 1234)
-    sk.send(LocoAdrMsg(address=1111))
+    sk.send(LocoAdrMsg(address=1111))         # find slot for loco 1111 and assume response is slot 1
     time.sleep(1)
-    sk.send(MoveSlotsMsg(slot1=1, slot2=1))
+    sk.send(MoveSlotsMsg(slot1=1, slot2=1))   # register slot 1
     time.sleep(1)
     for i in range(1, 6):
+        # send to slot 1 messages to turn the lights on and off
         sk.send(LocoDirfMsg(slot=1, direction=kBackward, lights=kOn, horn=kOff, bell=kOn))
         time.sleep(0.2)
         sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
@@ -59,7 +60,6 @@ def testReceive():
     process = TestBlinkLightsDirectly(sk)
     process.start()
     while True:
-        sk.receive()
         try:
             sk.receive()
         except:

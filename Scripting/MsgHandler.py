@@ -1,3 +1,20 @@
+"""
+This file contains several related parts.
+
+1) MsgSocket
+   -- lowest level
+   -- wrapper for sockets
+   -- connect, send, receive, attach, close
+   -- test with MsgSocket_Test.py
+2) MsgServerThread and ClientHandlerThread
+   -- sets up a listener and spawns handlers for the clients
+   -- test with MsgHandler_Test.py test 1
+3) MsgOutQuPump
+   -- a thread
+3) MsgInQuPump, MsgOutQuPump, MsgInternalQuPump
+
+"""
+
 from multiprocessing.queues import Queue
 from socket import socket
 from time import sleep
@@ -291,7 +308,7 @@ class MsgSocket(object):
             self.inBuffer += buf
         strSize = self.inBuffer[0] + 128 * self.inBuffer[1]
         while strSize + 2 > len(self.inBuffer):
-            buf = self.sock.recv(1024)
+            buf = self.sock.recv(1024)         # WARNING: if length of buf is 0, then the connection has been broken
             self.inBuffer += buf
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
@@ -302,13 +319,15 @@ class MsgSocket(object):
 
 class MsgServerThread(Thread):
     def __init__(self, name = "1", host = None, port = None, clientHandlerFunction = None):
-        assert(isinstance(name, str))
+        assert(host == None or isinstance(name, str))
         assert(isinstance(host, str))
         assert(isinstance(port, int))
         assert(clientHandlerFunction != None)
         printLog("Message server {0}: initializing at ({1}, {2})".format(name, host, port))
         Thread.__init__(self)
         self.name = name
+        if host == None:
+            host = socket.gethostname()
         self.host = host
         self.port = port
         self.clientHandlerFunction = clientHandlerFunction
