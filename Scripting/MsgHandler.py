@@ -8,18 +8,23 @@ This file contains several related parts.
    -- test with MsgSocket_Test.py
 2) MsgServerThread and ClientHandlerThread
    -- sets up a listener and spawns handlers for the clients
-   -- test with MsgHandler_Test.py test 1
-3) MsgOutQuPump
-   -- a thread
-3) MsgInQuPump, MsgOutQuPump, MsgInternalQuPump
-
+   -- test with MsgHandler_Test.py "test 1"
+3) MsgOutQuPump thread
+   -- moves messages from an out queue to either an internal queue or to a message socket
+   -- test with MsgHandler_Test.py "test 2"
+4) MsgInQuPump thread
+   -- moves messages from a socket to all in queues that are interested
+   -- test with MsgHandler_Test.py "test 2"
+3) MsgInternalQuPump thread
+   -- get interest messages fron internalQu and update interests in the inQuList
+   -- test with
 """
 
 from multiprocessing.queues import Queue
 from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
-from MessageTranslationTypes import *
+from MessageTranslationTypes import ControllerInMsgs
 from Log import printLog
 from threading import Thread
 import sys
@@ -27,9 +32,9 @@ import multiprocessing
 from collections import namedtuple
 
 #InQuListEntry  = namedtuple('InQuListEntry', 'qu, msgTypes')
-InQuListEntry       = namedtuple('InQuListEntry', 'inQu, interests')
-AddInterestMsg      = namedtuple('AddInterestMsg', 'inQuNum, interest')
-RemoveInterestMsg   = namedtuple('RemoveInterestMsg', 'inQuNum, interest')
+InQuListEntry         = namedtuple('InQuListEntry', 'inQu, interests')
+AddInterestMsg        = namedtuple('AddInterestMsg', 'inQuNum, interest')
+RemoveInterestMsg     = namedtuple('RemoveInterestMsg', 'inQuNum, interest')
 RemoveAllInterestsMsg = namedtuple('RemoveAllInterestsMsg', 'inQuNum')
 InQuListMsgs = (AddInterestMsg, RemoveInterestMsg, RemoveAllInterestsMsg)
 
@@ -156,14 +161,15 @@ class MsgInternalQuPump(Thread):
             elif isinstance(msg, AddInterestMsg):
                 printLog("MsgInternalQuPump {0}: adding interest {1} for inQuNum {2}".format(self.name, msg.interest, msg.inQuNum))
                 # if there is no entry for this inQuNum raise an exception
-                # elif the inQuNum already has this interest raise an exception
+                # elif the inQuNum already has this interest pass
                 # else add an interest for this inQuNum
                 if len(self.inQuList) <= msg.inQuNum:
                     raise Exception("MsgInternalQuPump {0}: inQuNum {1} is too large.".format(self.name, msg.inQuNum))
                 else:
                     x = self.inQuList[msg.inQuNum]
                     if msg.interest in x.interests:
-                        pass    # The interest could have been have added at a higher level
+                        pass
+                        # The interest could have been have added at a higher level
                         #raise Exception("MsgInternalQuPump {0}: Can't add. inQuNum {1} already has {2}".format(self.name, msg.inQuNum, msg.interest))
                     else:
                         x.interests.append(msg.interest)
@@ -180,6 +186,9 @@ class MsgInternalQuPump(Thread):
                         raise Exception("MsgInternalQuPump {0}: Can't remove. inQuNum {1} doesn't have {2}".format(self.name, msg.name, msg.interest))
                     else:
                         x.interests.remove(msg.interest)
+            else:
+                printLog("MsgInternalQuPump {0}: unrecognized message {1}}".format(self.name, msg))
+
 
 ################################################################################
 
