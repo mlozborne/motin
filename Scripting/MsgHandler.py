@@ -386,3 +386,5 @@ class ClientHandlerThread(Thread):
         printLog("Client handler {0}: running and calling {1}".format(self.name, self.clientHandlerFunction))
         self.clientHandlerFunction(msgSocketToClient)
 
+
+

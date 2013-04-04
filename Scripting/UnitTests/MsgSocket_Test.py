@@ -37,7 +37,7 @@ def testSend():
         time.sleep(0.2)
         sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
         time.sleep(0.2)
-    input("Press enter to kill RailroadBig and leave function testSend")
+    raw_input("Press enter to kill RailroadBig and leave function testSend")
     sk.close()
     sak.kill("simulator")
     print("Leaving function testSend")
@@ -83,7 +83,7 @@ class TestBlinkLightsDirectly(Thread):
             time.sleep(0.2)
             self.sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
             time.sleep(0.2)
-        input("\nPress enter to kill RailroadBig and stop thread BlinkLightsDirectly \n")
+        raw_input("\nPress enter to kill RailroadBig and stop thread BlinkLightsDirectly \n")
         sak.kill("simulator")
         print("Ending thread BlinkLightsDirectly\n")
 
@@ -131,7 +131,7 @@ class TestBlinkLightsViaController(Thread):
             time.sleep(0.2)
             self.sk.send(LocoDirfMsg(slot=5, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
             time.sleep(0.2)
-        input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
+        raw_input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
         sak.kill("simulator")
         sak.kill("controller")
         print("Ending thread BlinkLightsViaController\n")
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         print("2. Test receive")
         print("3. Test talking to controller")
         print("Q. Quit")
-        option = input(">>> ")
+        option = raw_input(">>> ")
         print("\n\n\n")
         if option == "q":
             break
@@ -166,5 +166,7 @@ if __name__ == "__main__":
         flushLog()
         printLog("\n\n\n")
     closeLog()
+
+
 
 

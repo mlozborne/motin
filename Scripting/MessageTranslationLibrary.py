@@ -186,17 +186,28 @@ def makeDoLocoInitStr(msg):
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return bytes([lowByte, highByte] + st)
 	
+#def makeDoReadLayoutStr(msg):
+#    #<0><10><count><XML file name>       where count is 1 byte
+#    assert(isinstance(msg.fileName, str))
+#    fileName = bytes(msg.fileName, 'ascii')
+#    st = [0]
+#    st.append(doReadLayout)
+#    st.append(len(fileName))
+#    st += list(fileName)
+#    lowByte, highByte = utConvertNaturalToBytes(len(st))
+#    return bytes([lowByte, highByte] + st)
+
 def makeDoReadLayoutStr(msg):
     #<0><10><count><XML file name>       where count is 1 byte
     assert(isinstance(msg.fileName, str))
-    fileName = bytes(msg.fileName, 'ascii')
     st = [0]
     st.append(doReadLayout)
-    st.append(len(fileName))
-    st += list(fileName)
+    st.append(len(msg.fileName))
+    for chr in msg.fileName:
+        st.append(ord(chr))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return bytes([lowByte, highByte] + st)
-	
+
 #######################################################################
 # Split routines
 def splitInputRepStr(st):
@@ -300,4 +311,6 @@ def splitPutTrainInformationStr(st):
 def splitPutPowerChangeCompleteStr(st):
     #<0><26>
     return PutPowerChangeCompleteMsg(dummy = 0)
+
+
 

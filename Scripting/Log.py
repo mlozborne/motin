@@ -96,4 +96,5 @@ def printLog(st):
 
     logCondition.notify()
     logCondition.release()
+
     

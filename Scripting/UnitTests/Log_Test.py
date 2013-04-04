@@ -47,3 +47,6 @@ if __name__ == "__main__":
     raw_input("press enter to quit")
     sleep(5)
     closeLog()
+
+
+
