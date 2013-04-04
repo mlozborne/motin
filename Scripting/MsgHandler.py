@@ -1,23 +1,36 @@
 """
 This file contains several related parts.
 
-1) MsgSocket
-   -- lowest level
-   -- wrapper for sockets
-   -- connect, send, receive, attach, close
-   -- test with MsgSocket_Test.py
-2) MsgServerThread and ClientHandlerThread
-   -- sets up a listener and spawns handlers for the clients
-   -- test with MsgHandler_Test.py "test 1"
-3) MsgOutQuPump thread
-   -- moves messages from an out queue to either an internal queue or to a message socket
-   -- test with MsgHandler_Test.py "test 2"
-4) MsgInQuPump thread
-   -- moves messages from a socket to all in queues that are interested
-   -- test with MsgHandler_Test.py "test 2"
-3) MsgInternalQuPump thread
-   -- get interest messages fron internalQu and update interests in the inQuList
-   -- test with
+Sockets
+   MsgSocket object
+       -- lowest level
+       -- wrapper for sockets
+       -- connect, send, receive, attach, close
+       -- test with MsgSocket_Test.py
+   MsgServerThread and ClientHandlerThread
+       -- sets up a listener and spawns handlers for the clients
+       -- test with MsgHandler_Test.py "test 1"
+Pumps
+   MsgOutQuPump thread
+       -- moves messages from an out queue to either an internal queue or to a message socket
+       -- test with MsgHandler_Test.py "test 2"
+   MsgInQuPump thread
+       -- moves messages from a socket to all queues that are interested
+       -- test with MsgHandler_Test.py "test 2"
+   MsgInternalQuPump thread
+       -- get interest messages fron internalQu and update interests in the inQuList
+       -- test with Throttle_Test.py and GuiThrottle_Test.py
+   MsgPumpHandler object
+       -- creates message socket object that links to simulator/locobuffer
+       -- creates internal queue
+       -- creates and starts pumps and passes them the message socket and queues
+       -- test with Throttle_Test.py and GuiThrottle_Test.py
+
+User level object
+   MsgHandler object
+       -- each message consumer and each message producer needs exactly one of these
+       -- allows consumer/producer threads to exchange messages with the railroad and/or each other
+       -- test with Throttle_Test.py and GuiThrottle_Test.py
 """
 
 from multiprocessing.queues import Queue
@@ -285,15 +298,16 @@ class MsgSocket(object):
         printLog("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
         self.inBuffer = []
         self.sock = socket()
-        for i in range(10):
+        for i in range(5):
             if not self.sock.connect_ex((host, port)):
                 printLog("MsgSocket {0}: has connected to {1}".format(self.name, self.sock.getpeername()))
                 return
-            sleep(1)
-        st = "MsgSocket {0}: EXCEPTION: Socket FAILED to connected to ({1}, {2})".format(self.name, host, port)
+            else:
+                printLog("MsgSocket {0}: failed to connect to ({1}, {2})".format(self.name, host, port))
+                sleep(1)
+        st = "MsgSocket {0}: gave up trying to connect to ({1}, {2})".format(self.name, host, port)
         printLog(st)
-        print(st); sys.stdout.flush()
-        raise
+        raise Exception(st)
 
     def attach(self, sock):
         assert(isinstance(sock, socket))
@@ -343,12 +357,14 @@ class MsgServerThread(Thread):
 
     def run(self):
         printLog("Message server {0}: running".format(self.name))
-        self.serverSocket = socket()
-        self.serverSocket.bind((self.host, self.port))           # bind
-        self.serverSocket.listen(5)                              # listen
+        serverSocket = socket()
+        printLog("   1")
+        serverSocket.bind((self.host, self.port))           # bind
+        printLog("   2")
+        serverSocket.listen(5)                              # listen
         printLog("Message server {0}: now listening at ({1}, {2})".format(self.name, self.host, self.port))
         while True:
-            socketToClient, address = self.serverSocket.accept() # accept
+            socketToClient, address = serverSocket.accept() # accept
             printLog("Message server {0}: just created a connection to client at {1}". \
                       format(self.name, socketToClient.getpeername()))
             ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()

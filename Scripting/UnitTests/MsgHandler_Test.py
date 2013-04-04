@@ -1,11 +1,10 @@
 """
 Test1: MsgSocket
-    o There are three processes and each process has its own log
-        process main with log_main.txt
+    o There are three processes and two processes have their own log
         process main creates and starts a Client process and a Server process
         process Client with log_client.txt
         process Server with log_server.txt
-    o Process Server listens for connect requests at port 1234 and
+    o Process Server listens for connect requests at port 1200 and
       then spawns threads to service  the clients.
     o Process Client connects to the server.
     o The client and the service exchange messages.
@@ -22,7 +21,6 @@ Test2: MsgQuPump
     end the program
 """
 from MsgHandler import *
-
 from multiprocessing import Process, Queue
 from MessageTranslationTypes import *
 import sys
@@ -39,7 +37,7 @@ def clientHandlerFunction(socketToClient):
         print("Handler sent message {0}".format(msg)); sys.stdout.flush()
         msg = sk.receive()
         print("Handler received message {0}".format(msg)); sys.stdout.flush()
-    socketToClient.close()
+    sk.close()
 
 class Client(Process):
     def __init__(self, host, port):
@@ -69,7 +67,8 @@ class Server(Process):
 
     def run(self):
         openLog("Server", 1)
-        MsgServerThread("1", self.host, self.port, clientHandlerFunction).start()
+        thr = MsgServerThread("1", self.host, self.port, clientHandlerFunction)
+        thr.start()
 
 class Consumer(Thread):
     def __init__(self, name, inQu):
@@ -101,36 +100,36 @@ if __name__ == "__main__":
     ###################################################
     # Test 1
     
-#    Client('localhost', 1200).start()
-#    Server('localhost', 1200, clientHandlerFunction).start()
+    Server('localhost', 1200, clientHandlerFunction).start()
+    Client('localhost', 1200).start()
 
     ###################################################
     # Test 2
 
-    openLog("main")                                           #open log
-    sak.start("simulator")                                    #start simulator
-    sk = MsgSocket(name = "1")                                #create msgSocket
-    sk.connect("localHost", 1234)                             #connect socket to simulator
-    sleep(3)
-    
-    inQuList = []
-    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = ()))# qu 0 all messages
-    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (SwRepMsg,)))# qu 1 only one kind of message
-    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg, SwRepMsg)))# qu 2 two kinds of messages
-    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg,)))# qu 3 only one kind of messagte
-
-    MsgInQuPump(name = "in pump", sock = sk, inQuList = inQuList).start()
-
-    outQu = Queue()
-    MsgOutQuPump(name = "out pump", sock = sk, qu = outQu).start()
-
-    Producer("1", outQu).start()
-    for i in range(3):
-        Consumer(str(i), inQuList[i].qu).start()
-
-    input("press enter to quit")
-    sak.kill("simulator")                                     #kill simulator
-    closeLog()
+#    openLog("main")                                           #open log
+#    sak.start("simulator")                                    #start simulator
+#    sk = MsgSocket(name = "1")                                #create msgSocket
+#    sk.connect("localHost", 1234)                             #connect socket to simulator
+#    sleep(3)
+#
+#    inQuList = []
+#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = ()))# qu 0 all messages
+#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (SwRepMsg,)))# qu 1 only one kind of message
+#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg, SwRepMsg)))# qu 2 two kinds of messages
+#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg,)))# qu 3 only one kind of messagte
+#
+#    MsgInQuPump(name = "in pump", sock = sk, inQuList = inQuList).start()
+#
+#    outQu = Queue()
+#    MsgOutQuPump(name = "out pump", sock = sk, qu = outQu).start()
+#
+#    Producer("1", outQu).start()
+#    for i in range(3):
+#        Consumer(str(i), inQuList[i].qu).start()
+#
+#    input("press enter to quit")
+#    sak.kill("simulator")                                     #kill simulator
+#    closeLog()
 
     ###################################################
     # Test 3
