@@ -38,7 +38,7 @@ from socket import socket
 from time import sleep
 from MessageTranslationLibrary import makeMsgStr, splitMsgStr
 from MessageTranslationTypes import ControllerInMsgs
-from Log import printLog
+from Log import printLog, flushLog
 from threading import Thread
 import sys
 import multiprocessing

@@ -24,7 +24,7 @@ from MsgHandler import *
 from multiprocessing import Process, Queue
 from MessageTranslationTypes import *
 import sys
-from Log import openLog, closeLog, printLog
+from Log import openLog, printLog, closeLog
 from time import sleep
 import StartAndKill as sak
 from threading import Thread
@@ -67,10 +67,13 @@ class Server(Process):
 
     def run(self):
         openLog("Server", 1)
-        thr = MsgServerThread("1", self.host, self.port, clientHandlerFunction)
-        printLog("Just created a MsgServerThread")
-        thr.start()
-        printLog("Just started the MsgServerThread")
+        printLog("Server process about to initialize and start MsgServerThread")
+        MsgServerThread("1", self.host, self.port, self.clientHandlerFunction).start()
+#        printLog("Server process go to sleep for 10")
+        sleep(10)
+#        printLog("Server process wake up and closeLog")
+#        closeLog()
+
 
 class Consumer(Thread):
     def __init__(self, name, inQu):
@@ -102,9 +105,11 @@ if __name__ == "__main__":
     ###################################################
     # Test 1
     print("Test 1")
-    Server('localhost', 5000, clientHandlerFunction).start()
+    serverProc = Server('localhost', 5000, clientHandlerFunction)
+    serverProc.start()
 #    Client('localhost', 5000).start()
-    raw_input("Press enter to quit")
+    raw_input("Press enter to stop the processess")
+#    serverProc.terminate()
 
     ###################################################
     # Test 2
