@@ -342,12 +342,12 @@ class MsgSocket(object):
 
 class MsgServerThread(Thread):
     def __init__(self, name = "1", host = None, port = None, clientHandlerFunction = None):
+        Thread.__init__(self)
         assert(host == None or isinstance(name, str))
         assert(isinstance(host, str))
         assert(isinstance(port, int))
         assert(clientHandlerFunction != None)
         printLog("Message server {0}: initializing at ({1}, {2})".format(name, host, port))
-        Thread.__init__(self)
         self.name = name
         if host == None:
             host = socket.gethostname()
@@ -371,11 +371,11 @@ class MsgServerThread(Thread):
 
 class ClientHandlerThread(Thread):
     def __init__(self, name, socketToClient, clientHandlerFunction):
+        Thread.__init__(self)
         assert(isinstance(name, str))
         assert(isinstance(socketToClient, socket))
         assert(clientHandlerFunction != None)
         printLog("Client handler {0}: created for {1}".format(name, socketToClient.getpeername()))
-        Thread.__init__(self)
         self.name = name
         self.socketToClient = socketToClient
         self.clientHandlerFunction = clientHandlerFunction

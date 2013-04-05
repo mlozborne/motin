@@ -69,13 +69,13 @@ class Server(Process):
         openLog("Server", 1)
         thr = MsgServerThread("1", self.host, self.port, clientHandlerFunction)
         printLog("Just created a MsgServerThread")
-        thr.run()
+        thr.start()
         printLog("Just started the MsgServerThread")
 
 class Consumer(Thread):
     def __init__(self, name, inQu):
-        printLog("Consumer {0} created".format(name))
         Thread.__init__(self)
+        printLog("Consumer {0} created".format(name))
         self.inQu = inQu
         self.name = name
 
@@ -87,8 +87,8 @@ class Consumer(Thread):
 
 class Producer(Thread):
     def __init__(self, name, outQu):
-        printLog("Producer {0} created".format(name))
         Thread.__init__(self)
+        printLog("Producer {0} created".format(name))
         self.outQu = outQu
         self.name = name
 
