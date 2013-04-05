@@ -357,14 +357,14 @@ class MsgServerThread(Thread):
 
     def run(self):
         printLog("Message server {0}: running".format(self.name))
-        serverSocket = socket()
+        self.serverSocket = socket()
         printLog("   1")
-        serverSocket.bind((self.host, self.port))           # bind
+        self.serverSocket.bind((self.host, self.port))           # bind
         printLog("   2")
-        serverSocket.listen(5)                              # listen
+        self.serverSocket.listen(5)                              # listen
         printLog("Message server {0}: now listening at ({1}, {2})".format(self.name, self.host, self.port))
         while True:
-            socketToClient, address = serverSocket.accept() # accept
+            socketToClient, address = self.serverSocket.accept() # accept
             printLog("Message server {0}: just created a connection to client at {1}". \
                       format(self.name, socketToClient.getpeername()))
             ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()

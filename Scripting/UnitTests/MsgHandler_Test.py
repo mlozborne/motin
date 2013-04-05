@@ -68,7 +68,9 @@ class Server(Process):
     def run(self):
         openLog("Server", 1)
         thr = MsgServerThread("1", self.host, self.port, clientHandlerFunction)
-        thr.start()
+        printLog("Just created a MsgServerThread")
+        thr.run()
+        printLog("Just started the MsgServerThread")
 
 class Consumer(Thread):
     def __init__(self, name, inQu):
@@ -99,9 +101,10 @@ if __name__ == "__main__":
 
     ###################################################
     # Test 1
-    
-    Server('localhost', 1200, clientHandlerFunction).start()
-    Client('localhost', 1200).start()
+    print("Test 1")
+    Server('localhost', 5000, clientHandlerFunction).start()
+#    Client('localhost', 5000).start()
+    raw_input("Press enter to quit")
 
     ###################################################
     # Test 2
