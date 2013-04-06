@@ -274,7 +274,7 @@ class MsgSocket(object):
        rest of the string.
     o  Usage pattern on the client side.
            msk = MessageSocket()
-           msk.connect(serverSideHost, serverSidePort) # Tries for 10 seconds before throwing an exception
+           msk.connect(serverSideHost, serverSidePort) # Tries for 5 seconds before throwing an exception
            ...
            msk.send(msg)
            ...
@@ -296,11 +296,11 @@ class MsgSocket(object):
         assert(isinstance(host, str))
         assert(port > 0)
         printLog("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
-        self.inBuffer = []
+        self.inBuffer = bytes([])
         self.sock = socket()
         for i in range(5):
             if not self.sock.connect_ex((host, port)):
-                printLog("MsgSocket {0}: has connected to {1}".format(self.name, self.sock.getpeername()))
+                printLog("MsgSocket {0}: has connected to peer {1}".format(self.name, self.sock.getpeername()))
                 return
             else:
                 printLog("MsgSocket {0}: failed to connect to ({1}, {2})".format(self.name, host, port))
@@ -311,15 +311,15 @@ class MsgSocket(object):
 
     def attach(self, sock):
         assert(isinstance(sock, socket))
-        printLog("MsgSocket {0}: has attached standard socket {1}".format(self.name, sock.getpeername()))
+        printLog("MsgSocket {0}: has attached to peer {1}".format(self.name, sock.getpeername()))
         self.sock = sock
-        self.inBuffer = []
+        self.inBuffer = bytes([])
 
     def send(self, msg):
         assert(isinstance(msg, tuple))
         st = makeMsgStr(msg)
         self.sock.sendall(st)
-        printLog("<<< Sent    {0}    to {1}".format(msg, self.sock.getpeername()))
+        printLog("<<< Sent    {0}    to peer {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
         printLog("MsgSocket {0}: closing ".format(self.name))
@@ -328,15 +328,22 @@ class MsgSocket(object):
     def receive(self):
         if len(self.inBuffer) < 2:
             buf = self.sock.recv(1024)
-            self.inBuffer += buf
+            print("-----buf = {0}".format(buf))
+            for x in buf:
+                self.inBuffer.append(x)
+#            self.inBuffer += buf
+            print("-----self.inBuffer = {0}".format(self.inBuffer))
         strSize = self.inBuffer[0] + 128 * self.inBuffer[1]
+        print("-------strSize = {0}".format(strSize))
         while strSize + 2 > len(self.inBuffer):
             buf = self.sock.recv(1024)         # WARNING: if length of buf is 0, then the connection has been broken
-            self.inBuffer += buf
+            for x in buf:
+                self.inBuffer.append(x)
+#            self.inBuffer += buf
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)
-        printLog("    >>> Received    {0}    from {1}".format(msg, self.sock.getpeername()))
+        printLog("    >>> Received    {0}    from peer {1}".format(msg, self.sock.getpeername()))
         return msg
 
 
@@ -358,14 +365,12 @@ class MsgServerThread(Thread):
     def run(self):
         printLog("Message server {0}: running".format(self.name))
         self.serverSocket = socket()
-        printLog("   1")
         self.serverSocket.bind((self.host, self.port))           # bind
-        printLog("   2")
         self.serverSocket.listen(5)                              # listen
         printLog("Message server {0}: now listening at ({1}, {2})".format(self.name, self.host, self.port))
         while True:
             socketToClient, address = self.serverSocket.accept() # accept
-            printLog("Message server {0}: just created a connection to client at {1}". \
+            printLog("Message server {0}: just created a connection to peer at {1}". \
                       format(self.name, socketToClient.getpeername()))
             ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()
 
@@ -375,7 +380,7 @@ class ClientHandlerThread(Thread):
         assert(isinstance(name, str))
         assert(isinstance(socketToClient, socket))
         assert(clientHandlerFunction != None)
-        printLog("Client handler {0}: created for {1}".format(name, socketToClient.getpeername()))
+        printLog("Client handler {0}: created for peer {1}".format(name, socketToClient.getpeername()))
         self.name = name
         self.socketToClient = socketToClient
         self.clientHandlerFunction = clientHandlerFunction
@@ -383,7 +388,8 @@ class ClientHandlerThread(Thread):
     def run(self):
         msgSocketToClient = MsgSocket()
         msgSocketToClient.attach(self.socketToClient)
-        printLog("Client handler {0}: running and calling {1}".format(self.name, self.clientHandlerFunction))
+        printLog("Client handler {0}: running with peer {1} and function {2}" \
+                 .format(self.name, self.socketToClient.getpeername(), self.clientHandlerFunction))
         self.clientHandlerFunction(msgSocketToClient)
 
 

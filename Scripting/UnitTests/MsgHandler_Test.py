@@ -69,10 +69,8 @@ class Server(Process):
         openLog("Server", 1)
         printLog("Server process about to initialize and start MsgServerThread")
         MsgServerThread("1", self.host, self.port, self.clientHandlerFunction).start()
-#        printLog("Server process go to sleep for 10")
         sleep(10)
-#        printLog("Server process wake up and closeLog")
-#        closeLog()
+        closeLog()
 
 
 class Consumer(Thread):
@@ -104,12 +102,10 @@ if __name__ == "__main__":
 
     ###################################################
     # Test 1
-    print("Test 1")
-    serverProc = Server('localhost', 5000, clientHandlerFunction)
-    serverProc.start()
-#    Client('localhost', 5000).start()
-    raw_input("Press enter to stop the processess")
-#    serverProc.terminate()
+    print("Test 1: will terminate automatically in 10 seconds")
+    Server('localhost', 5000, clientHandlerFunction).start()
+    Client('localhost', 5000).start()
+
 
     ###################################################
     # Test 2
