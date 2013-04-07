@@ -191,7 +191,9 @@ class MsgInternalQuPump(Thread):
                 if len(self.inQuList) <= msg.inQuNum:
                     raise Exception("MsgInternalQuPump {0}: inQuNum {1} is too large.".format(self.name, msg.inQuNum))
                 else:
-                    self.inQuList[msg.inQuNum].interests = []
+                    interestList = self.inQuList[msg.inQuNum].interests
+                    for interest in interestList:
+                        interestList.remove(interest)
             elif isinstance(msg, AddInterestMsg):
                 printLog("MsgInternalQuPump {0}: adding interest {1} for inQuNum {2}".format(self.name, msg.interest, msg.inQuNum))
                 # if there is no entry for this inQuNum raise an exception

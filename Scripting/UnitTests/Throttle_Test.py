@@ -83,7 +83,7 @@ if __name__ == "__main__":
     throt.removeInterest(PutSensorStateMsg)
     throt.do(stopTrain)
     flushLog()
-    input("press enter to quit")
+    raw_input("press enter to quit")
     throt.close()
     sak.kill("controller")
     sak.kill("simulator")
