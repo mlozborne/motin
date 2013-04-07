@@ -43,8 +43,8 @@ from threading import Thread
 import sys
 import multiprocessing
 from collections import namedtuple
+from MessageTranslationLibrary import PutReadLayoutResponseMsg, InputRepMsg, PutInitOutcomeMsg, PutSensorStateMsg
 
-#InQuListEntry  = namedtuple('InQuListEntry', 'qu, msgTypes')
 InQuListEntry         = namedtuple('InQuListEntry', 'inQu, interests')
 AddInterestMsg        = namedtuple('AddInterestMsg', 'inQuNum, interest')
 RemoveInterestMsg     = namedtuple('RemoveInterestMsg', 'inQuNum, interest')
@@ -103,6 +103,27 @@ class MsgHandler(object):
     def put(self, msg):
         #printLog("MsgHandler {0}: putting message {1}".format(self.name, msg))
         self.outQu.put(msg)
+
+    def waitFor(self, msg):
+        printLog("waitFor: msg = {0}".format(msg))
+        assert(isinstance(msg, tuple))
+        while True:
+            while True:
+                #printLog("waitFor: trying to get from qu")
+                m = qu.get()
+                #printLog("waitFor: back from qu with message {0}".format(m))
+                if type(m) == type(msg):
+                    break
+            if isinstance(m, PutReadLayoutResponseMsg):
+                break
+            if isinstance(m, InputRepMsg) and m.sensor == msg.sensor:
+                break
+            if isinstance(m, PutInitOutcomeMsg) and m.physAdd == msg.physAdd:
+                break
+            if isinstance(m, PutSensorStateMsg) and m == msg:
+                break
+        #printLog("waitFor: waiting over, got message {0}".format(m))
+        return m
 
 ################################################################################
 InQuListEntry       = namedtuple('InQuListEntry', 'inQu, interests')
@@ -296,7 +317,7 @@ class MsgSocket(object):
         assert(isinstance(host, str))
         assert(port > 0)
         printLog("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
-        self.inBuffer = bytes([])
+        self.inBuffer = []
         self.sock = socket()
         for i in range(5):
             if not self.sock.connect_ex((host, port)):
@@ -313,7 +334,7 @@ class MsgSocket(object):
         assert(isinstance(sock, socket))
         printLog("MsgSocket {0}: has attached to peer {1}".format(self.name, sock.getpeername()))
         self.sock = sock
-        self.inBuffer = bytes([])
+        self.inBuffer = []
 
     def send(self, msg):
         assert(isinstance(msg, tuple))
@@ -328,18 +349,13 @@ class MsgSocket(object):
     def receive(self):
         if len(self.inBuffer) < 2:
             buf = self.sock.recv(1024)
-            print("-----buf = {0}".format(buf))
             for x in buf:
-                self.inBuffer.append(x)
-#            self.inBuffer += buf
-            print("-----self.inBuffer = {0}".format(self.inBuffer))
+                self.inBuffer.append(ord(x))
         strSize = self.inBuffer[0] + 128 * self.inBuffer[1]
-        print("-------strSize = {0}".format(strSize))
         while strSize + 2 > len(self.inBuffer):
             buf = self.sock.recv(1024)         # WARNING: if length of buf is 0, then the connection has been broken
             for x in buf:
-                self.inBuffer.append(x)
-#            self.inBuffer += buf
+                self.inBuffer.append(ord(x))
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)

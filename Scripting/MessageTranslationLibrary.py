@@ -1,10 +1,10 @@
 """
 Representation of messages.
-    o bytearray during transmition via sockets
-    o namedtupes internally
+    o byte array during transmition via sockets
+    o named tupes internally
 Conversion operations
-    o makeMsgStr(msg)    namedtuple --> bytearray
-    o splitMsgStr(st)    bytearray  --> namedtuple
+    o makeMsgStr(msg)    named tuple --> byte array
+    o splitMsgStr(st)    int array   --> named tuple
 """
 from MessageTranslationTypes import *
 
@@ -60,6 +60,12 @@ def utConvertNaturalToBytes(value):
 def utConvertBytesToNatural(b1, b2):
     return b1 + 128 * b2
 
+def utConvertListToStr(lst):
+    result = ""
+    for x in lst:
+        result += chr(x)
+    return result
+
 #######################################################################
 # Make routines
 def makePowerStr(msg):
@@ -72,7 +78,7 @@ def makePowerStr(msg):
         st = [OPC_GPOFF]
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return bytearray([lowByte, highByte] + st)
 	
 def makeLocoSpdStr(msg):
     #<0xA0><SLOT#><SPD><CHK>
@@ -82,7 +88,7 @@ def makeLocoSpdStr(msg):
     st.append(min(kSpeedMax, msg.speed))
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 
 def makeLocoDirfStr(msg):
     #<0xA1><SLOT#><DIR_STATE><CHK>
@@ -102,7 +108,7 @@ def makeLocoDirfStr(msg):
     st.append(dirf)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 def makeLocoSndStr(msg):
     #<0xA2><SLOT#><SOUND><CHK>
@@ -120,7 +126,7 @@ def makeLocoSndStr(msg):
     st.append(snd)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 def makeSwReqStr(msg):	
     #<0xB0><SW1><SW2><CHK>
@@ -133,7 +139,7 @@ def makeSwReqStr(msg):
         st.append(bitRequestThrow)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 def makeMoveSlotsStr(msg):
     #<0xBA><slot#><slot#><chk>
@@ -143,7 +149,7 @@ def makeMoveSlotsStr(msg):
     st.append(msg.slot2)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 def makeLocoAdrStr(msg):
     #<0xBF><adrhigh><adrlow><chk>
@@ -153,7 +159,7 @@ def makeLocoAdrStr(msg):
     st.append(msg.address % 128)
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 def makeWriteSlotDataToClearStr(msg):
     #<0xEF><0E><slot#><status><adrlow><spd><dirf><trk><ss2><adrhigh><snd><id1><id2><chk>
@@ -165,7 +171,7 @@ def makeWriteSlotDataToClearStr(msg):
     st[3] = 0x0B            # status = 0000 1011
     st.append(utMakeCheckSumByte(st))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 def makeDoLocoInitStr(msg):
     #<0><8><physical loco address> <count> <sensor#>...<sensor#>      where address and sensor# are 2 bytes
@@ -184,7 +190,7 @@ def makeDoLocoInitStr(msg):
         st.append(lowByte)
         st.append(highByte)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 	
 #def makeDoReadLayoutStr(msg):
 #    #<0><10><count><XML file name>       where count is 1 byte
@@ -195,7 +201,7 @@ def makeDoLocoInitStr(msg):
 #    st.append(len(fileName))
 #    st += list(fileName)
 #    lowByte, highByte = utConvertNaturalToBytes(len(st))
-#    return bytes([lowByte, highByte] + st)
+#    return utConvertListToStr([lowByte, highByte] + st)
 
 def makeDoReadLayoutStr(msg):
     #<0><10><count><XML file name>       where count is 1 byte
@@ -206,7 +212,7 @@ def makeDoReadLayoutStr(msg):
     for chr in msg.fileName:
         st.append(ord(chr))
     lowByte, highByte = utConvertNaturalToBytes(len(st))
-    return bytes([lowByte, highByte] + st)
+    return utConvertListToStr([lowByte, highByte] + st)
 
 #######################################################################
 # Split routines

@@ -102,9 +102,9 @@ if __name__ == "__main__":
 
     ###################################################
     # Test 1
-    print("Test 1: will terminate automatically in 10 seconds")
-    Server('localhost', 5000, clientHandlerFunction).start()
-    Client('localhost', 5000).start()
+#    print("Test 1: this will terminate automatically in 10 seconds")
+#    Server('localhost', 5000, clientHandlerFunction).start()
+#    Client('localhost', 5000).start()
 
 
     ###################################################
@@ -117,51 +117,54 @@ if __name__ == "__main__":
 #    sleep(3)
 #
 #    inQuList = []
-#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = ()))# qu 0 all messages
-#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (SwRepMsg,)))# qu 1 only one kind of message
-#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg, SwRepMsg)))# qu 2 two kinds of messages
-#    inQuList.append(InQuListEntry(qu = Queue(), msgTypes = (PutInitOutcomeMsg,)))# qu 3 only one kind of messagte
+#    inQuList.append(InQuListEntry(inQu = Queue(), interests = []))                           # qu 0 no  messages
+#    inQuList.append(InQuListEntry(inQu = Queue(), interests = [SwRepMsg]))                   # qu 1 only one kind of message
+#    inQuList.append(InQuListEntry(inQu = Queue(), interests = [PutInitOutcomeMsg, SwRepMsg]))# qu 2 two kinds of messages
+#    inQuList.append(InQuListEntry(inQu = Queue(), interests = [PutInitOutcomeMsg]))          # qu 3 only one kind of messages
 #
-#    MsgInQuPump(name = "in pump", sock = sk, inQuList = inQuList).start()
+#    MsgInQuPump(name = "", sock = sk, inQuList = inQuList).start()
 #
 #    outQu = Queue()
-#    MsgOutQuPump(name = "out pump", sock = sk, qu = outQu).start()
+#    internalQu = Queue()
+#    MsgOutQuPump(name = "", sock = sk, outQu = outQu, internalQu = internalQu).start()
 #
 #    Producer("1", outQu).start()
-#    for i in range(3):
-#        Consumer(str(i), inQuList[i].qu).start()
+#    for i in range(4):
+#        Consumer(str(i), inQuList[i].inQu).start()
 #
-#    input("press enter to quit")
+#    raw_input("press enter to quit")
 #    sak.kill("simulator")                                     #kill simulator
 #    closeLog()
 
     ###################################################
     # Test 3
     
-#    openLog()
-#
-#    qu = Queue()
-#
-#    for i in range(1,6):
-#        qu.put(SwRepMsg(switch = i, direction = kClosed))
-#
-#    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))
-#
-#    for i in range(1,6):
-#        qu.put(SwRepMsg(switch = i, direction = kThrown))
-#
-#    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))
-#
-#    for i in range(1,6):
-#        qu.put(SwRepMsg(switch = i, direction = kClosed))
-#
-#    msg = waitFor(qu, PutReadLayoutResponseMsg(responseFlag=100, code=200))
-#    print(str(msg))
-#
-#    msg = waitFor(qu, PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
-#    print(str(msg))
-#
-#    print("qu contains {0} messages".format(qu.qsize()))
+    openLog()
+
+    qu = Queue()
+
+    for i in range(1,6):
+        qu.put(SwRepMsg(switch = i, direction = kClosed))
+
+    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))
+
+    for i in range(1,6):
+        qu.put(SwRepMsg(switch = i, direction = kThrown))
+
+    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))
+
+    for i in range(1,6):
+        qu.put(SwRepMsg(switch = i, direction = kClosed))
+
+    msg = MsgHandler.waitFor(qu, PutReadLayoutResponseMsg(responseFlag=100, code=200))
+    print(str(msg))
+
+    msg = waitFor(qu, PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
+    print(str(msg))
+
+    print("qu contains {0} messages".format(qu.qsize()))
+
+    closeLog()
 
 
 

@@ -131,6 +131,6 @@ ControllerOutMsgs = (PowerMsg, LocoSpdMsg, LocoDirfMsg, LocoSndMsg, SwReqMsg,
 ControllerInMsgs = (PutTrainStateMsg, PutTrainPositionMsg, PutSectionStateMsg,
                     PutSwitchStateMsg, PutSensorStateMsg, PutInitOutcomeMsg,
                     PutReadLayoutResponseMsg, PutTrainInformationMsg,
-                    PutPowerChangeCompleteMsg)
+                    PutPowerChangeCompleteMsg, SwRepMsg, InputRepMsg, LongAckMsg, SlRdDataMsg)
 
 
