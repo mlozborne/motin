@@ -140,30 +140,23 @@ if __name__ == "__main__":
     # Test 3
     
     openLog()
-
     qu = Queue()
-
     for i in range(1,6):
         qu.put(SwRepMsg(switch = i, direction = kClosed))
-
-    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))
-
+    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))   # will wait for this one
     for i in range(1,6):
         qu.put(SwRepMsg(switch = i, direction = kThrown))
-
-    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))
-
+    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))   # will wait for this one
     for i in range(1,6):
         qu.put(SwRepMsg(switch = i, direction = kClosed))
 
-    msg = MsgHandler.waitFor(qu, PutReadLayoutResponseMsg(responseFlag=100, code=200))
+    msgHandler = MsgHandler(name = "1", inQu = qu, inQuNum = 0, outQu = Queue())
+    msg = msgHandler.waitFor(PutReadLayoutResponseMsg(responseFlag=100, code=200))
     print(str(msg))
-
-    msg = waitFor(qu, PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
+    msg = msgHandler.waitFor(PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
     print(str(msg))
 
     print("qu contains {0} messages".format(qu.qsize()))
-
     closeLog()
 
 

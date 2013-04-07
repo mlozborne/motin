@@ -56,23 +56,7 @@ class Throttle(object):
     def waitFor(self, msg):
         printLog("waitFor: msg = {0}".format(msg))
         assert(isinstance(msg, tuple))
-        while True:
-            while True:
-                #printLog("waitFor: about to getBlocking")
-                m = self.msgHandler.getBlocking()
-                #printLog("waitFor: back from getBlocking".format(m))
-                if type(m) == type(msg):
-                    break
-            if isinstance(m, PutReadLayoutResponseMsg):
-                break
-            if isinstance(m, InputRepMsg) and m.sensor == msg.sensor:
-                break
-            if isinstance(m, PutInitOutcomeMsg) and m.physAdd == msg.physAdd:
-                break
-            if isinstance(m, PutSensorStateMsg) and m == msg:
-                break
-        #printLog("waitFor: waiting over, got message {0}".format(m))
-        return m
+        return self.msgHandler.waitFor(msg)
 
 ################################################################################
 

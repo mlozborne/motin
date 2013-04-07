@@ -83,7 +83,7 @@ class MsgHandler(object):
         self.outQu.put(RemoveInterestMsg(inQuNum = self.inQuNum, interest = msgType))
 
     def close(self):
-        printLog("MsgHandler {0}: removing all interests".format(self.name))
+        printLog("MsgHandler {0}: closing and removing all interests".format(self.name))
         self.outQu.put(RemoveAllInterestsMsg(inQuNum = self.inQuNum))
 
     def getBlocking(self):
@@ -105,12 +105,12 @@ class MsgHandler(object):
         self.outQu.put(msg)
 
     def waitFor(self, msg):
-        printLog("waitFor: msg = {0}".format(msg))
+        #printLog("waitFor: msg = {0}".format(msg))
         assert(isinstance(msg, tuple))
         while True:
             while True:
                 #printLog("waitFor: trying to get from qu")
-                m = qu.get()
+                m = self.inQu.get()
                 #printLog("waitFor: back from qu with message {0}".format(m))
                 if type(m) == type(msg):
                     break
