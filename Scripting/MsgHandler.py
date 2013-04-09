@@ -319,7 +319,7 @@ class MsgSocket(object):
         assert(isinstance(host, str))
         assert(port > 0)
         printLog("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
-        self.inBuffer = []
+        self.inBuffer = bytearray()
         self.sock = socket()
         for i in range(5):
             if not self.sock.connect_ex((host, port)):
@@ -336,7 +336,7 @@ class MsgSocket(object):
         assert(isinstance(sock, socket))
         printLog("MsgSocket {0}: has attached to peer {1}".format(self.name, sock.getpeername()))
         self.sock = sock
-        self.inBuffer = []
+        self.inBuffer = bytearray()
 
     def send(self, msg):
         assert(isinstance(msg, tuple))
@@ -352,12 +352,12 @@ class MsgSocket(object):
         if len(self.inBuffer) < 2:
             buf = self.sock.recv(1024)
             for x in buf:
-                self.inBuffer.append(ord(x))
+                self.inBuffer.append(x)
         strSize = self.inBuffer[0] + 128 * self.inBuffer[1]
         while strSize + 2 > len(self.inBuffer):
             buf = self.sock.recv(1024)         # WARNING: if length of buf is 0, then the connection has been broken
             for x in buf:
-                self.inBuffer.append(ord(x))
+                self.inBuffer.append(x)
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)

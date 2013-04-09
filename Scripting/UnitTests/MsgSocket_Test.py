@@ -4,13 +4,15 @@
 ############################################################################
 
 import time
-
-from Log import *
+from Log import openLog, closeLog, flushLog, printLog
 from MessageTranslationLibrary import *
 from MessageTranslationTypes import *
 import StartAndKill as sak
 from MsgHandler import MsgSocket
 from threading import Thread
+
+def raw_input(str):
+    return input(str)
 
 ############################################################################
 
@@ -139,8 +141,6 @@ class TestBlinkLightsViaController(Thread):
 ############################################################################
 #      RUN FROM WINDOWS EXPLORER
 ############################################################################
-
-from Log import openLog, closeLog, flushLog
 
 if __name__ == "__main__":
     openLog()

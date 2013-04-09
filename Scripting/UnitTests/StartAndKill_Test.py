@@ -10,6 +10,9 @@ After testing
 from Log import openLog, closeLog
 from StartAndKill import start, kill, setTestingMode
 
+def raw_input(str):
+    return input(str)
+
 if __name__ == "__main__":
     setTestingMode()
     openLog()

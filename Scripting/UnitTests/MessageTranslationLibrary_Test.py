@@ -18,6 +18,12 @@ def utEx2(st):                       # expand the sting WITHOUT checksum
     lowByte, highByte = utConvertNaturalToBytes(n)
     return [lowByte, highByte] + st
 
+def bytes(intList):
+    result = ""
+    for x in intList:
+        result += chr(x)
+    return result
+
 class TestMessageTranslationLibrary(unittest.TestCase):
     """Test the functions in the message translation library"""
 

@@ -8,7 +8,8 @@ from Throttle import Throttle
 from MsgHandler import *
 from MessageTranslationLibrary import PutInitOutcomeMsg, PutTrainPositionMsg, PutTrainStateMsg, PutReadLayoutResponseMsg
 
-from GuiThrottle import GuiThrottle
+def raw_input(str):
+    return input(str)
 
 if __name__ == "__main__":
     openLog()
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         print("Error in XML file with flag = {0} and code = {1}".format(responseFlag, code))
         print ("THE END")
         input("press enter to quit")
-    throttle.close()                              <<<<<<<<<<<<<<<<<<<   doesn't work unless commented out 
+    throttle.close()                              #<<<<<<<<<<<<<<<<<<<   doesn't work unless commented out
 
     # Start four gui throttles and pass inQu and outQu
     printLog("Main: begin start four GuiThrottleProcess")
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     sleep(1)          ##### WEIRD If sleep is omitted, then the input statement
                       ##### blocks the gui from being displayed.
 
-    input("press enter to quit")
+    raw_input("press enter to quit")
 
     sak.kill("controller")
     sak.kill("simulator")

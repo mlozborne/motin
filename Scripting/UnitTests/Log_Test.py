@@ -15,6 +15,9 @@ import threading
 from Log import *
 from time import sleep
 
+def raw_input(str):
+    return input(str)
+
 class ManyLinesToLog(threading.Thread):
     def __init__(self, st):
         threading.Thread.__init__(self)

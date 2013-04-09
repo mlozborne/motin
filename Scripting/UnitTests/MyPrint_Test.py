@@ -5,6 +5,9 @@
 import threading
 from MyPrint import myPrint
 
+def raw_input(str):
+    return input(str)
+
 class ManyLinesToScreen(threading.Thread):
     def __init__(self, st):
         threading.Thread.__init__(self)
