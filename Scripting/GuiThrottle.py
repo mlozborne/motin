@@ -6,17 +6,26 @@ from tkinter import PhotoImage
 from multiprocessing import Process
 from Throttle import Throttle
 from Log import *
+from MsgHandler import AddInterestMsg, CommunicationsPackage
 
 class GuiThrottleProcess(Process):
-    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+#    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+    def __init__(self, name = None, comPkg = None):
         Process.__init__(self)
         printLog("GuiThrottleProcess {0}: initializing".format(name))
         assert(isinstance(name, str))
+
+        assert(isinstance(comPkg, CommunicationsPackage))
+        inQu = comPkg.inQu
+        inQuNum = comPkg.inQuNum
+        outQu = comPkg.outQu
+
         assert(isinstance(inQu, multiprocessing.queues.Queue))
         assert(inQuNum >= 0)
         assert(isinstance(outQu, multiprocessing.queues.Queue))
 
         self.name = name
+        self.comPkg = comPkg
         self.inQu = inQu
         self.inQuNum = inQuNum
         self.outQu = outQu
@@ -24,24 +33,38 @@ class GuiThrottleProcess(Process):
     def run(self):
         openLog("GuiThrottleProcess {0}".format(self.name))
         printLog("GuiThrottleProcess {0}: running".format(self.name))
-        GuiThrottle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu).mainloop()
+#        GuiThrottle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu).mainloop()
+        GuiThrottle(name = self.name, comPkg = self.comPkg).mainloop()
         printLog("GuiThrottleProcess {0}: finished running".format(self.name))
         
 class GuiThrottle(EasyFrame):
 
-    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+#    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+    def __init__(self, name = None, comPkg = None):
         EasyFrame.__init__(self, title="Throttle")
         printLog("GuiThrottle {0}: initializing".format(name))
 
         self.name = name
+
+        assert(isinstance(comPkg, CommunicationsPackage))
+        self.comPkg = comPkg
+        inQu = comPkg.inQu
+        inQuNum = comPkg.inQuNum
+        outQu = comPkg.outQu
+
         self.inQu = inQu
         self.inQuNum = inQuNum
         self.outQu = outQu
         self.virtSlot = None
         
+        outQu.put(AddInterestMsg(inQuNum, PutInitOutcomeMsg))
+        outQu.put(AddInterestMsg(inQuNum, PutTrainPositionMsg))
+        outQu.put(AddInterestMsg(inQuNum, PutTrainStateMsg))
+        
         self.readyToReadFromQueue = False
 
-        self.throttle = Throttle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu)
+#        self.throttle = Throttle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu)
+        self.throttle = Throttle(name = self.name, comPkg = self.comPkg)
         self.throttleReady = False
 
         imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"

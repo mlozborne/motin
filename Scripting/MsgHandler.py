@@ -45,6 +45,8 @@ import multiprocessing
 from collections import namedtuple
 from MessageTranslationLibrary import PutReadLayoutResponseMsg, InputRepMsg, PutInitOutcomeMsg, PutSensorStateMsg
 
+CommunicationsPackage = namedtuple('CommunicationsPackage', 'inQu, inQuNum, outQu')
+
 InQuListEntry         = namedtuple('InQuListEntry', 'inQu, interests')
 AddInterestMsg        = namedtuple('AddInterestMsg', 'inQuNum, interest')
 RemoveInterestMsg     = namedtuple('RemoveInterestMsg', 'inQuNum, interest')
@@ -58,6 +60,29 @@ InQuListMsgs = (AddInterestMsg, RemoveInterestMsg, RemoveAllInterestsMsg)
 #    interests             a list of message types
 
 ################################################################################
+
+class CommunicationResources(object):
+    def __init__(self, host = None, port = None, numberOfPackages = None):
+        self.host = host
+        self.port = port
+        self.numberOfPackages = numberOfPackages
+        self.packagesAllocated = 0
+        self.outQu = Queue()
+        self.inQuList = []
+        for i in range(numberOfPackages):
+            q = Queue()
+            self.inQuList.append(InQuListEntry(inQu = q, interests = []))
+        msgPumpHandler = MsgPumpHandler(name = "", host = self.host, port = self.port, inQuList = self.inQuList, outQu = self.outQu)
+        msgPumpHandler.startPumps()
+
+    def getNextPackage(self):
+        if self.packagesAllocated >= self.numberOfPackages:
+            raise "allocated too many resource packages"
+        i = self.packagesAllocated
+        self.packagesAllocated += 1
+        comPkg = CommunicationsPackage(inQu = self.inQuList[i].inQu, inQuNum = i, outQu = self.outQu)
+        return comPkg
+
 
 class MsgHandler(object):
     def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):

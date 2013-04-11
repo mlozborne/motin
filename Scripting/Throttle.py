@@ -1,16 +1,41 @@
-from MessageTranslationTypes import *
 from Log import printLog
-import multiprocessing
+from MessageTranslationTypes import *
+from MessageTranslationTypes import ControllerInMsgs
+from MessageTranslationTypes import DoLocoInitMsg
+from MessageTranslationTypes import DoReadLayoutMsg
+from MessageTranslationTypes import LocoDirfMsg
+from MessageTranslationTypes import LocoSndMsg
+from MessageTranslationTypes import LocoSpdMsg
+from MessageTranslationTypes import PutInitOutcomeMsg
+from MessageTranslationTypes import PutReadLayoutResponseMsg
+from MessageTranslationTypes import SwReqMsg
+from MessageTranslationTypes import kBackward
+from MessageTranslationTypes import kForward
+from MessageTranslationTypes import kOff
+from MessageTranslationTypes import kOn
+import MsgHandler
 from MsgHandler import *
+from MsgHandler import CommunicationsPackage
+import multiprocessing
 from time import sleep
 
 class Throttle(object):
-    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+#    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+    def __init__(self, name = None, comPkg = None):
         printLog("Throttle {0}: initializing".format(name))
+
         assert(isinstance(name, str))
+
+        assert(isinstance(comPkg, CommunicationsPackage))
+        inQu = comPkg.inQu
+        inQuNum = comPkg.inQuNum
+        outQu = comPkg.outQu
+
+#        print("inQu={0},inQuNum={1},outQu={2}".format(inQu,inQuNum,outQu))
         assert(isinstance(inQu, multiprocessing.queues.Queue))
         assert(inQuNum >= 0)
         assert(isinstance(outQu, multiprocessing.queues.Queue))
+
         self.name = name
         self.inQu = inQu
         self.inQuNum = inQuNum
