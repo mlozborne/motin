@@ -20,7 +20,6 @@ import multiprocessing
 from time import sleep
 
 class Throttle(object):
-#    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
     def __init__(self, name = None, comPkg = None):
         printLog("Throttle {0}: initializing".format(name))
 
@@ -31,15 +30,11 @@ class Throttle(object):
         inQuNum = comPkg.inQuNum
         outQu = comPkg.outQu
 
-#        print("inQu={0},inQuNum={1},outQu={2}".format(inQu,inQuNum,outQu))
         assert(isinstance(inQu, multiprocessing.queues.Queue))
         assert(inQuNum >= 0)
         assert(isinstance(outQu, multiprocessing.queues.Queue))
 
         self.name = name
-        self.inQu = inQu
-        self.inQuNum = inQuNum
-        self.outQu = outQu
         self.virtSlot = None
         self.direction = kForward
         self.lights = kOff
@@ -48,7 +43,7 @@ class Throttle(object):
         self.mute = kOff
         self.F5 = 0
         self.F6 = 0
-        self.msgHandler = MsgHandler(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu)
+        self.msgHandler = MsgHandler(name = self.name, comPkg = comPkg)
 
     def addInterest(self, interest):
         printLog("Throttle {0}: adding interest {1}".format(self.name, interest))

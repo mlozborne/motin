@@ -105,9 +105,10 @@ if __name__ == "__main__":
 
     ###################################################
     # Test 1
-    print("Test 1: this will terminate automatically in 10 seconds")
-    Server('localhost', 5000, clientHandlerFunction).start()
-    Client('localhost', 5000).start()
+
+#    print("Test 1: this will terminate automatically in 10 seconds")
+#    Server('localhost', 5000, clientHandlerFunction).start()
+#    Client('localhost', 5000).start()
 
 
     ###################################################
@@ -142,25 +143,25 @@ if __name__ == "__main__":
     ###################################################
     # Test 3
     
-#    openLog()
-#    qu = Queue()
-#    for i in range(1,6):
-#        qu.put(SwRepMsg(switch = i, direction = kClosed))
-#    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))   # will wait for this one
-#    for i in range(1,6):
-#        qu.put(SwRepMsg(switch = i, direction = kThrown))
-#    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))   # will wait for this one
-#    for i in range(1,6):
-#        qu.put(SwRepMsg(switch = i, direction = kClosed))
-#
-#    msgHandler = MsgHandler(name = "1", inQu = qu, inQuNum = 0, outQu = Queue())
-#    msg = msgHandler.waitFor(PutReadLayoutResponseMsg(responseFlag=100, code=200))
-#    print(str(msg))
-#    msg = msgHandler.waitFor(PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
-#    print(str(msg))
-#
-#    print("qu contains {0} messages".format(qu.qsize()))
-#    closeLog()
+    openLog()
+    qu = Queue()
+    for i in range(1,6):
+        qu.put(SwRepMsg(switch = i, direction = kClosed))
+    qu.put(PutReadLayoutResponseMsg(responseFlag=100, code=200))   # will wait for this one
+    for i in range(1,6):
+        qu.put(SwRepMsg(switch = i, direction = kThrown))
+    qu.put(PutInitOutcomeMsg(physAdd = 1111, physSlot = 1, virtAdd = 11, virtSlot = 5))   # will wait for this one
+    for i in range(1,6):
+        qu.put(SwRepMsg(switch = i, direction = kClosed))
+
+    msgHandler = MsgHandler(name = "1",  comPkg = CommunicationsPackage(inQu = qu, inQuNum = 0, outQu = Queue()))
+    msg = msgHandler.waitFor(PutReadLayoutResponseMsg(responseFlag=100, code=200))
+    print(str(msg))
+    msg = msgHandler.waitFor(PutInitOutcomeMsg(physAdd = 1111, physSlot = 125, virtAdd = 0, virtSlot = 0))
+    print(str(msg))
+
+    print("qu contains {0} messages".format(qu.qsize()))
+    closeLog()
 
 
 

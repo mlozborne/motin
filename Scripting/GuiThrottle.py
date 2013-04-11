@@ -9,7 +9,6 @@ from Log import *
 from MsgHandler import AddInterestMsg, CommunicationsPackage
 
 class GuiThrottleProcess(Process):
-#    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
     def __init__(self, name = None, comPkg = None):
         Process.__init__(self)
         printLog("GuiThrottleProcess {0}: initializing".format(name))
@@ -26,35 +25,26 @@ class GuiThrottleProcess(Process):
 
         self.name = name
         self.comPkg = comPkg
-        self.inQu = inQu
-        self.inQuNum = inQuNum
-        self.outQu = outQu
         
     def run(self):
         openLog("GuiThrottleProcess {0}".format(self.name))
         printLog("GuiThrottleProcess {0}: running".format(self.name))
-#        GuiThrottle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu).mainloop()
         GuiThrottle(name = self.name, comPkg = self.comPkg).mainloop()
         printLog("GuiThrottleProcess {0}: finished running".format(self.name))
         
 class GuiThrottle(EasyFrame):
 
-#    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
     def __init__(self, name = None, comPkg = None):
         EasyFrame.__init__(self, title="Throttle")
         printLog("GuiThrottle {0}: initializing".format(name))
 
         self.name = name
-
-        assert(isinstance(comPkg, CommunicationsPackage))
         self.comPkg = comPkg
         inQu = comPkg.inQu
         inQuNum = comPkg.inQuNum
         outQu = comPkg.outQu
 
         self.inQu = inQu
-        self.inQuNum = inQuNum
-        self.outQu = outQu
         self.virtSlot = None
         
         outQu.put(AddInterestMsg(inQuNum, PutInitOutcomeMsg))

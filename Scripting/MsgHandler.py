@@ -33,17 +33,23 @@ User level object
        -- test with Throttle_Test.py and GuiThrottle_Test.py
 """
 
+from Log import flushLog
+from Log import printLog
+from MessageTranslationLibrary import InputRepMsg
+from MessageTranslationLibrary import PutInitOutcomeMsg
+from MessageTranslationLibrary import PutReadLayoutResponseMsg
+from MessageTranslationLibrary import PutSensorStateMsg
+from MessageTranslationLibrary import makeMsgStr
+from MessageTranslationLibrary import splitMsgStr
+from MessageTranslationTypes import ControllerInMsgs
+import multiprocessing
+import sys
+from time import sleep
+
+from collections import namedtuple
 from multiprocessing.queues import Queue
 from socket import socket
-from time import sleep
-from MessageTranslationLibrary import makeMsgStr, splitMsgStr
-from MessageTranslationTypes import ControllerInMsgs
-from Log import printLog, flushLog
 from threading import Thread
-import sys
-import multiprocessing
-from collections import namedtuple
-from MessageTranslationLibrary import PutReadLayoutResponseMsg, InputRepMsg, PutInitOutcomeMsg, PutSensorStateMsg
 
 CommunicationsPackage = namedtuple('CommunicationsPackage', 'inQu, inQuNum, outQu')
 
@@ -62,6 +68,17 @@ InQuListMsgs = (AddInterestMsg, RemoveInterestMsg, RemoveAllInterestsMsg)
 ################################################################################
 
 class CommunicationResources(object):
+    """
+    The top level program creates one of these with the numberOfPackages equal to
+    the total number of MsgHandlers needed during the life time of the system.
+
+    Each message handler must be passed a CommunicationsPackage consisting of an
+       inQu, inQuNum, outQu
+    obtained by calling getNextPackage
+
+    Any process that creates one or more message handlers must be passed the same
+    number of CommunicationsPackage
+    """
     def __init__(self, host = None, port = None, numberOfPackages = None):
         self.host = host
         self.port = port
@@ -85,9 +102,15 @@ class CommunicationResources(object):
 
 
 class MsgHandler(object):
-    def __init__(self, name = None, inQu = None, inQuNum = None, outQu = None):
+    def __init__(self, name = None,  comPkg = None):
         printLog("MsgHandler {0}: initializing".format(name))
         assert(isinstance(name, str))
+
+        assert(isinstance(comPkg, CommunicationsPackage))
+        inQu = comPkg.inQu
+        inQuNum = comPkg.inQuNum
+        outQu = comPkg.outQu
+
         assert(isinstance(inQu, multiprocessing.queues.Queue))
         assert(isinstance(outQu, multiprocessing.queues.Queue))
         assert(0 <= inQuNum)

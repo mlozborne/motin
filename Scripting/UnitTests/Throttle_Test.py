@@ -44,14 +44,11 @@ if __name__ == "__main__":
     #  Start the simulator and controller
     sak.start("simulator")
     sak.start("controller")
+
+    # Create the communication resources for 1 user
+    comRes = CommunicationResources(host = 'localhost', port = 1235, numberOfPackages = 1)
     
-    # Set up the message pumps and a throttle
-    outQu = Queue()
-    inQu = Queue()
-    inQuList = [InQuListEntry(inQu = inQu, interests = [])]
-    msgPumpHandler = MsgPumpHandler(name = 'for Throttle Test', host = 'localhost', port = 1235, inQuList = inQuList, outQu = outQu)
-    msgPumpHandler.startPumps()
-    throt = Throttle(name = 'Bill', inQu = inQu, inQuNum = 0, outQu = outQu)
+    throt = Throttle(name = 'Bill', comPkg = comRes.getNextPackage())
     
     # Tell the throttle to read the layout file
     printLog("Main reading layout")
@@ -91,7 +88,6 @@ if __name__ == "__main__":
     sak.kill("controller")
     sak.kill("simulator")
     closeLog()
-
 
 
 
