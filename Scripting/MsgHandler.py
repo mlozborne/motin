@@ -168,7 +168,7 @@ class MsgHandler(object):
                 break
             if isinstance(m, PutInitOutcomeMsg) and m.physAdd == msg.physAdd:
                 break
-            if isinstance(m, PutSensorStateMsg) and m == msg:
+            if isinstance(m, PutSensorStateMsg) and m == msg:    # matches iff sensor number and state match
                 break
         #printLog("waitFor: waiting over, got message {0}".format(m))
         return m
