@@ -11,8 +11,8 @@ import StartAndKill as sak
 from MsgHandler import MsgSocket
 from threading import Thread
 
-def raw_input(str):
-    return input(str)
+#def raw_input(str):
+#    return input(str)
 
 ############################################################################
 

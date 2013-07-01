@@ -29,8 +29,8 @@ from time import sleep
 import StartAndKill as sak
 from threading import Thread
 
-def raw_input(str):
-    return input(str)
+#def raw_input(str):
+#    return input(str)
 
 def clientHandlerFunction(socketToClient):
     sk = socketToClient
