@@ -171,247 +171,247 @@ PACKAGE BODY LayoutPkg IS
             -- raise;
 		-- end IdentifyTrainV3;
 
-		-- PROCEDURE IdentifyTrainV2 (SensorID : Positive) IS
-         -- sx                   : SensorNodePtr;   -- ptr to sensor that fired
-			-- sf                   : SensorObjPtr;    -- next sensor in front of train
-         -- t1                   : SectionObjPtr;   -- first section containing sx
-         -- t2                   : SectionObjPtr;   -- second section containing sx
-			-- reservedSection      : sectionObjPtr;
-			-- occupiedSection      : sectionObjPtr;
-			-- lastSection          : sectionObjPtr;
-         -- BackId               : Positive;
-			-- oldSensorState       : sensorStateType;
-			-- newSensorState       : sensorStateType;
-			-- trainId              : trainIdType;
-			-- sensorsPtr           : sensorArrayAccess; -- <s1..sn>
-      -- BEGIN
-          -- myPutLine("      xxxxxxxxxxxxx: In IdentifyTrainV2, sensor = " & integer'image(sensorId)); 
+		PROCEDURE IdentifyTrainV2 (SensorID : Positive) IS
+         sx                   : SensorNodePtr;   -- ptr to sensor that fired
+			sf                   : SensorObjPtr;    -- next sensor in front of train
+         t1                   : SectionObjPtr;   -- first section containing sx
+         t2                   : SectionObjPtr;   -- second section containing sx
+			reservedSection      : sectionObjPtr;
+			occupiedSection      : sectionObjPtr;
+			lastSection          : sectionObjPtr;
+         BackId               : Positive;
+			oldSensorState       : sensorStateType;
+			newSensorState       : sensorStateType;
+			trainId              : trainIdType;
+			sensorsPtr           : sensorArrayAccess; -- <s1..sn>
+      BEGIN
+          myPutLine("      xxxxxxxxxxxxx: In IdentifyTrainV2, sensor = " & integer'image(sensorId)); 
 			 
-		   -- -- Get a pointer to the sensor object.
-			-- -- If not found then ignore this sensor and return
-         -- FindSensor(SensorList, SensorID, sx);         
-         -- IF sx = NULL THEN
-            -- myPutLine("      xxxxxxxxxxxxx: MAYBE ERROR sensor not recognized " & integer'image(sensorId) ); 
-            -- return;
-         -- end if;
+		   -- Get a pointer to the sensor object.
+			-- If not found then ignore this sensor and return
+         FindSensor(SensorList, SensorID, sx);         
+         IF sx = NULL THEN
+            myPutLine("      xxxxxxxxxxxxx: MAYBE ERROR sensor not recognized " & integer'image(sensorId) ); 
+            return;
+         end if;
 			
-         -- -- Keep track of the old and new state of the sensor
-			-- oldSensorState := sx.sensor.state;
-			-- flipSensor(sx);
-			-- newSensorState := sx.sensor.state;
-         -- myPutLine("      xxxxxxxxxxxxx: Sensor state = " & sensorStateType'image(oldSensorState)); 
+         -- Keep track of the old and new state of the sensor
+			oldSensorState := sx.sensor.state;
+			flipSensor(sx);
+			newSensorState := sx.sensor.state;
+         myPutLine("      xxxxxxxxxxxxx: Sensor state = " & sensorStateType'image(oldSensorState)); 
 			
-         -- -- Inform Othrottles that sensor has fired and its new state                 -- mo 1/30/12
-         -- SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
+         -- Inform Othrottles that sensor has fired and its new state                 -- mo 1/30/12
+         SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
 			
-			-- -- Find the two sections that contain the sensor
-			-- getUnbockedUsableSectionsContainingSensor(sx.Sensor.Id, t1, t2);
-			-- if t1 /= null then
-				-- myPutLine("      xxxxxxxxxxxxx: 1st section id, state, trainId = " 
-				          -- & integer'image(t1.id) & " " 
-							 -- & sectionStateType'image(t1.state) & " " 
-							 -- & integer'image(t1.trainId)); 
-			-- end if;
-			-- if t2 /= null then
-				-- myPutLine("      xxxxxxxxxxxxx: 2st section id, state, trainId = " 
-				          -- & integer'image(t2.id) & " " 
-							 -- & sectionStateType'image(t2.state) & " " 
-							 -- & integer'image(t2.trainId)); 
-			-- end if;
+			-- Find the two sections that contain the sensor
+			getUnbockedUsableSectionsContainingSensor(sx.Sensor.Id, t1, t2);
+			if t1 /= null then
+				myPutLine("      xxxxxxxxxxxxx: 1st section id, state, trainId = " 
+				          & integer'image(t1.id) & " " 
+							 & sectionStateType'image(t1.state) & " " 
+							 & integer'image(t1.trainId)); 
+			end if;
+			if t2 /= null then
+				myPutLine("      xxxxxxxxxxxxx: 2st section id, state, trainId = " 
+				          & integer'image(t2.id) & " " 
+							 & sectionStateType'image(t2.state) & " " 
+							 & integer'image(t2.trainId)); 
+			end if;
 			
-			-- -- If either section is undefined, then put all trains in an error state and return
-			-- if t1 = null or t2 = null then
-            -- myPutLine("      xxxxxxxxxxxxx: XML, LOGIC, OR SENSOR FIRING ERROR can't find two unblocked sections for sensor"); 
-				-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-            -- return;
-         -- end if;
+			-- If either section is undefined, then put all trains in an error state and return
+			if t1 = null or t2 = null then
+            myPutLine("      xxxxxxxxxxxxx: XML, LOGIC, OR SENSOR FIRING ERROR can't find two unblocked sections for sensor"); 
+				SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+            return;
+         end if;
 							
-			-- -- If the sections involve different trains 
-			-- -- and the sensor is not a back sensor of either 
-			-- -- then put both trains in an error state and return
-			-- if t1.trainId /= 0 
-			-- and then t2.trainId /= 0 
-			-- and then t1.TrainId /= t2.TrainId 
-			-- and then (sensorId /= getBackSensor(t1.trainId) and sensorId /= getBackSensor(t2.trainId))
-			-- then
-            -- myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR sensor involves two trains:" & integer'image(sensorId) ); 
-				-- sendToTrainQueue(makeSensorErrorMsg(SensorId), t1.trainId);
-				-- sendToTrainQueue(makeSensorErrorMsg(SensorId), t2.trainId);
-            -- return;
-         -- end if;
+			-- If the sections involve different trains 
+			-- and the sensor is not a back sensor of either 
+			-- then put both trains in an error state and return
+			if t1.trainId /= 0 
+			and then t2.trainId /= 0 
+			and then t1.TrainId /= t2.TrainId 
+			and then (sensorId /= getBackSensor(t1.trainId) and sensorId /= getBackSensor(t2.trainId))
+			then
+            myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR sensor involves two trains:" & integer'image(sensorId) ); 
+				sendToTrainQueue(makeSensorErrorMsg(SensorId), t1.trainId);
+				sendToTrainQueue(makeSensorErrorMsg(SensorId), t2.trainId);
+            return;
+         end if;
 			
-			-- -- If the sections involve no trains then logic error, put all trains in error state, and return
-			-- if t1.trainId = 0 and t2.trainId = 0 then
-            -- myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR: no train ids found"); 
-				-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-			   -- return;
-		   -- end if;
+			-- If the sections involve no trains then logic error, put all trains in error state, and return
+			if t1.trainId = 0 and t2.trainId = 0 then
+            myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR: no train ids found"); 
+				SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+			   return;
+		   end if;
 							
-			-- -- If neither section is occupied then put all trains in an error state and return
-			-- if t1.state /= occupied and t2.state /= occupied then
-            -- myPutLine("      xxxxxxxxxxxxx: RANDOM SENSOR FIRING ERROR no trains nearby " 
-				          -- & integer'image(sensorId)); 
-				-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-            -- return;
-         -- end if;
+			-- If neither section is occupied then put all trains in an error state and return
+			if t1.state /= occupied and t2.state /= occupied then
+            myPutLine("      xxxxxxxxxxxxx: RANDOM SENSOR FIRING ERROR no trains nearby " 
+				          & integer'image(sensorId)); 
+				SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
+            return;
+         end if;
 					
-			-- -- If sections are occupied by different trains then go with the train whose back sensor was fired
-			-- -- Else go with the train in the occupied section
-			-- if        (t1.state = occupied and t2.state = occupied) 
-			-- and then  (t1.trainId /= t2.trainId)
-			-- then
-				-- if sensorId = getBackSensor(t1.trainId) then
-					-- trainId := t1.trainId;
-				-- elsif sensorId = getBackSensor(t2.trainId) then
-					-- trainId := t2.trainId;
-				-- else
-					-- myPutLine("      xxxxxxxxxxxxx: SENSOR FIRING ERROR: sensor doesn't match back of either train" 
-								 -- & integer'image(sensorId)); 
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), t1.trainId);
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), t2.trainId);
-					-- return;
-				-- end if;
-			-- elsif t1.state = occupied then
-				-- trainId := t1.trainId;
-			-- else
-				-- trainId := t2.trainId;
-			-- end if;
+			-- If sections are occupied by different trains then go with the train whose back sensor was fired
+			-- Else go with the train in the occupied section
+			if        (t1.state = occupied and t2.state = occupied) 
+			and then  (t1.trainId /= t2.trainId)
+			then
+				if sensorId = getBackSensor(t1.trainId) then
+					trainId := t1.trainId;
+				elsif sensorId = getBackSensor(t2.trainId) then
+					trainId := t2.trainId;
+				else
+					myPutLine("      xxxxxxxxxxxxx: SENSOR FIRING ERROR: sensor doesn't match back of either train" 
+								 & integer'image(sensorId)); 
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), t1.trainId);
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), t2.trainId);
+					return;
+				end if;
+			elsif t1.state = occupied then
+				trainId := t1.trainId;
+			else
+				trainId := t2.trainId;
+			end if;
 
 					
 			
-			-- sensorsPtr := GetSensors(TrainId);
-         -- myPutLine("      xxxxxxxxxxxxx: Id of train being processed = " & integer'image(trainId) & " *******************************");			
-			-- -- Identify the fired sensor relative to the train's sensors
-			-- if sensorId = sensorsPtr(1) then       
+			sensorsPtr := GetSensors(TrainId);
+         myPutLine("      xxxxxxxxxxxxx: Id of train being processed = " & integer'image(trainId) & " *******************************");			
+			-- Identify the fired sensor relative to the train's sensors
+			if sensorId = sensorsPtr(1) then       
 			
-				-- -- First sensor fired   (sx = s1)
+				-- First sensor fired   (sx = s1)
 				
-				-- -- Ignore if open --> closed
-				-- if oldSensorState = open then
-					-- myPutLine("      xxxxxxxxxxxxx: front of train approaching sensor, ignored " & integer'image(sensorId)); 
-					-- disposeSensorArray(sensorsPtr);
-					-- return;
-				-- end if;
+				-- Ignore if open --> closed
+				if oldSensorState = open then
+					myPutLine("      xxxxxxxxxxxxx: front of train approaching sensor, ignored " & integer'image(sensorId)); 
+					disposeSensorArray(sensorsPtr);
+					return;
+				end if;
 				
-				-- -- Closed --> open
-				-- myPutLine("      xxxxxxxxxxxxx: front of train leaving sensor, processing " & integer'image(sensorId)); 
+				-- Closed --> open
+				myPutLine("      xxxxxxxxxxxxx: front of train leaving sensor, processing " & integer'image(sensorId)); 
 				
-				-- -- Determine which section is reserved, which occupied
-				-- if t1.state = reserved and t2.state = occupied then
-					-- reservedSection := t1;
-					-- occupiedSection := t2;
-				-- elsif t1.state = occupied and t2.state = reserved then
-					-- reservedSection := t2;
-					-- occupiedSection := t1;
-				-- else
-					-- myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR should have had one section occupied, one reserved " 
-					          -- & integer'image(sensorId) ); 
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
-					-- disposeSensorArray(sensorsPtr);
-					-- return;
-				-- end if;
+				-- Determine which section is reserved, which occupied
+				if t1.state = reserved and t2.state = occupied then
+					reservedSection := t1;
+					occupiedSection := t2;
+				elsif t1.state = occupied and t2.state = reserved then
+					reservedSection := t2;
+					occupiedSection := t1;
+				else
+					myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR should have had one section occupied, one reserved " 
+					          & integer'image(sensorId) ); 
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+					disposeSensorArray(sensorsPtr);
+					return;
+				end if;
 				
-				-- -- Determine the next sensor in front of train
-				-- if reservedSection.sensorList.head.sensor.id = sensorId then
-					-- sf := reservedSection.sensorList.tail.sensor;
-				-- else	
-					-- sf := reservedSection.sensorList.head.sensor;
-				-- end if;
+				-- Determine the next sensor in front of train
+				if reservedSection.sensorList.head.sensor.id = sensorId then
+					sf := reservedSection.sensorList.tail.sensor;
+				else	
+					sf := reservedSection.sensorList.head.sensor;
+				end if;
 				
-            -- -- Change reserved section to occupied.
-				-- -- Send section state message.
-				-- -- Add new sensor to front of train.
-				-- -- Tell train front sensor fired.
-				-- reservedSection.State := Occupied;
-            -- SendToOutQueue(makePutSectionStateMsg(reservedSection.Id, Occupied));				
-				-- AddNewSensorToFront(TrainId, sf);
-				-- SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);
+            -- Change reserved section to occupied.
+				-- Send section state message.
+				-- Add new sensor to front of train.
+				-- Tell train front sensor fired.
+				reservedSection.State := Occupied;
+            SendToOutQueue(makePutSectionStateMsg(reservedSection.Id, Occupied));				
+				AddNewSensorToFront(TrainId, sf);
+				SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);
 
-				-- PutTrainPositionMsg(TrainId);
+				PutTrainPositionMsg(TrainId);
 				
-				-- disposeSensorArray(sensorsPtr);				
-				-- return;
+				disposeSensorArray(sensorsPtr);				
+				return;
 				
-			-- elsif sensorId = sensorsPtr(sensorsPtr'last - 1) then
+			elsif sensorId = sensorsPtr(sensorsPtr'last - 1) then
 			
-				-- -- Second to last sensor fired  (sx = sn-1)
+				-- Second to last sensor fired  (sx = sn-1)
 				
-            -- -- Logic error if closed --> open
-				-- if oldSensorState = closed then
-					-- myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR sensor sn-1 closed --> open  " & integer'image(sensorId) ); 
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
-					-- disposeSensorArray(sensorsPtr);
-					-- return;
-				-- end if;
+            -- Logic error if closed --> open
+				if oldSensorState = closed then
+					myPutLine("      xxxxxxxxxxxxx: LOGIC ERROR sensor sn-1 closed --> open  " & integer'image(sensorId) ); 
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+					disposeSensorArray(sensorsPtr);
+					return;
+				end if;
 				
-				-- -- Open --> closed
-				-- myPutLine("      xxxxxxxxxxxxx: back of train approaching sensor, processing " & integer'image(sensorId) ); 
+				-- Open --> closed
+				myPutLine("      xxxxxxxxxxxxx: back of train approaching sensor, processing " & integer'image(sensorId) ); 
 				
-				-- -- Error return if both sections not occupied
-				-- if t1.state /= occupied and t2.state /= occupied then
-					-- myPutLine("      xxxxxxxxxxxxx: LOBIC ERROR should have both sections occupied " & integer'image(sensorId) ); 
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
-					-- disposeSensorArray(sensorsPtr);
-					-- return;
-				-- end if;
+				-- Error return if both sections not occupied
+				if t1.state /= occupied and t2.state /= occupied then
+					myPutLine("      xxxxxxxxxxxxx: LOBIC ERROR should have both sections occupied " & integer'image(sensorId) ); 
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+					disposeSensorArray(sensorsPtr);
+					return;
+				end if;
 
-				-- -- Determine which section is last
-				-- backId := sensorsPtr(sensorsPtr'last);
-				-- IF t1.sensorList.head.sensor.id = backId OR t1.SensorList.Tail.sensor.id = backId  THEN
-					-- lastSection := t1;
-				-- else
-					-- lastSection := t2;
-				-- end if;
+				-- Determine which section is last
+				backId := sensorsPtr(sensorsPtr'last);
+				IF t1.sensorList.head.sensor.id = backId OR t1.SensorList.Tail.sensor.id = backId  THEN
+					lastSection := t1;
+				else
+					lastSection := t2;
+				end if;
 				
-				-- -- Free last section and remove it from blocking lists
-				-- -- Send section state message
-				-- -- Remove sensor from back of train
-				-- -- Tell train back sensor fired
-				-- lastSection.state := free;
-            -- lastSection.trainId := 0;
-				-- releaseBlockings(lastSection.blockingList);
-				-- SendToOutQueue(makePutSectionStateMsg(lastSection.Id, Free));
-				-- RemoveLastSensor(TrainId);
-				-- SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+				-- Free last section and remove it from blocking lists
+				-- Send section state message
+				-- Remove sensor from back of train
+				-- Tell train back sensor fired
+				lastSection.state := free;
+            lastSection.trainId := 0;
+				releaseBlockings(lastSection.blockingList);
+				SendToOutQueue(makePutSectionStateMsg(lastSection.Id, Free));
+				RemoveLastSensor(TrainId);
+				SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
 
-				-- PutTrainPositionMsg(TrainId);
+				PutTrainPositionMsg(TrainId);
 		  
-		      -- -- Tell all trains to try to move again
-				-- SendToAllTrainQueues(makeTryToMoveAgainMsg);			
+		      -- Tell all trains to try to move again
+				SendToAllTrainQueues(makeTryToMoveAgainMsg);			
 				
-				-- disposeSensorArray(sensorsPtr);
-            -- return;
+				disposeSensorArray(sensorsPtr);
+            return;
 				
-			-- elsif sensorId = sensorsPtr(sensorsPtr'last) then
+			elsif sensorId = sensorsPtr(sensorsPtr'last) then
 			
-				-- if oldSensorState = open then
-					-- -- Logic error if open --> closed
-					-- myPutLine("      xxxxxxxxxxxxx: LOBIC ERROR sn open --> closed " & integer'image(sensorId) ); 
-					-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
-				-- else
-					-- -- Okay if closed --> open
-					-- myPutLine("      xxxxxxxxxxxxx: back of train leaving sensor " & integer'image(sensorId)); 				
-				-- end if;
+				if oldSensorState = open then
+					-- Logic error if open --> closed
+					myPutLine("      xxxxxxxxxxxxx: LOBIC ERROR sn open --> closed " & integer'image(sensorId) ); 
+					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+				else
+					-- Okay if closed --> open
+					myPutLine("      xxxxxxxxxxxxx: back of train leaving sensor " & integer'image(sensorId)); 				
+				end if;
 
-				-- disposeSensorArray(sensorsPtr);
-				-- return;
+				disposeSensorArray(sensorsPtr);
+				return;
 				
-			-- else
+			else
 			
-				-- -- Undetermined logic error
-				-- myPutLine("      xxxxxxxxxxxxx: UNDETERMINED LOGIC ERROR on sensor " & integer'image(sensorId) ); 
-				-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
-				-- disposeSensorArray(sensorsPtr);
-				-- return;				
+				-- Undetermined logic error
+				myPutLine("      xxxxxxxxxxxxx: UNDETERMINED LOGIC ERROR on sensor " & integer'image(sensorId) ); 
+				sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);
+				disposeSensorArray(sensorsPtr);
+				return;				
 
-			-- end if;
+			end if;
 			
-      -- EXCEPTION
-         -- WHEN Error : OTHERS =>
-            -- put_line("**************** EXCEPTION Layout pkg in IdentifyTrainV2: " & Exception_Information(Error));
-            -- myPutLine("    sensor id #" & Positive'Image(sensorId));
-            -- RAISE;
-      -- END IdentifyTrainV2;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in IdentifyTrainV2: " & Exception_Information(Error));
+            myPutLine("    sensor id #" & Positive'Image(sensorId));
+            RAISE;
+      END IdentifyTrainV2;
 
 		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 		---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
