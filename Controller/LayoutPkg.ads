@@ -331,12 +331,12 @@ PACKAGE LayoutPkg IS
 											 searchOutcome : out natural);
 			-- pre none
 			-- post 
-			--  Search all occupied/reserved section that contain sensor and have same trainId
+			--  Search all occupied/reserved section that contain sensor
 			--                                                    SECTION 1  /  SECTION 2
 			--  case 1: neither section occupied/reserved         null       /  null
 			--  case 2: only one section occupied/reserved        not null   /  null
 			--  case 3: both sections occupied/reserved but with 
-			--          different trainId's                       not null   /  null
+			--          different trainId's                       not null   /  not null
 			--  case 4: both sections occupied with same trainId     
 			--                                                    not null   /  not null
 			--  case 5: one section occupied, one reserved        not null   /  not null
