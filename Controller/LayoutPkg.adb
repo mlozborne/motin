@@ -2134,17 +2134,22 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END SendToAllTrainQueues;
 
-      -- Check if it is possible to reserve this section bassed on switch states
+      -- Check if it is possible to reserve this section based on switch states
       FUNCTION IsSectionUseable (SectionPtr : SectionObjPtr) RETURN Boolean IS
          SwitchPtr : SwitchNodePtr := SectionPtr.SwitchList.Head;
          Result    : Boolean;      -- := False;                         -- mo 1/6/12
          SensorPtr : SensorNodePtr;
          Id        : Positive;
       BEGIN
+		   -- Loop through all switches in this section to see 
+			-- if they are all set correctly for usability of this section.
          WHILE SwitchPtr /= NULL LOOP
+			   -- Assume the section is not usable because this switch is set incorrectly wrong
             result := false;                                             -- mo 1/6/12
             CASE SwitchPtr.Switch.TypeOfSwitch IS
                WHEN Normal =>
+					   -- The switch is normal
+						-- Let Id = the section sensor that is at the closed/thrown end of the switch
                   IF SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id THEN
                      Id := SectionPtr.SensorList.Tail.Sensor.Id;
                   ELSE
@@ -2152,24 +2157,34 @@ PACKAGE BODY LayoutPkg IS
                   END IF;
                   CASE SwitchPtr.Switch.State IS
                      WHEN Closed =>
+							   -- The switch is closed
                         SensorPtr := SwitchPtr.Switch.ClosedSensors.Head;
                         WHILE SensorPtr /= NULL LOOP
                            IF SensorPtr.Sensor.Id = Id THEN
+										-- Sensor Id matches one of the sensors in the switch's closed list
+										-- Therefore from the perspective of this switch the section is usable.
                               Result := True;
                            END IF;
                            SensorPtr := SensorPtr.Next;
                         END LOOP;
                         IF NOT Result THEN
+									-- Sensor Id did not match one of the sensors in the switch's closed list
+									-- so the section is NOT usable
                            RETURN False;
                         END IF;
                      WHEN Thrown =>
+								-- The switch is thrown
                         IF Id /= SwitchPtr.Switch.ThrownSensor.Id THEN
+									-- Sensor Id did not match the sensor at the switch's thrown end
+									-- so the section is NOT usable
                            RETURN False;
                         END IF;
                      WHEN OTHERS =>
+								-- The switch is moving, so the section is NOT usable
                         RETURN False;
                   END CASE;
                WHEN Crossover =>
+						-- The switch is part of a crossover pair
                   CASE SwitchPtr.Switch.State IS
                      WHEN Closed =>
                         IF NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
