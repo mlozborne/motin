@@ -8,7 +8,7 @@ with MessageTranslationTypes; use messageTranslationTypes;
 
 
 PACKAGE TrainPkg IS
-   PROCEDURE SpawnTrain (
+   PROCEDURE SpawnTrain ( 
       TrainId    : TrainIdType;
       TrainState : TrainStateType := Halted;
       Direction  : DirectionType  := Forward;

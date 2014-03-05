@@ -189,8 +189,8 @@ PACKAGE LayoutPkg IS
                                       State   : SwitchStateType);
       PROCEDURE MoveSwitch           (SwitchId : Positive;
                                       State    : SwitchStateType);
-      PROCEDURE PositionTrain       (TrainId :        TrainIdType;
-                                     Count   :        Positive;
+      PROCEDURE PositionTrain        (TrainId :        TrainIdType;
+                                      Count   :        Positive;
                                       Sensors :        SensorArrayType;
                                       Result  :    OUT Boolean);
       PROCEDURE ReleaseReservation   (TrainId : TrainIdType);
@@ -354,7 +354,7 @@ PACKAGE LayoutPkg IS
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
 		
       -- PositionTrain and build data structures from XML
-      PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive;SensorPtr :OUT SensorNodePtr);
+      PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);
 		
 		-- PositionTrain and MakeReservation helpers
       FUNCTION  IsSectionUseable(SectionPtr : SectionObjPtr) RETURN Boolean;

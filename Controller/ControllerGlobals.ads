@@ -23,7 +23,7 @@ PACKAGE ControllerGlobals IS
    kFirstPhysAddress      : constant natural := 101;    -- mo 1/15/12
    kLastPhysAddress       : constant natural := 9999;   -- mo 1/15/12
    kClearAllSlotsAddress  : constant natural := 9999;
-   SUBTYPE ColorType IS String(1 .. 6);  
+   SUBTYPE ColorType IS String(1 .. 6);   
    
    SUBTYPE SwitchID IS Natural RANGE 1 .. KNumSwitches;
    SUBTYPE SegmentID IS Natural RANGE 1 .. KNumSegments;
