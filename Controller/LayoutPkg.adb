@@ -1858,7 +1858,7 @@ PACKAGE BODY LayoutPkg IS
 			elsif firstSection.state = occupied and secondSection.state = occupied then
 				searchOutcome := 4;
 			else
-				searchOutcome := 5;
+				searchOutcome := 5;   what if both sections are reserved???????????????
 			end if;
       EXCEPTION
          WHEN Error : OTHERS =>
@@ -2098,6 +2098,93 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
 		end flipSensor;
 
+		procedure identifySensor(sx : positive;               -- MO March 2014
+		                         identificationOutcome : out natural;
+										 trainId : out trainIdType) is
+			soPtr     : sensorObjPtr;
+			toPtr     : trainObjPtr;
+			sId       : positive;
+		begin
+			-- Case 1
+			-- see if the sensor is legal
+			getSensor(sx, soPtr);
+			if soPtr = null then
+				identificationOutcome := 1;
+				return;
+			end if;
+			
+			-- Case 2
+			-- for each train in the train list 
+			--     check if sx equals the back sensor
+			toPtr := trainList;
+			while toPtr /= null loop
+				sId := getBackSensor(toPtr.trainId);
+				if sx = sId then
+					identificationOutcome := 2;
+					trainId := toPtr.trainId;
+					return;
+				end if;
+				toPtr := toPtr.next;
+			end loop;
+			
+			-- Case 3
+			-- for each train in the train list
+			--     check if sx is under the train
+			toPtr := trainList;
+			while toPtr /= null loop
+				if sensorUnderTrain(toPtr.trainId, sx) then
+					identificationOutcome := 3;
+					trainId := toPtr.trainId;
+					return;
+				end if;
+				toPtr := toPtr.next;
+			end loop;
+			
+			-- Case 4
+			-- for each train in the train list
+			--     check if sx is equal to the front sensor
+			toPtr := trainList;
+			while toPtr /= null loop
+				sId := getFrontSensor(toPtr.trainId);
+				if sx = sId then
+					identificationOutcome := 4;
+					trainId := toPtr.trainId;
+					return;
+				end if;
+				toPtr := toPtr.next;
+			end loop;
+			
+			-- Case 5
+			-- for each train in the train list
+			--     check is sx is equal to a sensor in a reserved section
+			-- Try to find two sections that are occupied/reserved and which contain the sensor
+			sectionPtr := sectionList.head;
+         WHILE SectionPtr /= NULL LOOP
+            IF   (SectionPtr.Section.SensorList.Head.Sensor.Id = sx OR
+                  SectionPtr.Section.SensorList.Tail.Sensor.Id = sx) 
+				AND  (SectionPtr.Section.State = Reserved) 
+				THEN
+               IF FirstSection = NULL THEN
+                  FirstSection := SectionPtr.Section;
+					else
+						secondSection := sectionPtr.section;
+						exit;
+					end if;
+            END IF;
+            SectionPtr := SectionPtr.Next;
+         END LOOP;
+			
+					
+			
+			
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in identifySensor: " & Exception_Information(Error));
+            put_line("    sensor id #" & Positive'Image(sx));
+            RAISE;
+		end identifySensor;
+		
+
       -- Send a message to a specific TrainQueue
       PROCEDURE SendToTrainQueue (
             Cmd : MessageType;
@@ -2323,11 +2410,12 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END BlockSections;
 
-      PROCEDURE GetSensor (
+      PROCEDURE GetSensor(
             SensorId :        Positive;
             Sensor   :    OUT SensorObjPtr) IS
          SensorPtr : SensorNodePtr := SensorList.Head;
       BEGIN
+			sensor := null;
          WHILE SensorPtr /= NULL LOOP
             IF SensorPtr.Sensor.Id = SensorId THEN
                Sensor := SensorPtr.Sensor;

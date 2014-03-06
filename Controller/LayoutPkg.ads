@@ -324,10 +324,13 @@ PACKAGE LayoutPkg IS
       FUNCTION  GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType;
       FUNCTION  GetSensors    (TrainId : TrainIdType) RETURN SensorArrayAccess; 
       function  countSensors(trainId : trainIdType) return natural;
-		procedure getUnbockedUsableSectionsContainingSensor(SensorID : Positive;
-                                  FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr);
+		procedure getUnbockedUsableSectionsContainingSensor(
+		                            SensorID : Positive;
+                                  FirstSection : OUT SectionObjPtr; 
+											 SecondSection : OUT SectionObjPtr);
       PROCEDURE GetOccResSections(SensorID : Positive;
-                                  FirstSection : OUT SectionObjPtr; SecondSection : OUT SectionObjPtr;
+                                  FirstSection : OUT SectionObjPtr; 
+											 SecondSection : OUT SectionObjPtr;
 											 searchOutcome : out natural);
 			-- pre none
 			-- post 
@@ -352,6 +355,16 @@ PACKAGE LayoutPkg IS
       function  GetBackSensor(TrainId : TrainIdType)                         return Positive;
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
+		
+		procedure identifySensor(sx : positive;               -- MO March 2014
+		                         identificationOutcome : out natural;
+										 trainId : out trainIdType);
+			-- Case 1: sx not in controller’s sensor list
+			-- Case 2: sx = sn (even if sx = t1 or sx=tf for another train
+			-- Case 3: sx=si in <s2,...,sn-1>, where n  > 2
+			-- Case 4: sx = s1 (and by Case 2 sx/=tn for all other trains)
+			-- Case 5: sx = sf (and by the previous cases, sx belongs to no other train)
+			-- Case 6: other
 		
       -- PositionTrain and build data structures from XML
       PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);
