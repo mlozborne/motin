@@ -179,7 +179,9 @@ PACKAGE LayoutPkg IS
          --            end if
 			--          end if
 			--          return
-
+			-- case 6:  both sections reserved with
+			--          same train id                             not null  /  not null 
+			--          NOT GOING TO HAPPEN SO WILL IGNORE IT COMPLETELY
 
 		PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
 		-- PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
@@ -356,14 +358,29 @@ PACKAGE LayoutPkg IS
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
 		
-		procedure identifySensor(sx : positive;               -- MO March 2014
-		                         identificationOutcome : out natural;
-										 trainId : out trainIdType);
+		procedure identifySensor(sx               : positive;               -- MO March 2014
+		                         idSensorCase     : out natural;
+										 expectationError : out boolean;
+										 trainId          : out trainIdType;
+										 leftSectionPtr   : out sectionObjPtr;
+										 rightSectionPtr  : out sectionObjPtr);
+			-- We assume here that the train of interest is moving from right to left.
 			-- Case 1: sx not in controller’s sensor list
 			-- Case 2: sx = sn (even if sx = t1 or sx=tf for another train
+			--         expecting O* for (sn-1,sx,-)=(sn-1,sn,-) where
+			--         O belongs to this train  
+		   --         * belongs to another train or no train
 			-- Case 3: sx=si in <s2,...,sn-1>, where n  > 2
+			--         expecting O...O for (si-1,sx,...,sn-1,sn)=(si-1,si,...,sn-1,sn) where
+			-- 		  all O belongs to this train
+			--         we don't attempt to determine the train's direction
 			-- Case 4: sx = s1 (and by Case 2 sx/=tn for all other trains)
+			--			  expecting RO for (sf,sx,s2)=(sf,s1,s2) where
+			--			  R and O belong to this train
 			-- Case 5: sx = sf (and by the previous cases, sx belongs to no other train)
+			--			  expecting notRR for (-,sx,s1)=(sf+1,sf,s1) where
+			--			  R belongs to this train
+			--			  notR belongs to another train or no train
 			-- Case 6: other
 		
       -- PositionTrain and build data structures from XML

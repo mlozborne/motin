@@ -1836,15 +1836,6 @@ PACKAGE BODY LayoutPkg IS
 						secondSection := sectionPtr.section;
 						exit;
 					end if;
-               -- ELSIF FirstSection.TrainId = SectionPtr.Section.TrainId THEN
-                  -- SecondSection := SectionPtr.Section;
-						-- if firstSection.state = occupied and secondSection.state = occupied then
-							-- searchOutcome := 4;
-						-- else
-							-- searchOutcome := 5;
-						-- end if;
-                  -- RETURN;
-               -- END IF;
             END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
@@ -1858,7 +1849,7 @@ PACKAGE BODY LayoutPkg IS
 			elsif firstSection.state = occupied and secondSection.state = occupied then
 				searchOutcome := 4;
 			else
-				searchOutcome := 5;   what if both sections are reserved???????????????
+				searchOutcome := 5;   -- what if both sections are reserved? not going to happen
 			end if;
       EXCEPTION
          WHEN Error : OTHERS =>
@@ -2098,85 +2089,133 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
 		end flipSensor;
 
-		procedure identifySensor(sx : positive;               -- MO March 2014
-		                         identificationOutcome : out natural;
-										 trainId : out trainIdType) is
-			soPtr     : sensorObjPtr;
-			toPtr     : trainObjPtr;
-			sId       : positive;
+		procedure identifySensor(sx               : positive;               -- MO March 2014
+		                         idSensorCase     : out natural;
+										 expectationError : out boolean;
+										 trainId          : out trainIdType;
+										 leftSectionPtr   : out sectionObjPtr;
+										 rightSectionPtr  : out sectionObjPtr) is
+			sensorPtr                  : sensorObjPtr;
+			trainPtr                   : trainObjPtr;
+			sId                        : positive;
+			section1Ptr, section2Ptr   : sectionObjPtr;
+			searchOutcome              : natural;
 		begin
+			expectationError := false;
+			leftSectionPtr := null;
+			rightSectionPtr := null;
+			
 			-- Case 1
 			-- see if the sensor is legal
-			getSensor(sx, soPtr);
-			if soPtr = null then
-				identificationOutcome := 1;
+			getSensor(sx, sensorPtr);
+			if sensorPtr = null then
+				idSensorCase := 1;
 				return;
 			end if;
+			
+			getOccResSections(sx, section1Ptr, section2Ptr, searchOutcome);
 			
 			-- Case 2
 			-- for each train in the train list 
 			--     check if sx equals the back sensor
-			toPtr := trainList;
-			while toPtr /= null loop
-				sId := getBackSensor(toPtr.trainId);
+			trainPtr := trainList;
+			while trainPtr /= null loop
+				sId := getBackSensor(trainPtr.trainId);
 				if sx = sId then
-					identificationOutcome := 2;
-					trainId := toPtr.trainId;
+					idSensorCase := 2;
+					trainId := trainPtr.trainId;
+					-- Check the expectation 
+					if sectionOccupied(section1Ptr) and trainInSection(trainId, section1Ptr) then
+						leftSectionPtr := section1Ptr;
+						rightSectionPtr := section2Ptr;
+					else
+						leftSectionPtr := section2Ptr;
+						rightSectionPtr := section1Ptr;
+					end if;
+					if trainInSection(rightSectionPtr) then
+						expectationError := true;
+					end if;
+					-------------------------	
 					return;
 				end if;
-				toPtr := toPtr.next;
+				trainPtr := trainPtr.next;
 			end loop;
 			
 			-- Case 3
 			-- for each train in the train list
 			--     check if sx is under the train
-			toPtr := trainList;
-			while toPtr /= null loop
-				if sensorUnderTrain(toPtr.trainId, sx) then
-					identificationOutcome := 3;
-					trainId := toPtr.trainId;
+			trainPtr := trainList;
+			while trainPtr /= null loop
+				if sensorUnderTrain(trainPtr.trainId, sx) then
+					idSensorCase := 3;
+					trainId := trainPtr.trainId;
+					-- Check the expectation
+					if sectionOccupied(section1Ptr) and sectionOccupied(section2Ptr) and
+					   trainInSection(section1Ptr, trainId) and trainInSection(section2Ptr, trainId) then
+						leftSectionPtr := section1Ptr;    -- actually we don't care about left and right
+						rightSectionPtr := section2Ptr;
+					else
+						expectationError := true;
+					end if;
+					------------------------
 					return;
 				end if;
-				toPtr := toPtr.next;
+				trainPtr := trainPtr.next;
 			end loop;
 			
 			-- Case 4
 			-- for each train in the train list
 			--     check if sx is equal to the front sensor
-			toPtr := trainList;
-			while toPtr /= null loop
-				sId := getFrontSensor(toPtr.trainId);
+			trainPtr := trainList;
+			while trainPtr /= null loop
+				sId := getFrontSensor(trainPtr.trainId);
 				if sx = sId then
-					identificationOutcome := 4;
-					trainId := toPtr.trainId;
+					idSensorCase := 4;
+					trainId := trainPtr.trainId;
+					-- Check the expectation
+					if not (trainInSection(section1Ptr, trainId) and trainInSection(section2Ptr)) then
+						expectationError := true;
+					elsif sectionReserved(section1Ptr) and sectionOccupied(section2Ptr) then
+						leftSectionPtr := section1Ptr;
+						rightSectionPtr := section2Ptr;
+					elsif sectionReserved(section2Ptr) and sectionOccupied(section1Ptr) then
+						leftSectionPtr := section2Ptr;
+						rightSectionPtr := section1Ptr;
+					else
+						expectationError := true;
+					end if;
+					------------------------
 					return;
 				end if;
-				toPtr := toPtr.next;
+				trainPtr := trainPtr.next;
 			end loop;
 			
 			-- Case 5
-			-- for each train in the train list
-			--     check is sx is equal to a sensor in a reserved section
-			-- Try to find two sections that are occupied/reserved and which contain the sensor
-			sectionPtr := sectionList.head;
-         WHILE SectionPtr /= NULL LOOP
-            IF   (SectionPtr.Section.SensorList.Head.Sensor.Id = sx OR
-                  SectionPtr.Section.SensorList.Tail.Sensor.Id = sx) 
-				AND  (SectionPtr.Section.State = Reserved) 
-				THEN
-               IF FirstSection = NULL THEN
-                  FirstSection := SectionPtr.Section;
-					else
-						secondSection := sectionPtr.section;
-						exit;
-					end if;
-            END IF;
-            SectionPtr := SectionPtr.Next;
-         END LOOP;
-			
+			-- if at this point, we have a (reserved,not reserved) pair 
+			-- this should establish case 5
+			idSensorCase := 5;
+			if sectionReserved(section1Ptr) and not sectionReserved(section2Ptr) then
+				leftSectionPtr := section2Ptr;
+				rightSectionPtr := section1Ptr;
+				trainId := section1Ptr.trainId;
+				if trainInSection(leftSectionPtr) then
+					expectationError := true;
+				end if;
+		      return;
+			elsif sectionReserved(section2Ptr) and not sectionReserved(section1Ptr) then
+				trainId := section2Ptr.trainId;
+				leftSectionPtr := section1Ptr;
+				rightSectionPtr := section2Ptr;
+				if trainInSection(leftSectionPtr) then
+					expectationError := true;
+				end if;
+				return;
+			end if;
+
+			-- Case 6
+			idSensorCase := 6;
+			return;
 					
-			
-			
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in identifySensor: " & Exception_Information(Error));
