@@ -183,8 +183,8 @@ PACKAGE LayoutPkg IS
 			--          same train id                             not null  /  not null 
 			--          NOT GOING TO HAPPEN SO WILL IGNORE IT COMPLETELY
 
-		PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
-		-- PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
+		-- PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
+		PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
       PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
@@ -358,6 +358,9 @@ PACKAGE LayoutPkg IS
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
 		
+		function trainInSection(trainId : trainIdtype; sp : sectionObjPtr) return boolean;
+		function sectionReserved(sp : sectionObjPtr) return boolean;
+		function sectionOccupied(sp : sectionObjPtr) return boolean;
 		procedure identifySensor(sx               : positive;               -- MO March 2014
 		                         idSensorCase     : out natural;
 										 expectationError : out boolean;
