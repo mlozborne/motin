@@ -2091,6 +2091,9 @@ PACKAGE BODY LayoutPkg IS
 
 		function trainInSection(trainId : trainIdtype; sp : sectionObjPtr) return boolean is
 		begin
+			if trainId = 0 then
+				return false;
+			end if;
 			if sp /= null and then sp.trainId = trainId then
 				return true;
 			else
@@ -2132,6 +2135,7 @@ PACKAGE BODY LayoutPkg IS
 			expectationError := false;
 			leftSectionPtr := null;
 			rightSectionPtr := null;
+			trainId = 0;
 			
 			-- Case 1
 			-- see if the sensor is legal
@@ -2219,8 +2223,9 @@ PACKAGE BODY LayoutPkg IS
 			end loop;
 			
 			-- Case 5
-			-- if at this point, we have a (reserved,not reserved) pair 
+			-- If at this point, we have a (reserved,not reserved) pair 
 			-- this should establish case 5
+			-- There is NO WAY (I hope) that trainId is 0
 			idSensorCase := 5;
 			if sectionReserved(section1Ptr) and not sectionReserved(section2Ptr) then
 				leftSectionPtr := section2Ptr;
@@ -2229,7 +2234,7 @@ PACKAGE BODY LayoutPkg IS
 				if trainInSection(trainId, leftSectionPtr) then
 					expectationError := true;
 				end if;
-		      return;
+				return;
 			elsif sectionReserved(section2Ptr) and not sectionReserved(section1Ptr) then
 				trainId := section2Ptr.trainId;
 				leftSectionPtr := section1Ptr;

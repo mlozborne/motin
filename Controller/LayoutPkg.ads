@@ -369,7 +369,7 @@ PACKAGE LayoutPkg IS
 										 rightSectionPtr  : out sectionObjPtr);
 			-- We assume here that the train of interest is moving from right to left.
 			-- Case 1: sx not in controller’s sensor list
-			-- Case 2: sx = sn (even if sx = t1 or sx=tf for another train
+			-- Case 2: sx = sn (even if sx = t1 or sx=tf for another train)
 			--         expecting O* for (sn-1,sx,-)=(sn-1,sn,-) where
 			--         O belongs to this train  
 		   --         * belongs to another train or no train
@@ -384,7 +384,7 @@ PACKAGE LayoutPkg IS
 			--			  expecting notRR for (-,sx,s1)=(sf+1,sf,s1) where
 			--			  R belongs to this train
 			--			  notR belongs to another train or no train
-			-- Case 6: other
+			-- Case 6: other, such as the sensor is not associated with any train
 		
       -- PositionTrain and build data structures from XML
       PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);
