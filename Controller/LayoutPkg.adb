@@ -2225,7 +2225,6 @@ PACKAGE BODY LayoutPkg IS
 			-- Case 5
 			-- If at this point, we have a (reserved,not reserved) pair 
 			-- this should establish case 5
-			-- There is NO WAY (I hope) that trainId is 0
 			idSensorCase := 5;
 			if sectionReserved(section1Ptr) and not sectionReserved(section2Ptr) then
 				leftSectionPtr := section2Ptr;
@@ -2246,6 +2245,7 @@ PACKAGE BODY LayoutPkg IS
 			end if;
 
 			-- Case 6
+			-- This encompasses the case in which sx cannot be associated with any train and trainId is 0.
 			idSensorCase := 6;
 			return;
 					
