@@ -184,7 +184,7 @@ PACKAGE LayoutPkg IS
 			--          NOT GOING TO HAPPEN SO WILL IGNORE IT COMPLETELY
 
 		-- PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
-		PROCEDURE IdentifyTrainV3      (SensorID : Positive);  -- sensor oriented, assumes sensor errors
+		PROCEDURE IdentifyTrainV3      (sx : Positive);  -- sensor oriented, assumes sensor errors
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
       PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
@@ -358,11 +358,16 @@ PACKAGE LayoutPkg IS
       PROCEDURE GetBackSensor(TrainId : TrainIdType; BackId : OUT Positive);
 		procedure flipSensor(sensorPtr : sensorNodePtr); 
 		
+		--vvvvvvvvvvvvvvvvvvvvvvvvvvvv Helper Functions for IdentifyTrainV3 vvvvvvvvvvvvvvvvvvvvvv
+      procedure errorStopTrainsAtBadSensor(idSensorCase         : positive;
+		                                     sx                   : positive;
+														 leftSectionPtr       : sectionObjPtr;
+														 rightSectionPtr      : sectionObjPtr);
 		function trainInSection(trainId : trainIdtype; sp : sectionObjPtr) return boolean;
 		function sectionReserved(sp : sectionObjPtr) return boolean;
 		function sectionOccupied(sp : sectionObjPtr) return boolean;
 		procedure identifySensor(sx               : positive;               -- MO March 2014
-		                         idSensorCase     : out natural;
+		                         idSensorCase     : out positive;
 										 expectationError : out boolean;
 										 trainId          : out trainIdType;
 										 leftSectionPtr   : out sectionObjPtr;
@@ -391,6 +396,7 @@ PACKAGE LayoutPkg IS
 			--			  notR belongs to another train or no train
 			-- Case 6: other, such as the sensor is not associated with any train
 			--         or both sections are reserved.
+		--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		
       -- PositionTrain and build data structures from XML
       PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);

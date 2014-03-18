@@ -162,15 +162,195 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END GetSwitchStates;
 				
-      PROCEDURE IdentifyTrainV3 (SensorID : Positive) IS
+		PROCEDURE IdentifyTrainV3 (sx : Positive) IS
+		   expectationError	 : boolean;
+         SensorPtr          : SensorNodePtr;
+			s1,sf   				 : sensorObjPtr;
+         leftSectionPtr     : SectionObjPtr;
+         rightSectionPtr    : SectionObjPtr;
+			nextFreeSection	 : sectionObjPtr;
+			section            : sectionObjPtr;
+			sectionNode        : sectionNodePtr;
+			oldSensorState     : sensorStateType;
+			newSensorState     : sensorStateType;
+			trainId			    : trainIdType;
+			SensorPtrs         : AccessToArrayOfSensorObjPtrType;
+			last               : positive;
+			idSensorCase		 : positive;
 		begin
-			null;
-      EXCEPTION
+			-- Determine if sensor is in the layout specification even if it exists physical.
+         FindSensor(SensorList, sx, SensorPtr);
+         IF SensorPtr = NULL THEN
+            myPutLine("      -------------IdentifyTrainV3: ERROR(maybe) sensor not recognized " & integer'image(sx) ); 
+            return;
+         end if;
+			
+			-- Remember the sensor's state:  oldSensorState
+			-- Flip the sensor:  newSensorState
+			-- Display the old sensor state
+			oldSensorState := sensorPtr.sensor.state;
+			flipSensor(sensorPtr);
+			newSensorState := sensorPtr.sensor.state;
+			if oldSensorState = open then
+				myPutLine("      -------------IdentifyTrainV3: sensor " & integer'image(sx) & " open-->closed");	
+			else
+				myPutLine("      -------------IdentifyTrainV3: sensor " & integer'image(sx) & " closed-->open");	
+			end if;
+
+         -- Inform Othrottles that sensor has fired and its new state                 
+         SendToOutQueue(makePutSensorStateMsg(sx, newSensorState));
+
+			-- Identify the sensor
+			-- If trainId is 0 then expectationError should be 6
+			identifySensor(sx, idSensorCase, expectationError, trainId, leftSectionPtr, rightSectionPtr);
+			
+			if idSensorCase = 1 then
+			
+				-- Case 1: sx not in controller’s sensor list
+				-- We have already eliminated this case above by calling FindSensor
+				null;
+			
+			elsif idSensorCase = 2 then	
+			
+				-- Case 2: sx = sn (even if sx = t1 or sx=tf for another train
+				if expectationError then
+					errorStopTrainsAtBadSensor(idSensorCase, sx, leftSectionPtr, rightSectionPtr);
+				else
+					if oldSensorState = closed then
+						myPutLine("      -------------IdentifyTrainV3: C2 NORMAL back of train leaving closed sensor sn"); 
+					else
+						myPutLine("      -------------IdentifyTrainV3: C2 SENSOR ERROR back of train leaving open sensor. Stop train.");
+						sendToTrainQueue(makeSensorErrorMsg(sx), trainId);	
+					end if;
+				end if;
+				
+			elsif idSensorCase = 3 then
+			
+				-- Case 3: sx=si in <s2,...,sn-1>, where n  > 2
+				if expectationError then
+					errorStopTrainsAtBadSensor(idSensorCase, sx, leftSectionPtr, rightSectionPtr);
+				else
+					SensorPtrs := GetSensorPtrs(TrainId); -- This array contains pointers to s1,s2,...,sn
+					last := sensorPtrs'last;
+					
+					if oldSensorState = closed then
+						myPutLine("      -------------IdentifyTrainV3: C3 FIXING sensor unexpectedly closed. Flip and continue"); 
+						flipSensor(sensorPtr);
+						SendToOutQueue(makePutSensorStateMsg(sx, closed));
+					end if;
+					-- NORMAL from here if sn-1 fired else fixing by removing extra sensorStateType
+					for i in reverse 2..last loop
+						exit when sx = sensorPtrs(i).id;
+						myPutLine("      -------------IdentifyTrainV3: C3 removing sensor"  
+						          & integer'image(sensorPtrs(i).id) & " from back of train"); 
+						sensorPtrs(i).state := open;   -- Open si for safety
+						SendToOutQueue(makePutSensorStateMsg(sensorPtrs(i).id, open));					
+						getSection(sectionNode, sensorPtrs(i-1).id, sensorPtrs(i).id);
+						section := sectionNode.section;
+						section.state := free;
+						SendToOutQueue(makePutSectionStateMsg(section.Id, Free));
+						ReleaseBlockings(section.BlockingList);
+						section.trainId := 0;
+						RemoveLastSensor(TrainId);
+						SendToTrainQueue(makeBackSensorFiredMsg(TrainId), TrainId);
+					end loop;	
+					putTrainPositionMsg(TrainId);
+					SendToAllTrainQueues(makeTryToMoveAgainMsg);					
+					disposeArrayOfSensorObjPtr(sensorPtrs);				
+				end if;
+				
+			elsif idSensorCase = 4 then
+			
+				-- Case 4: sx = s1 (and by Case 2 sx/=tn for all other trains)
+				if expectationError then
+					errorStopTrainsAtBadSensor(idSensorCase, sx, leftSectionPtr, rightSectionPtr);
+				else
+					if oldSensorState = open then
+						myPutLine("      -------------IdentifyTrainV3: C4 NORMAL front of train approaching sensor s1, ignore.");		
+					else 
+						myPutLine("      -------------IdentifyTrainV3: C4 NORMAL front of train leaving sensor s1.");	
+						leftSectionPtr.state := occupied;
+						sendToOutQueue(makePutSectionStateMsg(leftSectionPtr.Id, Occupied));
+						IF leftSectionPtr.SensorList.Head.Sensor.Id = sx THEN
+							AddNewSensorToFront(leftSectionPtr.TrainId, leftSectionPtr.SensorList.Tail.Sensor);   
+						ELSE
+							AddNewSensorToFront(leftSectionPtr.TrainId, leftSectionPtr.SensorList.Head.Sensor);
+						END IF;
+						if countSensors(trainId) > kMaxTrainLength + 1 then
+							myPutLine("      -------------IdentifyTrainV3: C4 ERROR train " & integer'image(trainId) & 
+										 " too long. Error stop train");	
+							sendToTrainQueue(makeSensorErrorMsg(sx), trainId);							
+						else   
+							SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
+						end if;
+						PutTrainPositionMsg(TrainId);                                    -- Put train position
+					end if;
+				end if;
+				
+			elsif idSensorCase = 5 then
+			
+			-- Case 5: sx = sf (and by the previous cases, sx belongs to no other train)
+				if expectationError then
+					errorStopTrainsAtBadSensor(idSensorCase, sx, leftSectionPtr, rightSectionPtr);
+				else
+					s1 := getFrontSensorPtr(trainId);
+					sf := getSensorAtFrontOfReservedSectionPtr(rightSectionPtr.all);
+					if oldSensorState = open then
+						myPutLine("      -------------IdentifyTrainV3: C5 IGNORE front of train approaching sf. Fix when leaving");
+					else
+						myPutLine("      -------------IdentifyTrainV3: C5 FIXING front of train leaving sf.");	
+						rightSectionPtr.state := occupied;
+						SendToOutQueue(makePutSectionStateMsg(rightSectionPtr.Id, Occupied));
+						getFreeSection(rightSectionPtr.nextSectionList, nextFreeSection);
+						if nextFreeSection = null then 
+							getFreeSection(rightSectionPtr.prevSectionList, nextFreeSection);
+						end if;
+						if nextFreeSection = null then
+							myPutLine("      -------------IdentifyTrainV3: C5 ERROR couldn't fix, next section blocked. Error stop train");	
+							sendToTrainQueue(makeSensorErrorMsg(sx), trainId);		
+						else 
+							nextFreeSection.state := occupied;
+							BlockSections(nextFreeSection.BlockingList);
+							nextFreeSection.trainId := trainId;
+							SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
+							s1.state := open;   -- Set s1 open for safety
+							SendToOutQueue(makePutSensorStateMsg(s1.id, open));
+							if rightSectionPtr.sensorList.head.sensor.id = sf.id then    -- Add sf to front of train
+								addNewSensorToFront(trainId, rightSectionPtr.sensorList.head.sensor);  
+							else
+								addNewSensorToFront(trainId, rightSectionPtr.sensorList.tail.sensor);
+							end if;
+							if nextFreeSection.sensorList.head.sensor.id = sf.id then   -- Add sf+1 to front of train
+								addNewSensorToFront(trainId, nextFreeSection.sensorList.tail.sensor);
+							else
+								addNewSensorToFront(trainId, nextFreeSection.sensorList.head.sensor);
+							end if;
+                     if countSensors(trainId) > kMaxTrainLength + 1 then
+                        myPutLine("      -------------IdentifyTrainV3: C5 ERROR train " & integer'image(trainId) & 
+                                  " too long. Error stop train");	
+                        sendToTrainQueue(makeSensorErrorMsg(sx), trainId);							
+                     else   
+                        SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
+                     end if;
+                     PutTrainPositionMsg(TrainId);                                    -- Put train position
+						end if;
+					end if;
+				end if;
+				
+			else
+			
+				-- Case 6: other, such as the sensor is not associated with any train
+            myPutLine("      -------------IdentifyTrainV3: C6 MYSTERY SENSOR FIRING not close to any trains: error stop all" );
+				SendToAllTrainQueues(makeSensorErrorMsg(sx));
+			
+			end if;
+								
+		EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in IdentifyTrainV3: " & Exception_Information(Error));
             raise;
 		end IdentifyTrainV3;
-
+		
 		-- PROCEDURE IdentifyTrainV2 (SensorID : Positive) IS
          -- sx                   : SensorNodePtr;   -- ptr to sensor that fired
 			-- sf                   : SensorObjPtr;    -- next sensor in front of train
@@ -652,6 +832,7 @@ PACKAGE BODY LayoutPkg IS
                PutTrainPositionMsg(TrainId);                                    -- Put train position
 				end if;
 			end if;
+			
 			return;
       EXCEPTION
          WHEN Error : OTHERS =>
@@ -2089,6 +2270,34 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
 		end flipSensor;
 
+      procedure errorStopTrainsAtBadSensor(idSensorCase         : positive;
+		                                     sx                   : positive;
+														 leftSectionPtr       : sectionObjPtr;
+														 rightSectionPtr      : sectionObjPtr) is
+			train1, train2			: natural;
+		begin
+			myPutLine("      -------------IdentifyTrainV3: EXPECTATION ERROR at sensor " & 
+			          integer'image(sx) & 
+						 " case #" & 
+						 integer'image(idSensorCase));
+			train1 := 0;
+			train2 := 0;
+			if leftSectionPtr /= null then
+				train1 := leftSectionPtr.trainId;
+			end if;
+			if rightSectionPtr /= null then
+				train2 := rightSectionPtr.trainId;
+			end if;
+			if train1 /= 0 then
+				myPutLine("                                    stopping train " & integer'image(train1));
+				sendToTrainQueue(makeSensorErrorMsg(sx), train1);
+			end if;
+			if train2 /= 0 and train2 /= train1 then
+				myPutLine("                                    stopping train " & integer'image(train2));
+				sendToTrainQueue(makeSensorErrorMsg(sx), train2);
+			end if;
+		end errorStopTrainsAtBadSensor;
+
 		function trainInSection(trainId : trainIdtype; sp : sectionObjPtr) return boolean is
 		begin
 			if trainId = 0 then
@@ -2121,7 +2330,7 @@ PACKAGE BODY LayoutPkg IS
 
 
 		procedure identifySensor(sx               : positive;               -- MO March 2014
-		                         idSensorCase     : out natural;
+		                         idSensorCase     : out positive;
 										 expectationError : out boolean;
 										 trainId          : out trainIdType;
 										 leftSectionPtr   : out sectionObjPtr;
@@ -2135,7 +2344,7 @@ PACKAGE BODY LayoutPkg IS
 			expectationError := false;
 			leftSectionPtr := null;
 			rightSectionPtr := null;
-			trainId = 0;
+			trainId := 0;
 			
 			-- Case 1
 			-- see if the sensor is legal
