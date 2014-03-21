@@ -3135,9 +3135,9 @@ PACKAGE BODY LayoutPkg IS
                         if isHigh then          -- mo 1/16/12
                            myPutLine("       ignoring high sensor " & integer'image(sensorId));
                         else                        
-                           -- LayoutPtr.IdentifyTrainV1(SensorId);                                     
+                            LayoutPtr.IdentifyTrainV1(SensorId);                                     
                            -- LayoutPtr.IdentifyTrainV2(SensorId);                                    
-                           LayoutPtr.IdentifyTrainV3(SensorId);                                      
+                           -- LayoutPtr.IdentifyTrainV3(SensorId);                                      
                         end if;
                      END;
                   WHEN OPC_SW_REQ =>
