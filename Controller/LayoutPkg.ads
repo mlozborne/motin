@@ -86,35 +86,52 @@ PACKAGE LayoutPkg IS
 			--            display "C2 ERROR back of train leaving open sensor. Error stop train"
 			--				  error stop train
 			--          elsif section1 occupied and sensor = s1 
-		   --            diplay"C2 ERROR no reserved section but s1 fired anyway. Error stop train"
+		   --            display "C2 ERROR no reserved section but s1 fired anyway. Error stop train"
 			--            this should never happen but if it does
 			--				  error stop train
 			--				elsif section1 = reserved then
 			--            This might happen if s1 didn't fire twice.
 			--            We now assume that sensor = sf
-			--            if open-->closed then
-			--              display "C2 IGNORE front of train approaching sf. Fix when leaving"
-			-- 			  else
-			--              display "C2 FIXING front of train leaving sf."
-			--				    section1 reserved-->occupied
-			--              get next free section (nextFreeSection)
-			--				    if not found then
-			--                 display "C2 ERROR couldn't fix, next section blocked. Error stop train"
-			--                 error stop train
-			--              else found
-			--				       nextFreeSection.state = occupied
-			--                 SAFETY set s1 open
-			--                 add sf to front of train  (one end of nextFreeSection)
-			--                 add sf+1 to front of train (other end of nextFreeSection)
-         --                 if train is now too long then
-         --                    display "C2 ERROR train" + trainId + "is too long"
-         --                    error stop train
-         --                 else
-			--                   tell train front sensor has fired
-			--                   put train position
-         --                 end if
-			--              end if
+			
+			--            if sf closed-->open then
+		   --              display "C2 ERROR sf closed-->open should have handled this when open-->closed. Error stop train"
+			--            else sf open-->closed then
+			--            	 display "C2 Just reached sf, we want to open s1 and handle s1 closed-->open"
+			--              change reserved section to occupied, tell train, etc...
+         --              if train is now too long then
+         --                 display "C5 ERROR train" + trainId + "is too long"
+         --                 error stop train
+         --              else
+			--                 tell train front sensor has fired
+			--                 put train position
+         --              end if
 			--            end if
+			
+			--xxx            if open-->closed then
+			--xxx              display "C2 IGNORE front of train approaching sf. Fix when leaving"
+			--xxx 			  else
+			--xxx              display "C2 FIXING front of train leaving sf."
+			--xxx				    section1 reserved-->occupied
+			--xxx              get next free section (nextFreeSection)
+			--xxx				    if not found then
+			--xxx                display "C2 ERROR couldn't fix, next section blocked. Error stop train"
+			--xxx                 error stop train
+			--xxx              else found
+			--xxx				       nextFreeSection.state = occupied
+			--xxx                 SAFETY set s1 open
+			--xxx                 add sf to front of train  (one end of nextFreeSection)
+			--xxx                 add sf+1 to front of train (other end of nextFreeSection)
+         --xxx                 if train is now too long then
+         --xxx                    display "C2 ERROR train" + trainId + "is too long"
+         --xxx                    error stop train
+         --xxx                 else
+			--xxx                   tell train front sensor has fired
+			--xxx                   put train position
+         --xxx                 end if
+			--xxx              end if
+			--xxx            end if
+			
+			
 			--          else 
 			--            display "C2 ERROR no clue what went wrong. Erro stop train"
 			--            error stop train

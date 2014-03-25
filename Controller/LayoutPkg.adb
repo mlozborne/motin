@@ -685,50 +685,85 @@ PACKAGE BODY LayoutPkg IS
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
 					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				elsif section1.state = reserved then
-					sf := getSensorAtFrontOfReservedSectionPtr(section1.all);
-					if oldSensorState = open then
-						myPutLine("      -------------IdentifyTrainV1: C2 IGNORE front of train approaching sf. Fix when leaving");
+					
+					-- In this section of code we now use s1.id instead of sf = sensorId
+					if oldSensorState = closed then
+						myPutLine("      -------------IdentifyTrainV1: C2 ERROR sf closed-->open should have handled this when open-->closed. Error stop train");
 					else
-						myPutLine("      -------------IdentifyTrainV1: C2 FIXING front of train leaving sf.");	
-						section1.state := occupied;
-						SendToOutQueue(makePutSectionStateMsg(section1.Id, Occupied));
-						getFreeSection(section1.nextSectionList, nextFreeSection);
-						if nextFreeSection = null then 
-							getFreeSection(section1.prevSectionList, nextFreeSection);
+						myPutLine("      -------------IdentifyTrainV1: C2 Just reached sf, we want to open s1 and handle s1 closed-->open");
+						myPutLine("      -------------IdentifyTrainV1: C2 NORMAL front of train leaving sensor s1.");		
+						IF section1.State = Reserved THEN
+							section1.State := Occupied;
+							SendToOutQueue(makePutSectionStateMsg(section1.Id, Occupied));
+							IF section1.SensorList.Head.Sensor.Id = s1.id THEN                
+								AddNewSensorToFront(section1.TrainId, section1.SensorList.Tail.Sensor);   
+							ELSE
+								AddNewSensorToFront(section1.TrainId, section1.SensorList.Head.Sensor);
+							END IF;
+						ELSE
+							section2.State := Occupied;
+							SendToOutQueue(makePutSectionStateMsg(section2.Id, Occupied));
+							IF section2.SensorList.Head.Sensor.Id = s1.id THEN               
+								AddNewSensorToFront(section2.TrainId, section2.SensorList.Tail.Sensor);
+							ELSE
+								AddNewSensorToFront(section2.TrainId, section2.SensorList.Head.Sensor);
+							END IF;
+						END IF;
+						trainId := section1.trainId;
+						if countSensors(trainId) > kMaxTrainLength + 1 then
+							myPutLine("      -------------IdentifyTrainV1: C5 ERROR train " & integer'image(trainId) & 
+										 " too long. Error stop train");	
+							sendToTrainQueue(makeSensorErrorMsg(s1.id), trainId);							
+						else   
+							SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
 						end if;
-						if nextFreeSection = null then
-							myPutLine("      -------------IdentifyTrainV1: C2 ERROR couldn't fix, next section blocked. Error stop train");	
-							sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
-							-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
-						else 
-							nextFreeSection.state := occupied;
-							BlockSections(nextFreeSection.BlockingList);
-							nextFreeSection.trainId := trainId;
-							SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
-							s1.state := open;   -- Set s1 open for safety
-							SendToOutQueue(makePutSensorStateMsg(s1.id, open));
-							if section1.sensorList.head.sensor.id = sf.id then    -- Add sf to front of train
-								addNewSensorToFront(trainId, section1.sensorList.head.sensor);  
-							else
-								addNewSensorToFront(trainId, section1.sensorList.tail.sensor);
-							end if;
-							if nextFreeSection.sensorList.head.sensor.id = sf.id then   -- Add sf+1 to front of train
-								addNewSensorToFront(trainId, nextFreeSection.sensorList.tail.sensor);
-							else
-								addNewSensorToFront(trainId, nextFreeSection.sensorList.head.sensor);
-							end if;
-                     if countSensors(trainId) > kMaxTrainLength + 1 then
-                        myPutLine("      -------------IdentifyTrainV1: C2 ERROR train " & integer'image(trainId) & 
-                                  " too long. Error stop train");	
-                        sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
-                     else   
-                        SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
-                     end if;
-                     PutTrainPositionMsg(TrainId);                                    -- Put train position
-						end if;
+						PutTrainPositionMsg(TrainId);                                    -- Put train position
 					end if;
+					
+					-- sf := getSensorAtFrontOfReservedSectionPtr(section1.all); 
+					-- if oldSensorState = open then
+						-- myPutLine("      -------------IdentifyTrainV1: C2 IGNORE front of train approaching sf. Fix when leaving");
+					-- else
+						-- myPutLine("      -------------IdentifyTrainV1: C2 FIXING front of train leaving sf.");	
+						-- section1.state := occupied;
+						-- SendToOutQueue(makePutSectionStateMsg(section1.Id, Occupied));
+						-- getFreeSection(section1.nextSectionList, nextFreeSection);
+						-- if nextFreeSection = null then 
+							-- getFreeSection(section1.prevSectionList, nextFreeSection);
+						-- end if;
+						-- if nextFreeSection = null then
+							-- myPutLine("      -------------IdentifyTrainV1: C2 ERROR couldn't fix, next section blocked. Error stop train");	
+							-- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);		
+						-- else 
+							-- nextFreeSection.state := occupied;
+							-- BlockSections(nextFreeSection.BlockingList);
+							-- nextFreeSection.trainId := trainId;
+							-- SendToOutQueue(makePutSectionStateMsg(nextFreeSection.Id, Occupied));
+							-- s1.state := open;   -- Set s1 open for safety
+							-- SendToOutQueue(makePutSensorStateMsg(s1.id, open));
+							-- if section1.sensorList.head.sensor.id = sf.id then    -- Add sf to front of train
+								-- addNewSensorToFront(trainId, section1.sensorList.head.sensor);  
+							-- else
+								-- addNewSensorToFront(trainId, section1.sensorList.tail.sensor);
+							-- end if;
+							-- if nextFreeSection.sensorList.head.sensor.id = sf.id then   -- Add sf+1 to front of train
+								-- addNewSensorToFront(trainId, nextFreeSection.sensorList.tail.sensor);
+							-- else
+								-- addNewSensorToFront(trainId, nextFreeSection.sensorList.head.sensor);
+							-- end if;
+                     -- if countSensors(trainId) > kMaxTrainLength + 1 then
+                        -- myPutLine("      -------------IdentifyTrainV1: C2 ERROR train " & integer'image(trainId) & 
+                                  -- " too long. Error stop train");	
+                        -- sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
+                     -- else   
+                        -- SendToTrainQueue(makeFrontSensorFiredMsg(TrainId), TrainId);  -- Tell train front sensor has fired
+                     -- end if;
+                     -- PutTrainPositionMsg(TrainId);                                    -- Put train position
+						-- end if;
+					-- end if;
+					
 				else
-					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no clue what went wrong. Erro stop train");
+					myPutLine("      -------------IdentifyTrainV1: C2 ERROR no clue what went wrong. Error stop train");
 					sendToTrainQueue(makeSensorErrorMsg(SensorId), trainId);							
 					-- SendToAllTrainQueues(makeSensorErrorMsg(SensorId));
 				end if;
