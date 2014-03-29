@@ -5,8 +5,8 @@ import StartAndKill as sak
 from Throttle import Throttle
 from time import sleep
 
-def raw_input(str):
-    return input(str)
+#def raw_input(str):
+#    return input(str)
 
 ###################################################
 

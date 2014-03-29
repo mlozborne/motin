@@ -7,8 +7,8 @@ from MsgHandler import *
 from Throttle import Throttle
 from multiprocessing import Queue
 
-#def raw_input(str):
-#    return input(str)
+def raw_input(str):
+    return input(str)
 
 def stopTrain(self):
     self.setSpeed(0)
