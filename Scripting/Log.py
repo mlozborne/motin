@@ -26,17 +26,17 @@ logLineCount = None                    # number of lines since last flush
 logFlushFrequency = None               # number of lines between flushes
 
 def openLog(name = "1", flushFrequency = 1):
-    
+
     global logFile
     global logFileName
     global logLineCount
     global logFlushFrequency
-    
+
     if logFile != None: return
 
     assert(isinstance(name, str))
     assert(isinstance(flushFrequency, int) and flushFrequency > 0)
-    
+
     logFileName = "log_" + str(name) + ".txt"
     logFile = open(logFileName, "w")
     logLineCount = 0
@@ -45,12 +45,12 @@ def openLog(name = "1", flushFrequency = 1):
     printLog("Opened " + logFileName)
 
 def closeLog():
-    
+
     global logFile
     global logFileName
     global logLineCount
     global logFlushFrequency
-    
+
     if logFile == None: return
 
     printLog("Closing " + logFileName)
@@ -59,12 +59,12 @@ def closeLog():
     logFile = None
 
 def flushLog():
-    
+
     global logFile
     global logFileName
     global logLineCount
     global logFlushFrequency
-    
+
     if logFile == None: return
 
     logCondition.acquire()
@@ -80,7 +80,7 @@ def printLog(st):
     global logFileName
     global logLineCount
     global logFlushFrequency
-    
+
     if logFile == None: return
 
     assert(isinstance(st, str))
@@ -97,4 +97,4 @@ def printLog(st):
     logCondition.notify()
     logCondition.release()
 
-    
+

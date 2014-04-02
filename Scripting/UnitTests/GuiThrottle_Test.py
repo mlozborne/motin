@@ -5,8 +5,8 @@ import StartAndKill as sak
 from Throttle import Throttle
 from time import sleep
 
-#def raw_input(str):
-#    return input(str)
+def raw_input(str):
+    return input(str)
 
 ###################################################
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         input("press enter to quit")
     throttle.close()
 
-    # Start four gui throttles 
+    # Start four gui throttles
     printLog("Main: begin start four GuiThrottleProcess")
     for i in range(4):
         GuiThrottleProcess(name = str(i+1), comPkg = comRes.getNextPackage()).start()
