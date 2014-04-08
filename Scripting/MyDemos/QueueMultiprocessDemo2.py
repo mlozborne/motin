@@ -2,6 +2,7 @@ from multiprocessing import Process, JoinableQueue, Queue, cpu_count
 import time
 import sys
 
+
 class Consumer(Process):
 
     def __init__(self, task_queue, result_queue):
@@ -25,13 +26,16 @@ class Consumer(Process):
             self.task_queue.task_done()
             self.result_queue.put(answer)
 
+
 class Task(object):
     def __init__(self, a, b):
         self.a = a
         self.b = b
+
     def __call__(self):
         time.sleep(0.5) # pretend to take some time to do the work
         return '%s * %s = %s' % (self.a, self.b, self.a * self.b)
+
     def __str__(self):
         return '%s * %s' % (self.a, self.b)
 
@@ -44,8 +48,7 @@ if __name__ == '__main__':
     # Start consumers
     num_consumers = cpu_count() * 2
     print('Creating %d consumers' % num_consumers); sys.stdout.flush()
-    consumers = [ Consumer(tasks, results)
-                  for i in range(num_consumers) ]
+    consumers = [Consumer(tasks, results) for i in range(num_consumers)]
     for w in consumers:
         w.start()
 

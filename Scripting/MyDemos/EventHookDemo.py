@@ -36,6 +36,7 @@ class EventHook(object):
     def __str__(self):
         return str(self.__handlers)
 
+
 class Switch(object):
     def __init__(self):
         self.value = None
@@ -47,9 +48,10 @@ class Switch(object):
         if oldValue != swDir:
             self.myListeners.fire(swDir)
 
+
 class Train(object):
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, tId):
+        self.id = tId
 
     def switchChange(self, swDir):
         if swDir == "closed":
@@ -57,8 +59,10 @@ class Train(object):
         else:
             print("stop train {0}".format(self.id))
 
+
 def dummy(swDir):
     print("switch direction = {0}".format(swDir))
+
 
 def main():
     switches = {}  

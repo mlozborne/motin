@@ -18,7 +18,7 @@ Pumps
        -- moves messages from a socket to all queues that are interested
        -- test with MsgHandler_Test.py "test 2"
    MsgInternalQuPump thread
-       -- get interest messages fron internalQu and update interests in the inQuList
+       -- get interest messages from internalQu and update interests in the inQuList
        -- test with Throttle_Test.py and GuiThrottle_Test.py
    MsgPumpHandler object
        -- creates message socket object that links to simulator/locobuffer
@@ -33,8 +33,7 @@ User level object
        -- test with Throttle_Test.py and GuiThrottle_Test.py
 """
 
-from Log import flushLog
-from Log import printLog
+from Log import gLog
 from MessageTranslationLibrary import InputRepMsg
 from MessageTranslationLibrary import PutInitOutcomeMsg
 from MessageTranslationLibrary import PutReadLayoutResponseMsg
@@ -42,11 +41,10 @@ from MessageTranslationLibrary import PutSensorStateMsg
 from MessageTranslationLibrary import makeMsgStr
 from MessageTranslationLibrary import splitMsgStr
 from MessageTranslationTypes import ControllerInMsgs
-import multiprocessing
-import sys
 from time import sleep
 
 from collections import namedtuple
+import multiprocessing
 from multiprocessing.queues import Queue
 from socket import socket
 from threading import Thread
@@ -57,15 +55,16 @@ InQuListEntry         = namedtuple('InQuListEntry', 'inQu, interests')
 AddInterestMsg        = namedtuple('AddInterestMsg', 'inQuNum, interest')
 RemoveInterestMsg     = namedtuple('RemoveInterestMsg', 'inQuNum, interest')
 RemoveAllInterestsMsg = namedtuple('RemoveAllInterestsMsg', 'inQuNum')
-InQuListMsgs = (AddInterestMsg, RemoveInterestMsg, RemoveAllInterestsMsg)
+InQuListMsgs          = (AddInterestMsg, RemoveInterestMsg, RemoveAllInterestsMsg)
 
 # Where
-#    inQuNum               0..<number of inQu's - 1>
-#    inQu                  multiprocessing.queueus.Queue
+#    inQuNum               0..<number of inQus - 1>
+#    inQu                  multiprocessing.queues.Queue
 #    interest              a message type, e.g. PutInitOutcomeMsg
 #    interests             a list of message types
 
 ################################################################################
+
 
 class CommunicationResources(object):
     """
@@ -79,7 +78,9 @@ class CommunicationResources(object):
     Any process that creates one or more message handlers must be passed the same
     number of CommunicationsPackage
     """
-    def __init__(self, host = None, port = None, numberOfPackages = None):
+
+    def __init__(self, name = None, host = None, port = None, numberOfPackages = None):
+        self.name = name
         self.host = host
         self.port = port
         self.numberOfPackages = numberOfPackages
@@ -89,7 +90,8 @@ class CommunicationResources(object):
         for i in range(numberOfPackages):
             q = Queue()
             self.inQuList.append(InQuListEntry(inQu = q, interests = []))
-        msgPumpHandler = MsgPumpHandler(name = "", host = self.host, port = self.port, inQuList = self.inQuList, outQu = self.outQu)
+        msgPumpHandler = MsgPumpHandler(name = self.name, host = self.host, port = self.port,
+                                        inQuList = self.inQuList, outQu = self.outQu)
         msgPumpHandler.startPumps()
 
     def getNextPackage(self):
@@ -102,8 +104,8 @@ class CommunicationResources(object):
 
 
 class MsgHandler(object):
-    def __init__(self, name = None,  comPkg = None):
-        printLog("MsgHandler {0}: initializing".format(name))
+    def __init__(self, name = None, comPkg = None):
+        gLog.print("MsgHandler {0}: initializing".format(name))
         assert(isinstance(name, str))
 
         assert(isinstance(comPkg, CommunicationsPackage))
@@ -120,46 +122,47 @@ class MsgHandler(object):
         self.outQu = outQu
 
     def addInterest(self, msgType):
-        printLog("MsgHandler {0}: adding interest {1}".format(self.name, msgType))
+        gLog.print("MsgHandler {0}: adding interest {1}".format(self.name, msgType))
         assert(msgType in ControllerInMsgs)
         self.outQu.put(AddInterestMsg(inQuNum = self.inQuNum, interest = msgType))
-        #printLog("MsgHandler {0}: finished adding interest {1}".format(self.name, msgType))
+        #gLog.print("MsgHandler {0}: finished adding interest {1}".format(self.name, msgType))
 
     def removeInterest(self, msgType):
-        printLog("MsgHandler {0}: removing interest {1}".format(self.name, msgType))
+        gLog.print("MsgHandler {0}: removing interest {1}".format(self.name, msgType))
         assert(msgType in ControllerInMsgs)
         self.outQu.put(RemoveInterestMsg(inQuNum = self.inQuNum, interest = msgType))
 
     def close(self):
-        printLog("MsgHandler {0}: closing and removing all interests".format(self.name))
+        gLog.print("MsgHandler {0}: closing and removing all interests".format(self.name))
         self.outQu.put(RemoveAllInterestsMsg(inQuNum = self.inQuNum))
 
     def getBlocking(self):
         msg = self.inQu.get()
-        #printLog("MsgHandler {0}: getBlocking message {1}".format(self.name, msg))
+        #gLog.print("MsgHandler {0}: getBlocking message {1}".format(self.name, msg))
         return msg
 
     def getNonblocking(self):
         try:
             msg = self.inQu.get(False) # non-blocking
-            #printLog("MsgHandler {0}: getNonblocking message {1}".format(self.name, msg))
+            #gLog.print("MsgHandler {0}: getNonblocking message {1}".format(self.name, msg))
             return msg
         except multiprocessing.queues.Empty:
-            printLog("MsgHandler {0}: getNonblocking empty qu exception)".format(self.name))
+            gLog.print("MsgHandler {0}: getNonblocking empty qu exception)".format(self.name))
             raise multiprocessing.queues.Empty
 
     def put(self, msg):
-        #printLog("MsgHandler {0}: putting message {1}".format(self.name, msg))
+        #gLog.print("MsgHandler {0}: putting message {1}".format(self.name, msg))
         self.outQu.put(msg)
 
     def waitFor(self, msg):
-        #printLog("waitFor: msg = {0}".format(msg))
+        #gLog.print("waitFor: msg = {0}".format(msg))
         assert(isinstance(msg, tuple))
+        m = None      # Giving m an arbitrary value just to fool the code inspection
         while True:
             while True:
-                #printLog("waitFor: trying to get from qu")
+                #gLog.print("waitFor: trying to get from qu")
                 m = self.inQu.get()
-                #printLog("waitFor: back from qu with message {0}".format(m))
+                #gLog.print("waitFor: back from qu with message {0}".format(m))
                 if type(m) == type(msg):
                     break
             if isinstance(m, PutReadLayoutResponseMsg):
@@ -170,15 +173,15 @@ class MsgHandler(object):
                 break
             if isinstance(m, PutSensorStateMsg) and m == msg:    # matches iff sensor number and state match
                 break
-        #printLog("waitFor: waiting over, got message {0}".format(m))
+        #gLog.print("waitFor: waiting over, got message {0}".format(m))
         return m
 
 ################################################################################
-InQuListEntry       = namedtuple('InQuListEntry', 'inQu, interests')
+
 
 class MsgPumpHandler(object):
     def __init__(self, name = None, host = None, port = None, inQuList = None, outQu = None):
-        printLog("MsgPumpHandler {0}: initializing".format(name))
+        gLog.print("MsgPumpHandler {0}: initializing".format(name))
         assert(isinstance(name, str))
         assert(isinstance(host, str))
         assert(port > 1000)
@@ -198,16 +201,17 @@ class MsgPumpHandler(object):
         self.outQu = outQu
 
     def startPumps(self):
-        #printLog("MsgHandler {0}: trying to start pumps".format(self.name))
+        #gLog.print("MsgHandler {0}: trying to start pumps".format(self.name))
         internalQu = Queue()
         msgSock = MsgSocket(name = self.name)
         msgSock.connect(self.host, self.port)
         MsgInternalQuPump(name = self.name, internalQu = internalQu, inQuList = self.inQuList).start()
         MsgInQuPump(name = self.name, sock = msgSock, inQuList = self.inQuList).start()
         MsgOutQuPump(name = self.name, sock = msgSock, outQu = self.outQu, internalQu = internalQu).start()
-        printLog("MsgHandler {0}: has started pumps".format(self.name))
+        gLog.print("MsgHandler {0}: has started pumps".format(self.name))
 
 ################################################################################
+
 
 class MsgInternalQuPump(Thread):
     def __init__(self, name = None, internalQu = None, inQuList = None):
@@ -223,17 +227,18 @@ class MsgInternalQuPump(Thread):
             for y in x.interests:
                 #print("..." + str(y))
                 assert(y in ControllerInMsgs)
-        printLog("MsgInternalQuPump {0}: initializing".format(name))
+        gLog.print("MsgInternalQuPump {0}: initializing".format(name))
         self.name = name
         self.internalQu = internalQu
         self.inQuList = inQuList
 
     def run(self):           
-        printLog("MsgInternalQuPump {0}: starting".format(self.name))
+        gLog.print("MsgInternalQuPump {0}: starting".format(self.name))
         while True:
             msg = self.internalQu.get()  
             if isinstance(msg, RemoveAllInterestsMsg):
-                printLog("MsgInternalQuPump {0}: removing all interests for inQuNum {1}".format(self.name, msg.inQuNum))
+                gLog.print("MsgInternalQuPump {0}: removing all interests for inQuNum {1}".
+                           format(self.name, msg.inQuNum))
                 # if there is no entry for this inQuNum raise an exception
                 # else remove all interests for this inQuNum
                 if len(self.inQuList) <= msg.inQuNum:
@@ -243,7 +248,8 @@ class MsgInternalQuPump(Thread):
                     for interest in interestList:
                         interestList.remove(interest)
             elif isinstance(msg, AddInterestMsg):
-                printLog("MsgInternalQuPump {0}: adding interest {1} for inQuNum {2}".format(self.name, msg.interest, msg.inQuNum))
+                gLog.print("MsgInternalQuPump {0}: adding interest {1} for inQuNum {2}".
+                           format(self.name, msg.interest, msg.inQuNum))
                 # if there is no entry for this inQuNum raise an exception
                 # elif the inQuNum already has this interest pass
                 # else add an interest for this inQuNum
@@ -254,11 +260,13 @@ class MsgInternalQuPump(Thread):
                     if msg.interest in x.interests:
                         pass
                         # The interest could have been have added at a higher level
-                        #raise Exception("MsgInternalQuPump {0}: Can't add. inQuNum {1} already has {2}".format(self.name, msg.inQuNum, msg.interest))
+                        #raise Exception("MsgInternalQuPump {0}: Can't add. inQuNum {1} already has {2}".
+                        #                format(self.name, msg.inQuNum, msg.interest))
                     else:
                         x.interests.append(msg.interest)
             elif isinstance(msg, RemoveInterestMsg):
-                printLog("MsgInternalQuPump {0}: removing interest {1} for inQuNum {2}".format(self.name, msg.interest, msg.inQuNum))
+                gLog.print("MsgInternalQuPump {0}: removing interest {1} for inQuNum {2}".
+                           format(self.name, msg.interest, msg.inQuNum))
                 # if there is no entry for this inQuNum raise an exception
                 # elif there is no matching interest raise an exception
                 # else remove an interest for this inQuNum
@@ -267,11 +275,12 @@ class MsgInternalQuPump(Thread):
                 else:
                     x = self.inQuList[msg.inQuNum]
                     if not msg.interest in x.interests:
-                        raise Exception("MsgInternalQuPump {0}: Can't remove. inQuNum {1} doesn't have {2}".format(self.name, msg.name, msg.interest))
+                        raise Exception("MsgInternalQuPump {0}: Can't remove. inQuNum {1} doesn't have {2}".
+                                        format(self.name, msg.inQuNum, msg.interest))
                     else:
                         x.interests.remove(msg.interest)
             else:
-                printLog("MsgInternalQuPump {0}: unrecognized message {1}}".format(self.name, msg))
+                gLog.print("MsgInternalQuPump {0}: unrecognized message {1}}".format(self.name, msg))
 
 
 ################################################################################
@@ -283,24 +292,25 @@ class MsgOutQuPump(Thread):
         assert(isinstance(sock, MsgSocket))
         assert(isinstance(outQu, multiprocessing.queues.Queue))
         assert(isinstance(internalQu, multiprocessing.queues.Queue))
-        printLog("MsgOutQuPump {0}: initializing".format(name))
+        gLog.print("MsgOutQuPump {0}: initializing".format(name))
         self.name = name
         self.sk = sock
         self.outQu = outQu
         self.internalQu = internalQu
 
     def run(self):
-        printLog("MsgOutQuPump {0}: starting".format(self.name))
+        gLog.print("MsgOutQuPump {0}: starting".format(self.name))
         while True:
             msg = self.outQu.get()
             if type(msg) in InQuListMsgs:
-                #printLog("MsgOutQuPump {0}: getting ready to put {1}".format(self.name, msg))
+                #gLog.print("MsgOutQuPump {0}: getting ready to put {1}".format(self.name, msg))
                 self.internalQu.put(msg)
             else:
-                #printLog("MsgOutQuPump {0}: getting ready to send {1}".format(self.name, msg))
+                #gLog.print("MsgOutQuPump {0}: getting ready to send {1}".format(self.name, msg))
                 self.sk.send(msg)
 
 ################################################################################
+
 
 class MsgInQuPump(Thread):
     def __init__(self, name = None, sock = None, inQuList = None):
@@ -314,13 +324,13 @@ class MsgInQuPump(Thread):
             assert(isinstance(x.interests, list))
             for y in x.interests:
                 assert(y in ControllerInMsgs)
-        printLog("MsgInQuPump {0}: initializing".format(name))
+        gLog.print("MsgInQuPump {0}: initializing".format(name))
         self.name = name
         self.sk = sock
         self.inQuList = inQuList
 
     def run(self):
-        printLog("MsgInQuPump {0}: starting".format(self.name))
+        gLog.print("MsgInQuPump {0}: starting".format(self.name))
         while True:
             st = self.sk.receive()
             msg = makeMsgStr(st)
@@ -331,6 +341,7 @@ class MsgInQuPump(Thread):
                     q.put(msg)
 
 ################################################################################
+
 
 class MsgSocket(object):
     """
@@ -360,29 +371,31 @@ class MsgSocket(object):
     """
     def __init__(self, name = "1"):
         assert(isinstance(name, str))
-        printLog("MsgSocket {0}: initializing".format(name))
+        gLog.print("MsgSocket {0}: initializing".format(name))
         self.name = name
+        self.inBuffer = None
+        self.sock = None
 
     def connect(self, host, port):
         assert(isinstance(host, str))
         assert(port > 0)
-        printLog("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
+        gLog.print("MsgSocket {0}: is trying to connect to ({1}, {2})".format(self.name, host, port))
         self.inBuffer = bytearray()
         self.sock = socket()
         for i in range(5):
             if not self.sock.connect_ex((host, port)):
-                printLog("MsgSocket {0}: has connected to peer {1}".format(self.name, self.sock.getpeername()))
+                gLog.print("MsgSocket {0}: has connected to peer {1}".format(self.name, self.sock.getpeername()))
                 return
             else:
-                printLog("MsgSocket {0}: failed to connect to ({1}, {2})".format(self.name, host, port))
+                gLog.print("MsgSocket {0}: failed to connect to ({1}, {2})".format(self.name, host, port))
                 sleep(1)
         st = "MsgSocket {0}: gave up trying to connect to ({1}, {2})".format(self.name, host, port)
-        printLog(st)
+        gLog.print(st)
         raise Exception(st)
 
     def attach(self, sock):
         assert(isinstance(sock, socket))
-        printLog("MsgSocket {0}: has attached to peer {1}".format(self.name, sock.getpeername()))
+        gLog.print("MsgSocket {0}: has attached to peer {1}".format(self.name, sock.getpeername()))
         self.sock = sock
         self.inBuffer = bytearray()
 
@@ -390,10 +403,10 @@ class MsgSocket(object):
         assert(isinstance(msg, tuple))
         st = makeMsgStr(msg)
         self.sock.sendall(st)
-        printLog("<<< Sent    {0}    to peer {1}".format(msg, self.sock.getpeername()))
+        gLog.print("<<< Sent    {0}    to peer {1}".format(msg, self.sock.getpeername()))
 
     def close(self):
-        printLog("MsgSocket {0}: closing ".format(self.name))
+        gLog.print("MsgSocket {0}: closing ".format(self.name))
         self.sock.close()
 
     def receive(self):
@@ -409,44 +422,46 @@ class MsgSocket(object):
         strMsg = self.inBuffer[2:2 + strSize]
         self.inBuffer = self.inBuffer[2 + strSize:]
         msg = splitMsgStr(strMsg)
-        printLog("    >>> Received    {0}    from peer {1}".format(msg, self.sock.getpeername()))
+        gLog.print("    >>> Received    {0}    from peer {1}".format(msg, self.sock.getpeername()))
         return msg
 
 
 class MsgServerThread(Thread):
     def __init__(self, name = "1", host = None, port = None, clientHandlerFunction = None):
         Thread.__init__(self)
-        assert(host == None or isinstance(name, str))
+        assert(host is None or isinstance(name, str))
         assert(isinstance(host, str))
         assert(isinstance(port, int))
-        assert(clientHandlerFunction != None)
-        printLog("Message server {0}: initializing at ({1}, {2})".format(name, host, port))
+        assert(clientHandlerFunction is not None)
+        gLog.print("Message server {0}: initializing at ({1}, {2})".format(name, host, port))
         self.name = name
-        if host == None:
+        if host is None:
             host = socket.gethostname()
         self.host = host
         self.port = port
         self.clientHandlerFunction = clientHandlerFunction
+        self.serverSocket = None
 
     def run(self):
-        printLog("Message server {0}: running".format(self.name))
+        gLog.print("Message server {0}: running".format(self.name))
         self.serverSocket = socket()
         self.serverSocket.bind((self.host, self.port))           # bind
         self.serverSocket.listen(5)                              # listen
-        printLog("Message server {0}: now listening at ({1}, {2})".format(self.name, self.host, self.port))
+        gLog.print("Message server {0}: now listening at ({1}, {2})".format(self.name, self.host, self.port))
         while True:
             socketToClient, address = self.serverSocket.accept() # accept
-            printLog("Message server {0}: just created a connection to peer at {1}". \
-                      format(self.name, socketToClient.getpeername()))
+            gLog.print("Message server {0}: just created a connection to peer at {1}".
+                       format(self.name, socketToClient.getpeername()))
             ClientHandlerThread("1", socketToClient, self.clientHandlerFunction).start()
+
 
 class ClientHandlerThread(Thread):
     def __init__(self, name, socketToClient, clientHandlerFunction):
         Thread.__init__(self)
         assert(isinstance(name, str))
         assert(isinstance(socketToClient, socket))
-        assert(clientHandlerFunction != None)
-        printLog("Client handler {0}: created for peer {1}".format(name, socketToClient.getpeername()))
+        assert(clientHandlerFunction is not None)
+        gLog.print("Client handler {0}: created for peer {1}".format(name, socketToClient.getpeername()))
         self.name = name
         self.socketToClient = socketToClient
         self.clientHandlerFunction = clientHandlerFunction
@@ -454,8 +469,8 @@ class ClientHandlerThread(Thread):
     def run(self):
         msgSocketToClient = MsgSocket()
         msgSocketToClient.attach(self.socketToClient)
-        printLog("Client handler {0}: running with peer {1} and function {2}" \
-                 .format(self.name, self.socketToClient.getpeername(), self.clientHandlerFunction))
+        gLog.print("Client handler {0}: running with peer {1} and function {2}"
+                   .format(self.name, self.socketToClient.getpeername(), self.clientHandlerFunction))
         self.clientHandlerFunction(msgSocketToClient)
 
 

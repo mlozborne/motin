@@ -1,6 +1,7 @@
 from queue import Queue
 from threading import Thread
 
+
 class Producer(Thread):
     def __init__(self, qu, name):
         Thread.__init__(self)
@@ -10,6 +11,7 @@ class Producer(Thread):
     def run(self):
         for i in range(50):
             self.qu.put(str(self.name)+str(i))
+
 
 class Consumer(Thread):
     def __init__(self, qu, name):
@@ -21,6 +23,7 @@ class Consumer(Thread):
         while True:
             item = self.qu.get()
             print(self.name + " " + item)
+
 
 def main():
     qu = Queue(5)            # This queue is shared by all producer and consumer processes

@@ -1,55 +1,78 @@
 ############################################################################
-###################### Unit Testing             ############################
+###################### Unit Testing  for Log    ############################
 ############################################################################
 """
-Expected output:
-    Interleaved output from multiple threads
-    Each thread logs
-        when it is starting
-        multiple lines of output
-        when it has ended
-    There should be NO BLANK LINES in the log and
-    each line should contain output from a single thread.
+        Expected output:
+            Interleaved output from multiple threads
+            Each thread logs
+                (a) when it is starting
+                (b) multiple lines of output
+                (c) when it has ended
+            There should be NO BLANK LINES in the log and
+            each line should contain output from a single thread.
+            The line '....MIDPOINT...' appears half way through.
+            In the first half lines are about 90 characters long.
+            In the second half lines are twice as long.
 """
+
+from unittest import TestCase
 import threading
-from Log import *
+from Log import gLog
 from time import sleep
 
-def raw_input(str):
-    return input(str)
 
-class ManyLinesToLog(threading.Thread):
-    def __init__(self, st):
+class PrintManyLinesToLog(threading.Thread):
+    def __init__(self, character):
         threading.Thread.__init__(self)
-        self.st = st
-        self.count = 0
+        self.character = character
+        self.lineCount = 0
 
     def run(self):
-        printLog("Starting " + self.st)
-        tempSt = ""
+        gLog.print("Starting " + self.character)
+        tempStr = ""
         for i in range(80):
-             tempSt = tempSt + self.st
+            tempStr = tempStr + self.character
         for i in range(50):
-            self.count += 1
-            printLog(tempSt + ": count = " + str(self.count))
-#            if i == 20: printLog(1)    # will cause an assertion error
-        printLog("Ending " + self.st)
-
-if __name__ == "__main__":
-    openLog("1", 40)
-#    openLog(1, 1)          # should cause an assertion error
-#    openLog("3", "cat")    # should cause an assertion error
-    for i in range(10):
-        ManyLinesToLog(str(i)).start()
-    raw_input("Pause until press enter")
-    printLog("...................... MIDPOINT.........................")
-    flushLog()
-    raw_input("Pause until press enter")
-    for i in range(10):
-        ManyLinesToLog(str(i)+str(i)+str(i)).start()
-    raw_input("press enter to quit")
-    sleep(5)
-    closeLog()
+            self.lineCount += 1
+            gLog.print(tempStr + ": count = " + str(self.lineCount))
+        gLog.print("Ending " + self.character)
 
 
+class TestLogClass(TestCase):
+    def test_assertions(self):
+        gLog.open('1')
+        self.assertRaises(AssertionError, gLog.print, 3)          # trying to print a non string
+        gLog.close()
 
+        self.assertRaises(AssertionError, gLog.open, 1, 40)       # name is not a string
+        self.assertRaises(AssertionError, gLog.open, 'a', 'cat')  # flushFrequency is not an integer
+        self.assertRaises(AssertionError, gLog.open, 'a', 2.5)    # flushFrequency is not an integer
+        self.assertRaises(AssertionError, gLog.open, 'a', -2)     # flushFrequency is < 0
+
+    def test_log(self):
+        gLog.open('2', 10)
+        gLog.print(
+            """
+                    Expected output:
+                        Interleaved output from multiple threads
+                        Each thread logs
+                            (a) when it is starting
+                            (b) multiple lines of output
+                            (c) when it has ended
+                        There should be NO BLANK LINES in the log and
+                        each line should contain output from a single thread.
+                        The line '....MIDPOINT...' appears half way through.
+                        In the first half lines are about 90 characters long.
+                        In the second half lines are twice as long.
+            """
+        )
+        for digit in range(10):
+            PrintManyLinesToLog(str(digit)).start()
+        sleep(2)
+        gLog.flush()
+        gLog.print('...................... MIDPOINT.........................')
+        for digit in range(10):
+            PrintManyLinesToLog(str(digit) + str(digit) + str(digit)).start()
+        sleep(5)
+        gLog.close()
+        raise Exception ('EXCEPTION EXPECTED: Check correctness of output in file log_test.txt')

@@ -1,22 +1,26 @@
 from multiprocessing import Process, Queue
 import sys
+import time
+
 
 class Producer(Process):
     def __init__(self, qu, name):
         Process.__init__(self)
-        print("creating {0}".format(self.name)); sys.stdout.flush()
+        print("creating producer {0}".format(name)); sys.stdout.flush()
         self.qu = qu
         self.name = name
 
     def run(self):
         print("running producer {0}".format(self.name)); sys.stdout.flush()
         for i in range(50):
+            time.sleep(0.01) # pretend to take some time to do the work
             self.qu.put(str(self.name) + str(i))
+
 
 class Consumer(Process):
     def __init__(self, qu, name):
         Process.__init__(self)
-        print("creating {0}".format(self.name)); sys.stdout.flush()
+        print("creating consumer {0}".format(name)); sys.stdout.flush()
         self.qu = qu
         self.name = name
 
@@ -24,15 +28,16 @@ class Consumer(Process):
         print("running consumer {0}".format(self.name)); sys.stdout.flush()
         while True:
             item = self.qu.get()
+            # time.sleep(0.002) # pretend to take some time to do the work
             print(self.name + " " + item); sys.stdout.flush()
 
 if __name__ == "__main__":
-    qu = Queue(5)            # This queue is shared by all producer and consumer processes
+    queue = Queue(5)            # This queue is shared by all producer and consumer processes
 
-    numConsumers = 2
+    numConsumers = 5
     numProducers = 3
-    consumers = [Consumer(qu, chr(ord('A') + i)) for i in range(numConsumers)]
-    producers = [Producer(qu, chr(ord('a') + i)) for i in range(numProducers)]
+    consumers = [Consumer(queue, chr(ord('A') + i)) for i in range(numConsumers)]
+    producers = [Producer(queue, chr(ord('a') + i)) for i in range(numProducers)]
 
     for c in consumers:
         c.start()
@@ -40,7 +45,7 @@ if __name__ == "__main__":
     for p in producers:
         p.start()
 
-    print("The end!!! qu size = {0}".format(qu.qsize())); sys.stdout.flush()
+    print("The end!!! qu size = {0}".format(queue.qsize())); sys.stdout.flush()
 
 
 

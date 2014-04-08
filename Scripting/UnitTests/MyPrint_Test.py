@@ -5,10 +5,12 @@
 import threading
 from MyPrint import myPrint
 
-def raw_input(str):
-    return input(str)
 
-class ManyLinesToScreen(threading.Thread):
+def raw_input(st):
+    return input(st)
+
+
+class PrintManyLinesToScreen(threading.Thread):
     def __init__(self, st):
         threading.Thread.__init__(self)
         self.st = st
@@ -18,15 +20,13 @@ class ManyLinesToScreen(threading.Thread):
         myPrint("Starting " + self.st)
         tempSt = ""
         for i in range(80):
-             tempSt = tempSt + self.st
+            tempSt = tempSt + self.st
         for i in range(47):
             self.count += 1
             myPrint(tempSt + ": count = " + str(self.count))
         myPrint("Ending " + self.st)
 
+
 if __name__ == "__main__":
-    for i in range(9):
-        ManyLinesToScreen(str(i)).start()
-    raw_input("press enter to quit")
-
-
+    for ii in range(9):
+        PrintManyLinesToScreen(str(ii)).start()

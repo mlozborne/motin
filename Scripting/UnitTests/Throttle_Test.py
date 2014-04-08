@@ -1,24 +1,24 @@
-##########################################################################################
-import StartAndKill as sak
+from StartAndKill import StartAndKill
 from MessageTranslationTypes import *
-from Log import *
-from time import sleep
 from MsgHandler import *
 from Throttle import Throttle
-from multiprocessing import Queue
 
-def raw_input(str):
-    return input(str)
+
+def raw_input(st):
+    return input(st)
+
 
 def stopTrain(self):
     self.setSpeed(0)
 
+
 def blinkLights(self, n):
-    for i in range(5):
+    for i in range(n):
         self.setLights(kOn)
         sleep(0.2)
         self.setLights(kOff)
         sleep(0.2)
+
 
 def tootHorn(self):
     self.setHorn(kOn)
@@ -39,31 +39,31 @@ def tootHorn(self):
     self.setHorn(kOff)
 
 if __name__ == "__main__":
-    openLog()
+    gLog.open()
 
     #  Start the simulator and controller
+    sak = StartAndKill()
     sak.start("simulator")
     sak.start("controller")
 
     # Create the communication resources for 1 user
-    comRes = CommunicationResources(host = 'localhost', port = 1235, numberOfPackages = 1)
+    comRes = CommunicationResources(name = 'throttle-test', host = 'localhost', port = 1235, numberOfPackages = 1)
     
     throt = Throttle(name = 'Bill', comPkg = comRes.getNextPackage())
     
     # Tell the throttle to read the layout file
-    printLog("Main reading layout")
+    gLog.print("Main reading layout")
     msg = throt.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
 
     # Tell the throttle to initialize train 1111
-    printLog("Main initializing train")
-    msg = throt.initTrain(1111, [5,1])
-    printLog("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
-              format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
+    gLog.print("Main initializing train")
+    msg = throt.initTrain(1111, [5, 1])
+    gLog.print("physAdd = {0}, physSlot = {1}, virtAdd = {2}, virtSlot = {3}".
+               format(msg.physAdd, msg.physSlot, msg.virtAdd, msg.virtSlot))
     if msg.physSlot > 120:
         print("\nABEND: couldn't initialize the train. Response code = {0}".format(msg.physSlot))
         input("press enter to quit")
-
 
     # Use the throttle to send messages to the controller
     throt.setBell(kOn)
@@ -82,15 +82,9 @@ if __name__ == "__main__":
     throt.waitFor(PutSensorStateMsg(id = 59, state = kSensorOpen))
     throt.removeInterest(PutSensorStateMsg)
     throt.do(stopTrain)
-    flushLog()
+    gLog.flush()
     raw_input("press enter to quit")
     throt.close()
     sak.kill("controller")
     sak.kill("simulator")
-    closeLog()
-
-
-
-
-
-
+    gLog.close()

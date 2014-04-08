@@ -1,20 +1,20 @@
-
 ############################################################################
 ###################### Unit Testing             ############################
 ############################################################################
 
 import time
-from Log import openLog, closeLog, flushLog, printLog
-from MessageTranslationLibrary import *
+from Log import gLog
 from MessageTranslationTypes import *
-import StartAndKill as sak
+from StartAndKill import StartAndKill
 from MsgHandler import MsgSocket
 from threading import Thread
 
-def raw_input(str):
-    return input(str)
+
+def raw_input(st):
+    return input(st)
 
 ############################################################################
+
 
 def testSend():
     """
@@ -23,6 +23,7 @@ def testSend():
     Tell train to blink its lights 5 times
     Will see only the messages sent.
     """
+    sak = StartAndKill()
     print("Entering function testSend")
     sak.setPath("../../runSoftware")
     sak.start("simulator")
@@ -46,6 +47,7 @@ def testSend():
 
 ############################################################################
 
+
 def testReceive():
     """
     Start RailroadBig and connect to it at (local host, 1234).
@@ -54,6 +56,7 @@ def testReceive():
         Tell train to blink lights and change direction 5 times.
     Should see messages sent and messages received.
     """
+    sak = StartAndKill()
     print("Entering function testReceive\n")
     sak.setPath("../../runSoftware")
     sak.start("simulator")
@@ -69,6 +72,7 @@ def testReceive():
     sk.close()
     print("Leaving function testReceive\n")
 
+
 class TestBlinkLightsDirectly(Thread):
     def __init__(self, sk):
         Thread.__init__(self, name="BlinkLightsDirectly")
@@ -76,6 +80,7 @@ class TestBlinkLightsDirectly(Thread):
 
     def run(self):
         print("Starting thread BlinkLightsDirectly\n")
+        sak = StartAndKill()
         self.sk.send(LocoAdrMsg(address=1111))
         time.sleep(1)
         self.sk.send(MoveSlotsMsg(slot1=1, slot2=1))
@@ -85,11 +90,12 @@ class TestBlinkLightsDirectly(Thread):
             time.sleep(0.2)
             self.sk.send(LocoDirfMsg(slot=1, direction=kForward, lights=kOff, horn=kOff, bell=kOff))
             time.sleep(0.2)
-        raw_input("\nPress enter to kill RailroadBig and stop thread BlinkLightsDirectly \n")
+        raw_input("\nPress enter to kill RailroadBig and stop thread TestBlinkLightsDirectly \n")
         sak.kill("simulator")
-        print("Ending thread BlinkLightsDirectly\n")
+        print("Ending thread TestBlinkLightsDirectly\n")
 
 ############################################################################
+
 
 def testTalkingToController():
     """
@@ -101,6 +107,7 @@ def testTalkingToController():
     Should see messages sent and messages received.
     """
     print("Entering function testTalkingToController")
+    sak = StartAndKill()
     sak.setPath("../../runSoftware")
     sak.start("simulator")
     sak.start("controller")
@@ -119,13 +126,15 @@ def testTalkingToController():
     sk.close()
     print("Leaving function testTalkingToController\n")
 
+
 class TestBlinkLightsViaController(Thread):
     def __init__(self, sk):
         Thread.__init__(self, name="BlinkLightsViaController")
         self.sk = sk
 
     def run(self):
-        print("Starting thread BlinkLightsViaController\n")
+        print("Starting thread TestBlinkLightsViaController\n")
+        sak = StartAndKill()
         self.sk.send(DoLocoInitMsg(address=1111, sensors=[5, 1]))
         time.sleep(1)
         for i in range(1, 6):
@@ -136,14 +145,14 @@ class TestBlinkLightsViaController(Thread):
         raw_input("\nPress enter to kill RailroadBig and Controller and stop thread BlinkLightsViaController \n")
         sak.kill("simulator")
         sak.kill("controller")
-        print("Ending thread BlinkLightsViaController\n")
+        print("Ending thread TestBlinkLightsViaController\n")
 
 ############################################################################
 #      RUN FROM WINDOWS EXPLORER
 ############################################################################
 
 if __name__ == "__main__":
-    openLog()
+    gLog.open("1")
     while True:
         print("\n\n\n")
         print("1. Test send")
@@ -155,18 +164,14 @@ if __name__ == "__main__":
         if option == "q":
             break
         elif option == "1":
-            printLog("testSend()\n")
+            gLog.print("testSend()\n")
             testSend()
         elif option == "2":
-            printLog("testReceive()\n")
+            gLog.print("testReceive()\n")
             testReceive()
         elif option == "3":
-            printLog("testTalkingToController()\n")
+            gLog.print("testTalkingToController()\n")
             testTalkingToController()
-        flushLog()
-        printLog("\n\n\n")
-    closeLog()
-
-
-
-
+        gLog.flush()
+        gLog.print("\n\n\n")
+    gLog.close()
