@@ -21,9 +21,9 @@ import sys
 
 class MessageApp(EasyFrame):
 
-    def __init__(self, num, myPort, otherPort):
+    def __init__(self, winTitle, myPort, otherPort):
         """Sets up the window and widgets."""
-        EasyFrame.__init__(self, title = "Message App " + str(num))
+        EasyFrame.__init__(self, title = "Message App " + winTitle)
 
         # Label and field for the input
         self.addLabel(text = "Input",
@@ -94,15 +94,15 @@ class ClientHandler(Thread):
     def run(self):
         message = decode(self.client.recv(1024), "ascii")
         if not message:
-            self.theGUI.printMessage('Client disconnected')
+            self.theGUI.printMessage('Message empty')
         else:
             self.theGUI.printMessage(message)
         self.client.close()
 
 if __name__ == "__main__":
-    number = int(sys.argv[1])
+    windowTitle = sys.argv[1]
     myPrt = int(sys.argv[2])
     otherPrt = int(sys.argv[3])
-    MessageApp(number, myPrt, otherPrt).mainloop()
+    MessageApp(windowTitle, myPrt, otherPrt).mainloop()
 
 

@@ -1,4 +1,6 @@
 """
+THIS IS MY VERSION. BASED ON KEN'S, BUT SIMPLIFIED SLIGHTLY BY NOT HAVING A SEPARATE CLIENT HANDLER THREAD.
+
 Two windows allow the user(s) to send and receive messages.
 Instructions:
 o  Open two command windows on the directory containing this file.
@@ -21,9 +23,9 @@ import sys
 
 class MessageApp(EasyFrame):
 
-    def __init__(self, num, myPort, otherPort):
+    def __init__(self, winTitle, myPort, otherPort):
         """Sets up the window and widgets."""
-        EasyFrame.__init__(self, title = "Message App " + str(num))
+        EasyFrame.__init__(self, title = "Message App " + winTitle)
 
         # Label and field for the input
         self.addLabel(text = "Input",
@@ -80,29 +82,18 @@ class MessageServer(Thread):
     def run(self):
         while True:
             client, address = self.server.accept()
-            handler = ClientHandler(client, self.theGUI)
-            handler.start()
+            message = decode(client.recv(1024), "ascii")
+            if not message:
+                self.theGUI.printMessage('Message empty')
+            else:
+                self.theGUI.printMessage(message)
+            client.close()
 
-
-class ClientHandler(Thread):
-    
-    def __init__(self, client, theGUI):
-        Thread.__init__(self)
-        self.client = client
-        self.theGUI = theGUI
-
-    def run(self):
-        message = decode(self.client.recv(1024), "ascii")
-        if not message:
-            self.theGUI.printMessage('Client disconnected')
-        else:
-            self.theGUI.printMessage(message)
-        self.client.close()
 
 if __name__ == "__main__":
-    number = int(sys.argv[1])
+    windowTitle = sys.argv[1]
     myPrt = int(sys.argv[2])
     otherPrt = int(sys.argv[3])
-    MessageApp(number, myPrt, otherPrt).mainloop()
+    MessageApp(windowTitle, myPrt, otherPrt).mainloop()
 
 
