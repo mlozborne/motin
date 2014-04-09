@@ -132,6 +132,10 @@ class StartAndKill():
           kill("adminthrottle")
           kill("all")
         """
+
+        # todo this doesn't work under Windows 8 at school. For instance, get the message:
+        # todo ERROR: The process "StartController" not found.
+
         if name.lower()[:3] == "sim":
             name = "RailroadBig"
         elif name.lower()[:3] == "con":

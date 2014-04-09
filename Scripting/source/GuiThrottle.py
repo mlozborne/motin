@@ -58,7 +58,8 @@ class GuiThrottle(EasyFrame):
         self.throttle = Throttle(name = self.name, comPkg = self.comPkg)
         self.throttleReady = False
 
-        imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"
+        # imageFolder = "C:\\Documents and Settings\\Martin\\Desktop\\Trains SVN\\Scripting\\Gifs\\"
+        imageFolder = "..\\Gifs\\"
 
         self.toggles = {'lights': kOff, 'horn': kOff, 'bell': kOff, 
                         'mute': kOff, 'direction': kForward}
