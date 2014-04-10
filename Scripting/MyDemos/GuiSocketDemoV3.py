@@ -1,19 +1,31 @@
 """
-THIS IS MY VERSION. BASED ON KEN'S, BUT SIMPLIFIED SLIGHTLY BY NOT HAVING A SEPARATE CLIENT HANDLER THREAD.
+Similar in function to the other versions but is easier to start because it creates two
+processes which in turn create the GUI threads. So there isn't a separate starter program.
 """
 
-from breezypythongui import EasyFrame
 from socket import *
 from codecs import decode
+from breezypythongui import EasyFrame
 from threading import Thread
-import sys
+from multiprocessing import Process
 
 
-class MessageApp(EasyFrame):
+class GuiProcess(Process):
+    def __init__(self, number, myPort, otherPort):
+        self.number = number
+        self.myPort = myPort
+        self.otherPort = otherPort
+        Process.__init__(self)
 
-    def __init__(self, winTitle, myPort, otherPort):
+    def run(self):
+        TheGui(self.number, self.myPort, self.otherPort).mainloop()
+
+
+class TheGui(EasyFrame):
+
+    def __init__(self, number, myPort, otherPort):
         """Sets up the window and widgets."""
-        EasyFrame.__init__(self, title = "Message App " + winTitle)
+        EasyFrame.__init__(self, title = "Message App " + str(number))
 
         # Label and field for the input
         self.addLabel(text = "Input",
@@ -79,9 +91,8 @@ class MessageServer(Thread):
 
 
 if __name__ == "__main__":
-    windowTitle = sys.argv[1]
-    myPrt = int(sys.argv[2])
-    otherPrt = int(sys.argv[3])
-    MessageApp(windowTitle, myPrt, otherPrt).mainloop()
+    GuiProcess(1, 5000, 5001).start()
+    GuiProcess(2, 5001, 5000).start()
+
 
 
