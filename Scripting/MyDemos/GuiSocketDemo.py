@@ -1,29 +1,12 @@
 """
 Two windows allow the user(s) to send and receive messages.
-
-Ok, here is something, probably not exactly what you want, but maybe it's a start.  
-Run each of the following commands in a separate terminal window:
-    python3 messageapp 1 5000 5001
-    python3 messageapp 2 5001 5000
-You will see two windows.  You can enter text in either input field and send it to the 
-other window, which receives and prints the text.
-
-The first command line arg is the window's number, the second is its port, and the 
-third is the other window's port.
-
-The code shows separate server and client handler threads.
-
-So, at least a GUI can listen for an event via socket and respond by displaying some output.
-
-I don't know how to get the two windows to launch from the same Python main module.
-
-It's 10:25 here, so I'm done hacking for the night.
 """
 
 from socket import *
 from codecs import decode
 from threading import Thread
 from breezypythongui import EasyFrame
+import sys
 
 
 class MessageApp(EasyFrame):
@@ -107,13 +90,7 @@ class ClientHandler(Thread):
         self.client.close()
 
 if __name__ == "__main__":
-#    number = int(sys.argv[1])
-#    myPort = int(sys.argv[2])
-#    otherPort = int(sys.argv[3])
-#    MessageApp(number, myPort, otherPort).mainloop()
-
-# Comment out one and run. Reverse comments and run again
-    MessageApp(1, 5000, 5001).mainloop()
-#    MessageApp(2, 5001, 5000).mainloop()
-
-    input("press enter to quit")
+    number = int(sys.argv[1])
+    myPort = int(sys.argv[2])
+    otherPort = int(sys.argv[3])
+    MessageApp(number, myPort, otherPort).mainloop()
