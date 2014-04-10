@@ -119,7 +119,12 @@ class GuiThrottle(EasyFrame):
         # Button horn
         self.btHorn = self.addButton(text="     Horn     ", 
                                      row=6, column=0, command=self.stopHorn, state = DISABLED)
-        self.btHorn.bind("<Button>", self.startHorn)
+        # todo Figure out why this doesn't work and generates the error
+        # todo TypeError: startHorn() takes 1 positional argument but 2 were given
+        # todo Perhaps there isn't a press/release event for a button but only for a canvas.
+        # todo Perhaps the button in "<ButtonPress>" is the mouse button
+        self.btHorn.bind("<ButtonPress-1>", self.startHorn)
+        self.btHorn.bind("<ButtonRelease-1>", self.stopHorn)
         self.gifHorn = PhotoImage(file= imageFolder + 'horn.gif')
         self.btHorn.config(image=self.gifHorn, width="60", height="20")
 
