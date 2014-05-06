@@ -1,12 +1,10 @@
 from StartAndKill import StartAndKill
 from MessageTranslationTypes import *
 from MsgHandler import *
-from Throttle import Throttle
-
+from Throttle import Throttle, setBell, setSpeed, doCommands
 
 def raw_input(st):
     return input(st)
-
 
 def stopTrain(self):
     self.setSpeed(0)
@@ -66,11 +64,13 @@ if __name__ == "__main__":
         input("press enter to quit")
 
     # Use the throttle to send messages to the controller
-    throt.setBell(kOn)
-    throt.do(blinkLights, 4)
-    throt.setBell(kOff)
-    throt.do(tootHorn)
-    throt.setSpeed(100)
+    commands = [[setBell, kOn], [blinkLights, 4], [setBell, kOff], [tootHorn], [setSpeed, 100]]
+    doCommands(throt, commands)
+    # throt.setBell(kOn)
+    # throt.do(blinkLights, 4)
+    # throt.setBell(kOff)
+    # throt.do(tootHorn)
+    # throt.setSpeed(100)
     sleep(3)
     throt.throwNextSwitch()
     throt.moveSwitch(12, kClosed)

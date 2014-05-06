@@ -59,10 +59,10 @@ class TheGui(EasyFrame):
         """Inputs the user's text and sends it to the other window's
         message server."""
         message = self.inputField.getText()
-        otherServer = socket(AF_INET, SOCK_STREAM)
-        otherServer.connect(self.otherAddress)
-        otherServer.send(bytes(message, 'ascii'))
-        otherServer.close()
+        socketToOtherServer = socket(AF_INET, SOCK_STREAM)
+        socketToOtherServer.connect(self.otherAddress)
+        socketToOtherServer.send(bytes(message, 'ascii'))
+        socketToOtherServer.close()
 
     def printMessage(self, message):
         """Appends message to the output area."""

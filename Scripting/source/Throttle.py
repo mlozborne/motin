@@ -19,6 +19,21 @@ import multiprocessing
 from multiprocessing.queues import Queue
 from time import sleep
 
+def doCommands(throttle, commands):
+    for command in commands:
+        if len(command) == 1:
+            throttle.do(command[0])
+        if len(command) == 2:
+            throttle.do(command[0], command[1])
+        if len(command) == 3:
+            throttle.do(command[0], command[1], command[2])
+
+def setBell(self, onOff):
+    self.setBell(onOff)
+
+def setSpeed(self, speed):
+    self.setSpeed(speed)
+
 
 class Throttle(object):
     def __init__(self, name = None, comPkg = None):
