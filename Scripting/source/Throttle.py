@@ -19,6 +19,10 @@ import multiprocessing
 from multiprocessing.queues import Queue
 from time import sleep
 
+###################################################################################################
+"""
+This section repeats all the Throttle methods in a form that can be used in command lists.
+"""
 def doCommands(throttle, commands):
     for command in commands:
         if len(command) == 1:
@@ -28,13 +32,46 @@ def doCommands(throttle, commands):
         if len(command) == 3:
             throttle.do(command[0], command[1], command[2])
 
-def setBell(self, onOff):
-    self.setBell(onOff)
+def addInterest(self, interest):
+    self.addInterest(interest)
+
+def removeInterest(self, interest):
+    self.removeInterest(interest)
+
+def waitFor(self, msg):
+    self.waitFor(msg)
 
 def setSpeed(self, speed):
     self.setSpeed(speed)
 
+def setDirection(self, direction):
+    self.setDirection(direction)
 
+def setLights(self, onOff):
+    self.setLights(onOff)
+
+def setHorn(self, onOff):
+    self.setHorn(onOff)
+
+def setBell(self, onOff):
+    self.setBell(onOff)
+
+def setMute(self, onOff):
+    self.setMute(onOff)
+
+def closeNextSwitch(self):
+    self.closeNextSwitch();
+
+def throwNextSwitch(self):
+    self.throwNextSwitch();
+
+def moveSwitch(self, sId, direction):
+    self.moveSwitch(sId, direction)
+
+def pause(self, secs):
+    self.pause(secs)
+
+####################################################################################################
 class Throttle(object):
     def __init__(self, name = None, comPkg = None):
         gLog.print("Throttle {0}: initializing".format(name))
@@ -186,3 +223,6 @@ class Throttle(object):
         assert(sId > 0)
         assert(direction == kForward or direction == kBackward)
         self.msgHandler.put(SwReqMsg(switch=sId, direction=direction))
+
+    def pause(self, secs):
+        sleep(secs)

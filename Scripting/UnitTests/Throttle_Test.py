@@ -1,7 +1,7 @@
 from StartAndKill import StartAndKill
 from MessageTranslationTypes import *
 from MsgHandler import *
-from Throttle import Throttle, setBell, setSpeed, doCommands
+from Throttle import *
 
 def raw_input(st):
     return input(st)
@@ -64,13 +64,20 @@ if __name__ == "__main__":
         input("press enter to quit")
 
     # Use the throttle to send messages to the controller
-    commands = [[setBell, kOn], [blinkLights, 4], [setBell, kOff], [tootHorn], [setSpeed, 100]]
+    # Option 1: using a command list
+    commands = [[setBell, kOn], [blinkLights, 4], [setBell, kOff], [tootHorn], [setSpeed, 100],
+                [pause, 3], [throwNextSwitch], [moveSwitch, 12, kClosed], [pause, 4], [moveSwitch, 12, kThrown],
+                [addInterest, PutSensorStateMsg], [waitFor, PutSensorStateMsg(id = 59, state = kSensorOpen)],
+                [removeInterest, PutSensorStateMsg], [stopTrain]]
     doCommands(throt, commands)
-    # throt.setBell(kOn)
-    # throt.do(blinkLights, 4)
-    # throt.setBell(kOff)
-    # throt.do(tootHorn)
-    # throt.setSpeed(100)
+
+    # Option 2: using throttle commands
+    """
+    throt.setBell(kOn)
+    throt.do(blinkLights, 4)
+    throt.setBell(kOff)
+    throt.do(tootHorn)
+    throt.setSpeed(100)
     sleep(3)
     throt.throwNextSwitch()
     throt.moveSwitch(12, kClosed)
@@ -82,6 +89,8 @@ if __name__ == "__main__":
     throt.waitFor(PutSensorStateMsg(id = 59, state = kSensorOpen))
     throt.removeInterest(PutSensorStateMsg)
     throt.do(stopTrain)
+    """
+
     gLog.flush()
     raw_input("press enter to quit")
     throt.close()
