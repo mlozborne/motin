@@ -70,6 +70,11 @@ if __name__ == "__main__":
                 [addInterest, PutSensorStateMsg], [waitFor, PutSensorStateMsg(id = 59, state = kSensorOpen)],
                 [removeInterest, PutSensorStateMsg], [stopTrain]]
     doCommands(throt, commands)
+    path = ((77, 18, kThrown), (77, 22, kClosed), (77, 15, kThrown), (77, 11, kClosed), (77, 9, kClosed),
+            (47, 5, kClosed), (27, 6, kClosed), (17, 7, kClosed), (12, 8, kClosed), (10, 4, kClosed), (62, 13, kClosed),
+            (80, 17, kClosed))
+    commands = ((pause, 1), (setLights, kOn), (setSpeed, 50), (followPath, path))
+    doCommands(throt, commands)
 
     # Option 2: using throttle commands
     """

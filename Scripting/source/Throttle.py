@@ -32,6 +32,9 @@ def doCommands(throttle, commands):
         if len(command) == 3:
             throttle.do(command[0], command[1], command[2])
 
+def followPath(self, path):
+    self.followPath(path)
+
 def addInterest(self, interest):
     self.addInterest(interest)
 
@@ -97,6 +100,23 @@ class Throttle(object):
         self.F5 = 0              # Flip this to close next turnout
         self.F6 = 0              # Flip this ot throw next turnout
         self.msgHandler = MsgHandler(name = self.name, comPkg = comPkg)
+
+    def followPath(self, path):
+        """
+        A path is a list of triples (sensor#, switch#, direction)
+        When the train reaches the sensor, the throttle moves the switch.
+        """
+        self.addInterest(PutSensorStateMsg)
+        previousSensor = 0
+        for point in path:
+            sensor = point[0]
+            switch = point[1]
+            direction = point[2]
+            if sensor != previousSensor:
+                previousSensor = sensor
+                self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
+            self.moveSwitch(switch, direction)
+        self.removeInterest(PutSensorStateMsg)
 
     def addInterest(self, interest):
         gLog.print("Throttle {0}: adding interest {1}".format(self.name, interest))
