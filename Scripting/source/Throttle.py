@@ -32,6 +32,9 @@ def doCommands(throttle, commands):
         if len(command) == 3:
             throttle.do(command[0], command[1], command[2])
 
+def followCommandPath(self, commandPath):
+    self.followCommandPath(commandPath)
+
 def followPath(self, path):
     self.followPath(path)
 
@@ -43,6 +46,9 @@ def removeInterest(self, interest):
 
 def waitFor(self, msg):
     self.waitFor(msg)
+
+def initTrain(self, address, position):
+    self.initTrain(address, position)
 
 def setSpeed(self, speed):
     self.setSpeed(speed)
@@ -100,6 +106,27 @@ class Throttle(object):
         self.F5 = 0              # Flip this to close next turnout
         self.F6 = 0              # Flip this ot throw next turnout
         self.msgHandler = MsgHandler(name = self.name, comPkg = comPkg)
+
+    def followCommandPath(self, path):
+        """
+        A command path is a list of tuples (sensor#, command)
+        When the train reaches the sensor, the throttle executes the command.
+        """
+        self.addInterest(PutSensorStateMsg)
+        previousSensor = 0
+        for point in path:
+            sensor = point[0]
+            command = point[1]
+            if sensor != previousSensor:
+                previousSensor = sensor
+                self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
+            if len(command) == 1:
+                self.do(command[0])
+            if len(command) == 2:
+                self.do(command[0], command[1])
+            if len(command) == 3:
+                self.do(command[0], command[1], command[2])
+        self.removeInterest(PutSensorStateMsg)
 
     def followPath(self, path):
         """
