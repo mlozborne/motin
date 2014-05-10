@@ -1,5 +1,4 @@
 from StartAndKill import StartAndKill
-from MessageTranslationTypes import *
 from MsgHandler import *
 from Throttle import *
 
