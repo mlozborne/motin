@@ -40,11 +40,13 @@ package MessageTranslationLibrary is
    procedure splitDoReadLayoutMsg           (msg : in MessageType; fileName : out Unbounded_String);
    procedure splitDoRestoreStateMsg         (msg : in MessageType; x : out  integer);
    procedure splitDoSaveStateMsg            (msg : in MessageType; x : out  integer);
+   procedure splitDoMakeSectionUseableMsg   (msg : in MessageType; sensor1 : out positive; sensor2 : out positive);
    PROCEDURE SplitFrontSensorFiredMsg       (msg : IN MessageType; TrainId : OUT TrainIdType);  
    procedure splitGetSwitchSuccessorMsg     (msg : in MessageType; x : out  integer);
    PROCEDURE SplitLoseReservationMsg        (msg : IN MessageType; TrainId : OUT TrainIdType);  
    procedure splitPutInitOutcomeMsg         (msg : in MessageType; physAdd : out locoAddressType; physSlot : out slotType;
                                                                    virtAdd : out locoAddressType; virtSlot : out slotType);
+   procedure splitPutMakeSectionUseableResponseMsg  (msg : in MessageType; sensor1 : out positive; sensor2 : out positive; flag : out natural);
    procedure splitPutReadLayoutResponseMsg  (msg : in MessageType; responseFlag : out positive; code : out natural);
    procedure splitPutRestoreResponseMsg     (msg : in MessageType; x : out  integer);
    procedure splitPutSaveResponseMsg        (msg : in MessageType; x : out  integer);
@@ -87,12 +89,14 @@ package MessageTranslationLibrary is
    function makeDoReadLayoutMsg           (fileName : string) return MessageType;
    function makeDoRestoreStateMsg         (x : integer) return MessageType;
    function makeDoSaveStateMsg            (x : integer) return MessageType;
+   function makeDoMakeSectionUseableMsg   (sensor1 : positive; sensor2 : positive) return MessageType;
    function makeFrontSensorFiredMsg       (trainId : trainIdType) return MessageType;
    function makeGetSwitchStatesMsg        return MessageType;
    function makeGetSwitchSuccessorMsg     (x : integer) return MessageType;
    function makeLoseReservationMsg        (trainId : trainIdType) return MessageType;
    function makePutInitOutcomeMsg         (physicallocoAddress : locoAddressType; physicalSlotNum : slotType;
                                            virtuallocoAddress : locoAddressType; virtualSlotNum : slotType) return MessageType;
+   function makePutMakeSectionUseableResponseMsg  (sensor1 : positive; sensor2 : positive; flag : natural) return MessageType;
 	function makePutPowerChangeCompleteMsg	return MessageType;
    function makePutReadLayoutResponseMsg  (responseFlag : positive; code : natural) return MessageType;
    function makePutRestoreResponseMsg     (x : integer) return MessageType;

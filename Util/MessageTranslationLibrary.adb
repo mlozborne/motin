@@ -688,6 +688,39 @@ package body MessageTranslationLibrary is
          raise;
    end makePutSwitchStateMsg;
 
+   function makeDoMakeSectionUseableMsg(sensor1 : positive; sensor2 : positive) return MessageType is
+   -- <00><opcode><sensor1 2 bytes><sensor2 2 bytes>
+		msg : messageType := nullMessage;
+   begin
+      msg.byteArray(1) := 16#00#;
+	   msg.byteArray(2) := doMakeSectionUseable;
+	   convertNaturalToBytes(sensor1, msg.byteArray(3), msg.byteArray(4));
+	   convertNaturalToBytes(sensor2, msg.byteArray(5), msg.byteArray(6));
+	   msg.size := 6;
+      return msg;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeDoMakeSectionUseableMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end makeDoMakeSectionUseableMsg;
+
+   function makePutMakeSectionUseableResponseMsg(sensor1 : positive; sensor2 : positive; flag : natural) return MessageType is
+   -- <00><opcode><sensor1 2 bytes><sensor2 2 bytes><flag 1 byte>
+		msg : messageType := nullMessage;
+   begin
+      msg.byteArray(1) := 16#00#;
+	   msg.byteArray(2) := putMakeSectionUseableResponse;
+	   convertNaturalToBytes(sensor1, msg.byteArray(3), msg.byteArray(4));
+	   convertNaturalToBytes(sensor2, msg.byteArray(5), msg.byteArray(6));
+		msg.byteArray(7) := unsigned_8(flag);
+	   msg.size := 7;
+      return msg;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makePutMakeSectionUseableResponseMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end makePutMakeSectionUseableResponseMsg;
+
    function makePutSensorStateMsg(sensorId : positive; state : sensorStateType) return MessageType is
    -- <00><opcode><sensor# 2 bytes><sensor state>
 		msg : messageType := nullMessage;
@@ -1087,6 +1120,29 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitPutSwitchStateMsg --" & kLFString & Exception_Information (error));
          raise;
    end splitPutSwitchStateMsg;
+
+   procedure splitDoMakeSectionUseableMsg   (msg : in MessageType; sensor1 : out positive; sensor2 : out positive) is
+   -- <00><opcode><sensor1 2 bytes><sensor2 2 bytes>
+   begin
+      sensor1 := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
+      sensor2 := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitDoMakeSectionUseableMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end splitDoMakeSectionUseableMsg;
+
+   procedure splitPutMakeSectionUseableResponseMsg  (msg : in MessageType; sensor1 : out positive; sensor2 : out positive; flag : out natural) is
+   -- <00><opcode><sensor# 2 bytes><sensor state>
+   begin
+      sensor1 := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
+      sensor2 := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
+      flag := natural(msg.byteArray(7));
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitPutMakeSectionUseableResponseMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end splitPutMakeSectionUseableResponseMsg;
 
    procedure splitPutSensorStateMsg (msg : in MessageType; sensorId : out positive; state : out sensorStateType) is
    -- <00><opcode><sensor# 2 bytes><sensor state>
