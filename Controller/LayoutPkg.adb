@@ -948,6 +948,16 @@ PACKAGE BODY LayoutPkg IS
             put_line("    trainId" & integer'image(trainId));
             raise;
       END MakeReservation;
+		
+		procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive) is 
+			xxxxxxxxxxxxxxx
+		begin
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in MakeSectionUseable: " & Exception_Information(Error));
+            put_line("    sensor1/sensor2" & integer'image(sensor1) & integer'image(sensor2));
+            raise;
+      END MakeSectionUseable;		
 
       PROCEDURE MoveNextSwitch (
             TrainId : TrainIdType;
@@ -3240,6 +3250,13 @@ PACKAGE BODY LayoutPkg IS
                               END;
                            WHEN GetSwitchStates =>
                               LayoutPtr.GetSwitchStates;
+									when doMakeSectionUseable =>
+										declare
+											sensor1, sensor2 : positive;
+										begin
+											splitDoMakeSectionUseableMsg(cmd, sensor1, sensor2);
+											LayoutPtr.makeSectionUseable(sensor1, sensor2);
+										end;
                            WHEN OTHERS =>
                               NULL;
                         END CASE;

@@ -72,6 +72,26 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
+		procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive);
+      PROCEDURE MakeReservation      (TrainId :        TrainIdType;
+                                      Result  :    OUT Boolean);
+      PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
+                                      State   : SwitchStateType);
+      PROCEDURE MoveSwitch           (SwitchId : Positive;
+                                      State    : SwitchStateType);
+      PROCEDURE PositionTrain        (TrainId :        TrainIdType;
+                                      Count   :        Positive;
+                                      Sensors :        SensorArrayType;
+                                      Result  :    OUT Boolean);
+      PROCEDURE ReleaseReservation   (TrainId : TrainIdType);
+      procedure removeFromTrainList  (trainId : TrainIdType);              
+      PROCEDURE RepositionTrain      (TrainId :        TrainIdType;
+                                      Count   :        Positive;
+                                      Sensors :        SensorArrayType;
+                                      Result  :    OUT Boolean);
+		procedure setAllSensorsOpen;		
+      PROCEDURE SwitchFinishedMoving (SwitchId : Positive;
+                                      State    : SwitchStateType);
 
 		PROCEDURE IdentifyTrainV1      (SensorID : Positive);  
 			--                                                    Section1   / Section2
@@ -202,25 +222,7 @@ PACKAGE LayoutPkg IS
 
 		-- PROCEDURE IdentifyTrainV2      (SensorID : Positive);  -- sensor oriented, assumes no sensor errors
 		PROCEDURE IdentifyTrainV3      (sx : Positive);  -- sensor oriented, assumes sensor errors
-      PROCEDURE MakeReservation      (TrainId :        TrainIdType;
-                                      Result  :    OUT Boolean);
-      PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
-                                      State   : SwitchStateType);
-      PROCEDURE MoveSwitch           (SwitchId : Positive;
-                                      State    : SwitchStateType);
-      PROCEDURE PositionTrain        (TrainId :        TrainIdType;
-                                      Count   :        Positive;
-                                      Sensors :        SensorArrayType;
-                                      Result  :    OUT Boolean);
-      PROCEDURE ReleaseReservation   (TrainId : TrainIdType);
-      procedure removeFromTrainList  (trainId : TrainIdType);              
-      PROCEDURE RepositionTrain      (TrainId :        TrainIdType;
-                                      Count   :        Positive;
-                                      Sensors :        SensorArrayType;
-                                      Result  :    OUT Boolean);
-		procedure setAllSensorsOpen;		
-      PROCEDURE SwitchFinishedMoving (SwitchId : Positive;
-                                      State    : SwitchStateType);
+
       -- End functions to manipulate data structures 	
       ------------------------ 2a -------------------------------
 

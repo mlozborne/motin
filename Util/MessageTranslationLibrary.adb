@@ -1343,6 +1343,8 @@ package body MessageTranslationLibrary is
       slotNum, sectionId, switchId, physAdd, locoAdd,
       physSlot, virtAdd, virtSlot, responseFlag, trainId,
       responseCode, speed, sensorId     : natural;
+		sensor1, sensor2						 : positive;
+		flag										 : natural;
       trainState                        : trainStateType;
       sectionState                      : sectionStateType;
       switchState                       : switchStateType;
@@ -1511,6 +1513,17 @@ package body MessageTranslationLibrary is
                    natural'image(slotNum) & natural'image(speed) & " " & directionType'image(direction) & 
                    " " & onOffType'image(light) & " " & onOffType'image(bell) & 
 						 " " & onOffType'image(horn) & " " &onOffType'image(mute) & "]";
+			when doMakeSectionUseable =>
+				splitDoMakeSectionUseableMsg(msg, sensor1, sensor2);
+				return "doMakeSectionUseable: sensor1/sensor2 " & 
+				       natural'image(sensor1) & "/" &
+				       natural'image(sensor2);
+			when putMakeSectionUseableResponse =>
+				splitPutMakeSectionUseableResponseMsg(msg, sensor1, sensor2, flag);
+				return "doMakeSectionUseable: sensor1/sensor2/flag " & 
+				       natural'image(sensor1) & "/" &
+				       natural'image(sensor2) & "/" &
+				       natural'image(flag);
          when getSwitchStates =>
             return "getSwitchStates";
          when getFirstSwitch =>
