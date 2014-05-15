@@ -950,8 +950,23 @@ PACKAGE BODY LayoutPkg IS
       END MakeReservation;
 		
 		procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive) is 
-			xxxxxxxxxxxxxxx
+			sectionNPtr :  SectionNodePtr
 		begin
+			-- This is a preliminary simplified version
+			-- Move all switches in the section to their proper positions and send
+			-- a response message back to all OThrottles.
+			
+			-- 1) Find the section defined by the sensors
+			findSection(sensor1, sensor2, sectionNPtr);
+			swNPtr := sectionNPtr.section.switchList.head;
+			while swNPtr /= null loop
+				
+			
+			-- 2) Move each switch in the section
+			
+			
+			
+			
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MakeSectionUseable: " & Exception_Information(Error));
@@ -2609,6 +2624,7 @@ PACKAGE BODY LayoutPkg IS
 										-- Sensor Id matches one of the sensors in the switch's closed list
 										-- Therefore from the perspective of this switch the section is usable.
                               Result := True;
+										exit;
                            END IF;
                            SensorPtr := SensorPtr.Next;
                         END LOOP;

@@ -545,7 +545,7 @@ PRIVATE
          PrevSectionList : SectionObjList;
          BlockingList    : BlockingObjList;
          BlockCount      : Natural             := 0;
-         TrainId         : TrainIdType := 0;
+         TrainId         : TrainIdType         := 0;
       END RECORD;
       
    TYPE SectionNode IS

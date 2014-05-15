@@ -1,0 +1,124 @@
+	Line 1381:       FUNCTION CheckSensors (
+	Line 1910: 		function getTrainsSensorNumbers(trainId : trainIdType) return naturalListType is
+	Line 1958:       FUNCTION GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType IS
+	Line 1992:       FUNCTION GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess IS
+	Line 2026:       function countSensors(trainId : trainIdType) return natural is
+	Line 2151: 		function sensorUnderTrain(trainId : trainIdType; sensor : positive) return boolean is
+	Line 2176: 		function sensorIsNextToLast(trainId : trainIdType; sensor : positive) return boolean is
+	Line 2198: 		function  getSensorAtFrontOfReservedSectionPtr(section : sectionObj) return sensorObjPtr is
+	Line 2217: 		function  getSensorAtFrontOfReservedSection(section : sectionObj) return positive is
+	Line 2236: 		function GetFrontSensorPtr(TrainId : TrainIdType) return sensorObjPtr is
+	Line 2256: 		function GetBackSensorPtr(TrainId : TrainIdType) return sensorObjPtr is
+	Line 2276: 		function GetFrontSensor(TrainId : TrainIdType) return Positive is
+	Line 2297: 		function GetBackSensor(TrainId : TrainIdType) return Positive is
+	Line 2378: 		function trainInSection(trainId : trainIdtype; sp : sectionObjPtr) return boolean is
+	Line 2390: 		function sectionReserved(sp : sectionObjPtr) return boolean is
+	Line 2399: 		function sectionOccupied(sp : sectionObjPtr) return boolean is
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 2583:       FUNCTION IsSectionUseable (SectionPtr : SectionObjPtr) RETURN Boolean IS
+	
+	Line 2665:       FUNCTION AllFree (
+	Line 2792:       function isNewTrain(TrainId : TrainIdType) return boolean is
+	Line 2810:       FUNCTION IsIn (
+	
+	                vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 132:       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType) is
+	
+	Line 152:       PROCEDURE GetSwitchStates IS
+	Line 165: 		PROCEDURE IdentifyTrainV3 (sx : Positive) IS
+	Line 630: 			procedure putTrainPositionMsg(TrainId : trainIdType) is
+	Line 641:       PROCEDURE IdentifyTrainV1 (SensorID : Positive) IS
+	
+	                vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 915:       PROCEDURE MakeReservation (
+	
+	               ===========================================
+						============================================
+	Line 952: 		procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive) is 
+	
+	Line 962:       PROCEDURE MoveNextSwitch (
+	Line 1021:       PROCEDURE MoveSwitch (SwitchId : Positive; State    : SwitchStateType) IS
+	Line 1073:       PROCEDURE PositionTrain (
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 1113:       PROCEDURE ReleaseReservation (
+	
+	Line 1136:       procedure removeFromTrainList(trainId : TrainIdType) is
+	Line 1162:       PROCEDURE repositionTrain (                                            -- mo 1/17/12
+	Line 1177: 		procedure setAllSensorsOpen is 
+	Line 1194:       PROCEDURE SwitchFinishedMoving (
+	Line 1235:       PROCEDURE NewSection (
+	Line 1246:       PROCEDURE EndSection IS
+	Line 1265:       PROCEDURE AddToEnd (
+	Line 1303:       PROCEDURE FindAllSections (
+	Line 1332:       PROCEDURE SetNextSectionList IS
+	Line 1352:       PROCEDURE SetPrevSectionList IS
+	Line 1371:       PROCEDURE EndSectionList IS
+	Line 1395:       PROCEDURE GetSections (
+	
+	Line 1435:       PROCEDURE EndSwitchList IS
+	Line 1483:       PROCEDURE FindSwitch (
+	Line 1502:       PROCEDURE AddSwitch (
+	Line 1539:       PROCEDURE UpdateSwitch (
+	Line 1560:       PROCEDURE UpdateSwitchNarrow (
+	Line 1590:       PROCEDURE UpdateSwitchClosed (
+	Line 1620:       PROCEDURE UpdateSwitchThrown (
+	Line 1646:       PROCEDURE AddSensor (Id : Positive) IS
+	Line 1680:       PROCEDURE AddBlocking (
+	Line 1712:       PROCEDURE Print (
+	Line 1723:       PROCEDURE Print_Sensors (
+	Line 1745:       PROCEDURE Print_Switchs (
+	Line 1776:       PROCEDURE Print_Blockings (
+	Line 1792:       PROCEDURE Print_Sections (
+	Line 1850:       PROCEDURE SetXMLFilename (Filename : Unbounded_String) IS
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 1867:       PROCEDURE FindSensor (
+	
+	Line 1886:       PROCEDURE ReleaseBlockings (
+	Line 1935:       PROCEDURE AddNewSensorToFront (TrainId : TrainIdType; Sensor  : SensorObjPtr) IS
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 2043:       PROCEDURE getUnbockedUsableSectionsContainingSensor (
+	
+	Line 2075:       PROCEDURE GetOccResSections (
+	Line 2120:       PROCEDURE RemoveLastSensor (
+	Line 2317:       PROCEDURE GetBackSensor (TrainId : TrainIdType; BackId  : OUT Positive) IS
+	Line 2335: 		procedure flipSensor(sensorPtr : sensorNodePtr) is 
+	Line 2350:       procedure errorStopTrainsAtBadSensor(idSensorCase         : positive;
+	
+	               vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 2409: 		procedure identifySensor(sx               : positive;               -- MO March 2014
+	
+	Line 2547:       PROCEDURE SendToTrainQueue (
+	Line 2567:       PROCEDURE SendToAllTrainQueues (
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+						  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+						  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 2687:       PROCEDURE FindSection (
+	
+	Line 2711:       PROCEDURE FindAllSections (
+	Line 2734:       PROCEDURE PlaceTrainInSections (
+	Line 2752:       PROCEDURE BlockSections (BlockingList : BlockingObjList) IS
+	Line 2771:       PROCEDURE GetSensor(
+	Line 2831:       PROCEDURE GetFreeSection (
+	Line 2851:       PROCEDURE GetTrainSensorList (
+	Line 2871:       -- PROCEDURE SetNotUseable (
+	Line 2894:       PROCEDURE GetSection (
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+						  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 2917:       PROCEDURE MoveSwitchPossible (
+	Line 2955:       PROCEDURE MoveSwitchPossible (
+	
+	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	Line 2986:       PROCEDURE FindIdOfTrainLoosingReservation (SwitchPtr : SwitchNodePtr; 
+	Line 3020:       PROCEDURE SendLoseReservationMessages (SwitchPtr : SwitchNodePtr) IS
+	
+	Line 3049: 		procedure disposeSensorNode(ptr : in out sensorNodePtr) is
+	Line 3056: 		procedure makeEmptySensorObjList(sol : in out sensorObjList) is 
+	Line 3067: 		-- procedure disposeTrainObj(ptr : in out TrainObjPtr) is
+	Line 3075: 		procedure updateTrainSensors(TrainId : TrainIdType; Sensors : SensorArrayType) IS
+	Line 3108: 		PROCEDURE AddNewTrain (TrainId : TrainIdType; Sensors : SensorArrayType) IS
