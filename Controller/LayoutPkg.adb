@@ -1247,18 +1247,18 @@ PACKAGE BODY LayoutPkg IS
 ------------------------------- 2b -----------------------------------------
 -------------------- Begin build data structures from XML ------------------
 
-      PROCEDURE NewSection (
+      PROCEDURE bldNewSection (
             Id : Positive) IS
       BEGIN
          CurrentSection := NEW SectionObj;
          CurrentSection.Id := Id;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in NewSection: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldNewSection: " & Exception_Information(Error));
             RAISE;
-      END NewSection;
+      END bldNewSection;
 
-      PROCEDURE EndSection IS
+      PROCEDURE bldEndSection IS
       BEGIN
          IF SectionList.Head = NULL THEN
             SectionList.Head := NEW SectionNode;
@@ -1272,9 +1272,9 @@ PACKAGE BODY LayoutPkg IS
          Free_Section(CurrentSection);
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in EndSection: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldEndSection: " & Exception_Information(Error));
             RAISE;
-     END EndSection;
+     END bldEndSection;
 
       -- Add a section to the end of a section list
       PROCEDURE AddToEnd (
@@ -1383,15 +1383,15 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END SetPrevSectionList;
 
-      PROCEDURE EndSectionList IS
+      PROCEDURE bldEndSectionList IS
       BEGIN
          SetNextSectionList;
          SetPrevSectionList;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in EndSectionList: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldEndSectionList: " & Exception_Information(Error));
             RAISE;
-      END EndSectionList;
+      END bldEndSectionList;
 
       FUNCTION CheckSensors (
             Sensors  : SensorObjList;
@@ -1447,7 +1447,7 @@ PACKAGE BODY LayoutPkg IS
       END GetSections;
 
       -- Finish things up when the SwitchList is all read in
-      PROCEDURE EndSwitchList IS
+      PROCEDURE bldEndSwitchList IS
          SwitchPtr         : SwitchNodePtr  := SwitchList.Head;
          ClosedSectionList : SectionObjList;
          ThrownSectionList : SectionObjList;
@@ -1491,9 +1491,9 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in EndSwitchList: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldEndSwitchList: " & Exception_Information(Error));
             RAISE;
-      END EndSwitchList;
+      END bldEndSwitchList;
 
       PROCEDURE FindSwitch (
             Switchs   :        SwitchObjList;
@@ -1514,7 +1514,7 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END FindSwitch;
 
-      PROCEDURE AddSwitch (
+      PROCEDURE bldAddSwitch (
             Id    : Positive) IS
          SwitchPtr : SwitchNodePtr;
       BEGIN
@@ -1546,12 +1546,12 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in AddSwitch: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldAddSwitch: " & Exception_Information(Error));
             put_line("    adding switch #" & Positive'Image(Id));
             RAISE;
-      END AddSwitch;
+      END bldAddSwitch;
 
-      PROCEDURE UpdateSwitch (
+      PROCEDURE bldUpdateSwitch (
             Id           : Positive;
             TypeOfSwitch : ControllerGlobals.SwitchType;
             state        : switchStateType) IS
@@ -1567,12 +1567,12 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in UpdateSwitch: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldUpdateSwitch: " & Exception_Information(Error));
             put_line("    switch #" & Positive'Image(Id));
             RAISE;
-      END UpdateSwitch;
+      END bldUpdateSwitch;
 
-      PROCEDURE UpdateSwitchNarrow (
+      PROCEDURE bldUpdateSwitchNarrow (
             NarrowId : Positive) IS
          SensorPtr : SensorNodePtr;
       BEGIN
@@ -1597,12 +1597,12 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in UpdateSwitchNarrow: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldUpdateSwitchNarrow: " & Exception_Information(Error));
             put_line("    narrow id #" & Positive'Image(narrowId));
             RAISE;
-      END UpdateSwitchNarrow;
+      END bldUpdateSwitchNarrow;
 
-      PROCEDURE UpdateSwitchClosed (
+      PROCEDURE bldUpdateSwitchClosed (
             ClosedId : Positive) IS
          SensorPtr : SensorNodePtr;
       BEGIN
@@ -1627,12 +1627,12 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in UpdateSwitchClosed: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldUpdateSwitchClosed: " & Exception_Information(Error));
             put_line("    closed id #" & Positive'Image(closedId));
             RAISE;
-      END UpdateSwitchClosed;
+      END bldUpdateSwitchClosed;
 
-      PROCEDURE UpdateSwitchThrown (
+      PROCEDURE bldUpdateSwitchThrown (
             ThrownId : Positive) IS
          SensorPtr : SensorNodePtr;
       BEGIN
@@ -1653,12 +1653,12 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in UpdateSwitchThrown: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldUpdateSwitchThrown: " & Exception_Information(Error));
             put_line("    thrown id #" & Positive'Image(thrownId));
             RAISE;
-      END UpdateSwitchThrown;
+      END bldUpdateSwitchThrown;
 
-      PROCEDURE AddSensor (Id : Positive) IS
+      PROCEDURE bldAddSensor (Id : Positive) IS
          SensorPtr : SensorNodePtr;
       BEGIN
          IF CurrentSection.SensorList.Head = NULL THEN
@@ -1687,12 +1687,12 @@ PACKAGE BODY LayoutPkg IS
          END IF;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in AddSensor: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldAddSensor: " & Exception_Information(Error));
             put_line("    sensor id #" & Positive'Image(Id));
             RAISE;
-      END AddSensor;
+      END bldAddSensor;
 
-      PROCEDURE AddBlocking (
+      PROCEDURE bldAddBlocking (
             Id : Positive) IS
       BEGIN
          IF CurrentSection.BlockingList.Head = NULL THEN
@@ -1707,10 +1707,10 @@ PACKAGE BODY LayoutPkg IS
          CurrentSection.BlockingList.Tail.Id := Id;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in AddBlocking: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldAddBlocking: " & Exception_Information(Error));
             put_line("    id #" & Positive'Image(Id));
             RAISE;
-      END AddBlocking;
+      END bldAddBlocking;
 		
 -------------------- End build data structures from XML --------------------
 ------------------------------- 2b -----------------------------------------

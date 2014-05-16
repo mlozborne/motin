@@ -18,7 +18,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      LayoutPtr.NewSection(Id);
+      LayoutPtr.bldNewSection(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("*********** EXCEPTION Error adding section:" & Positive'Image(Id) & " " & Exception_Information(Error));
@@ -37,7 +37,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      LayoutPtr.AddSensor(Id);
+      LayoutPtr.bldAddSensor(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************ EXCEPTION Error adding sensor:" & Positive'Image(Id) & " " & Exception_Information(Error));
@@ -60,7 +60,7 @@ PACKAGE BODY XMLParser IS
       -- IF Get_Index(Atts, "state") /= -1 THEN
          -- State := SwitchStateType'Value(Get_Value(Atts, "state"));
       -- END IF;
-      LayoutPtr.AddSwitch(Id);
+      LayoutPtr.bldAddSwitch(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************* EXCEPTION Error adding switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
@@ -84,7 +84,7 @@ PACKAGE BODY XMLParser IS
       ELSE
          TypeOfSwitch := ControllerGlobals.SwitchType'Value("Normal");
       END IF;
-      LayoutPtr.UpdateSwitch(Id, TypeOfSwitch, state);
+      LayoutPtr.bldUpdateSwitch(Id, TypeOfSwitch, state);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************* EXCEPTION Error updating switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
@@ -98,7 +98,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "id") /= -1 THEN
          NarrowId := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      LayoutPtr.UpdateSwitchNarrow(NarrowId);
+      LayoutPtr.bldUpdateSwitchNarrow(NarrowId);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("*************** EXCEPTION Error updating switch narrow end. Sensor Id:" & Positive'Image(NarrowId) & " " & Exception_Information(Error));
@@ -112,7 +112,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "id") /= -1 THEN
          ClosedId := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      LayoutPtr.UpdateSwitchClosed(ClosedId);
+      LayoutPtr.bldUpdateSwitchClosed(ClosedId);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("*********** EXCEPTION Error updating switch closed end. Sensor Id:" & Positive'Image(ClosedId) & " " & Exception_Information(Error));
@@ -126,7 +126,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "id") /= -1 THEN
          ThrownId := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      LayoutPtr.UpdateSwitchThrown(ThrownId);
+      LayoutPtr.bldUpdateSwitchThrown(ThrownId);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("*************** EXCEPTION Error updating switch thrown end. Sensor Id:" & Positive'Image(ThrownId) & " " & Exception_Information(Error));
@@ -145,7 +145,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      LayoutPtr.AddBlocking(Id);
+      LayoutPtr.bldAddBlocking(Id);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************** EXCEPTION Error getting blocking values " & Exception_Information(Error));
@@ -214,11 +214,11 @@ PACKAGE BODY XMLParser IS
          Qname         :        Unicode.CES.Byte_Sequence := "") IS
    BEGIN
       IF Local_Name = "section" THEN
-         LayoutPtr.EndSection;
+         LayoutPtr.bldEndSection;
       ELSIF Local_Name = "section-list" THEN
-         LayoutPtr.EndSectionList;
+         LayoutPtr.bldEndSectionList;
       ELSIF Local_Name = "switch-list" THEN
-         LayoutPtr.EndSwitchList;
+         LayoutPtr.bldEndSwitchList;
       END IF;
    EXCEPTION
       WHEN Error : OTHERS =>

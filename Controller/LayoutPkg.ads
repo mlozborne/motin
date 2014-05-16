@@ -229,56 +229,56 @@ PACKAGE LayoutPkg IS
 		------------------------------- 2b -----------------------------------------
 		-------------------- Begin build data structures from XML ------------------
       -- Creates a new section using private variable CurrentSection
-      PROCEDURE NewSection (
+      PROCEDURE bldNewSection (
             Id : Positive);
 
       -- CurrentSection has been populated with Data
       -- CurrentSection is added to the end of SectionList
-      PROCEDURE EndSection;
+      PROCEDURE bldEndSection;
 
       -- SectionList has been read
       -- Figure out the sections surrounding each section
-      PROCEDURE EndSectionList;
+      PROCEDURE bldEndSectionList;
 
       -- SwitchList has been read
       -- Figure out what switchs are blocking sections
       --   based on current state
-      PROCEDURE EndSwitchList;
+      PROCEDURE bldEndSwitchList;
 
       -- Adds a new switch to CurrentSection's SwitchList
       -- If the switch is not already in the Full SwitchList, it is added
-      PROCEDURE AddSwitch (
+      PROCEDURE bldAddSwitch (
             Id    : Positive);
 
       -- Find the Switch with Id
       -- private variable CurrentSwitch points to the switch
       -- set the type of the switch
-      PROCEDURE UpdateSwitch (
+      PROCEDURE bldUpdateSwitch (
             Id           : Positive;
             TypeOfSwitch : ControllerGlobals.SwitchType;
             state        : switchStateType);
 
       -- Add a pointer to the sensor with Id = NarrowId to the list of narrow
       --   sensors in CurrentSwitch
-      PROCEDURE UpdateSwitchNarrow (
+      PROCEDURE bldUpdateSwitchNarrow (
             NarrowId : Positive);
 
       -- Add a pointer to the sensor with Id = ClosedId to the list of closed
       --    sensors in CurrentSwitch
-      PROCEDURE UpdateSwitchClosed (
+      PROCEDURE bldUpdateSwitchClosed (
             ClosedId : Positive);
 
       -- Add a pointer to the sensor with Id = ThrownId to CurrentSwitch
-      PROCEDURE UpdateSwitchThrown (
+      PROCEDURE bldUpdateSwitchThrown (
             ThrownId : Positive);
 
       -- Adds a new sensor to CurrentSection's SensorList
       -- If the sensor is not already in the Full SensorList, it is added
-      PROCEDURE AddSensor (
+      PROCEDURE bldAddSensor (
             Id : Positive);
 
       -- Adds Id to CurrentSection's BlockingList
-      PROCEDURE AddBlocking (
+      PROCEDURE bldAddBlocking (
             Id : Positive);
 		-------------------- End build data structures from XML --------------------
 		------------------------------ 2b ------------------------------------------
