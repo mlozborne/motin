@@ -29,9 +29,9 @@ PACKAGE BODY CommandQueueManager IS
             SSIQueue.putMessage(Message);
          WHEN UZero =>         
             CASE message.ByteArray(2) IS
-				   when putPowerChangeComplete => 
-						myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");
-						CommandQueueManager.OutQueue.putMessage(message);
+               when putPowerChangeComplete => 
+                  myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to out queue... ");
+                  CommandQueueManager.OutQueue.putMessage(message);
                 when MsgTrainTaskQuit | MsgReinitializeTrain =>
                   myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to train queue... ");
                   TrainIdQueueList.GetQueue(Integer(message.ByteArray(3)), TrainQueuePtr);
@@ -176,30 +176,30 @@ PACKAGE BODY CommandQueueManager IS
             raise;
       end put;
 
-		procedure clearEntry(i : natural) is
-			newEntry  : lookupEntry;
-		begin
-			if lookupTable(I).sensors /= null then
-				disposeSensorArray(LookupTable(I).Sensors); 
-			end if;
-			lookupTable(i) := newEntry;
+      procedure clearEntry(i : natural) is
+         newEntry  : lookupEntry;
+      begin
+         if lookupTable(I).sensors /= null then
+            disposeSensorArray(LookupTable(I).Sensors); 
+         end if;
+         lookupTable(i) := newEntry;
       EXCEPTION
          WHEN error: OTHERS =>
             put_line("**************** EXCEPTION CommandQueueManager: ClearEntry " & Exception_Information(Error));
             raise;
-		end clearEntry;
-		
-		procedure clearTable is 
-		begin
-			for i in lookupTable'range loop
-				clearEntry(i);
-			end loop;
+      end clearEntry;
+      
+      procedure clearTable is 
+      begin
+         for i in lookupTable'range loop
+            clearEntry(i);
+         end loop;
       EXCEPTION
          WHEN error: OTHERS =>
             put_line("**************** EXCEPTION CommandQueueManager: ClearTable " & Exception_Information(Error));
             raise;
-		end clearTable;
-		
+      end clearTable;
+      
       ----------------------------------------------------------
       -- return index of first empty entry in lookup table
       ---------------------------------------------------------
@@ -227,8 +227,8 @@ PACKAGE BODY CommandQueueManager IS
       begin
          FOR I IN LookupTable'RANGE LOOP
             IF lookupTable(I).physTrainAddr = PhysAddr THEN
-					clearEntry(i);
-					return;
+               clearEntry(i);
+               return;
             END IF;
          END LOOP;
       EXCEPTION
@@ -238,13 +238,13 @@ PACKAGE BODY CommandQueueManager IS
       end removeEntryByPhysAddr;
       
       procedure removeEntryByEitherAddr(PhysAddr : LocoAddressType;
-                                   		 VirtAddr : LocoAddressType) is  
+                                          VirtAddr : LocoAddressType) is  
       begin
          FOR I IN LookupTable'RANGE LOOP
             IF (physAddr /= 0 and lookupTable(I).physTrainAddr = PhysAddr) or
-				   (virtAddr /= 0 and lookupTable(i).virtTrainAddr = virtAddr) THEN
-					clearEntry(i);
-					return;
+               (virtAddr /= 0 and lookupTable(i).virtTrainAddr = virtAddr) THEN
+               clearEntry(i);
+               return;
             END IF;
          END LOOP;
       EXCEPTION
@@ -311,9 +311,9 @@ PACKAGE BODY CommandQueueManager IS
       procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean) is
       BEGIN
          found := false;
-			if virtSlotNum = 0 then	
-				return;
-			end if;
+         if virtSlotNum = 0 then   
+            return;
+         end if;
          FOR I IN LookupTable'RANGE LOOP
             IF LookupTable(I).VirtSlotNum = VirtSlotNum THEN
                trainId := i;

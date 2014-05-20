@@ -66,50 +66,50 @@ PACKAGE CommandQueueManager IS
    PROTECTED SlotLookupTable IS
 
       procedure put;
-			-- display current content of talbe
-			
+         -- display current content of talbe
+         
       PROCEDURE RequestTrainId(TrainId: OUT TrainIdType);
-			-- return the index of the first unused slot in the table and 
-			--   set the slot to in use
-			-- raise LookupTableFull if there are no empty slots
-			
+         -- return the index of the first unused slot in the table and 
+         --   set the slot to in use
+         -- raise LookupTableFull if there are no empty slots
+         
       PROCEDURE CreateEntry(VirtTrainAddr: IN LocoAddressType;
                             PhysTrainAddr: IN LocoAddressType; 
                             TrainId: IN TrainIdType);
-			-- pre:  TrainId has been obtained using RequestTrainId
-			-- make an entry in the table at index TrainId
-			
-		procedure clearTable;
-			-- reinitialize all entries in the table
+         -- pre:  TrainId has been obtained using RequestTrainId
+         -- make an entry in the table at index TrainId
+         
+      procedure clearTable;
+         -- reinitialize all entries in the table
       procedure clearEntry(i : natural);
-			-- reinitialize all fields in entry i
+         -- reinitialize all fields in entry i
       procedure removeEntryByTrainId(trainId : trainIdType); 
-			-- same as clearEntry above
+         -- same as clearEntry above
       procedure removeEntryByPhysAddr(PhysAddr : LocoAddressType); 
-			-- clear the entry that contains the PhysAddr
-		procedure removeEntryByEitherAddr(PhysAddr : LocoAddressType;
-                                   		 VirtAddr : LocoAddressType);
-			-- clear the entry that contains either address.
+         -- clear the entry that contains the PhysAddr
+      procedure removeEntryByEitherAddr(PhysAddr : LocoAddressType;
+                                          VirtAddr : LocoAddressType);
+         -- clear the entry that contains either address.
       FUNCTION TrainIdToVirtSlotNum(TrainId: TrainIdType) RETURN  SlotType;
-			-- return VirtSlotNum at index TrainId. Could be 0.
+         -- return VirtSlotNum at index TrainId. Could be 0.
       FUNCTION TrainIdToPhysSlotNum(TrainId: TrainIdType) RETURN SlotType;
-			-- return PhysSlotNum at index TrainId. Could be 0.
+         -- return PhysSlotNum at index TrainId. Could be 0.
       FUNCTION TrainIdToVirtAddr(TrainId: TrainIdType) RETURN LocoAddressType;
-			-- return VirtAddr at index TrainId. Could be 0.
+         -- return VirtAddr at index TrainId. Could be 0.
       FUNCTION TrainIdToPhysAddr(TrainId: TrainIdType) RETURN LocoAddressType;
-			-- return PhysAddr at index TrainId. Could be 0.
-			
+         -- return PhysAddr at index TrainId. Could be 0.
+         
       FUNCTION PhysSlotNumToTrainId(PhysSlotNum: SlotType) RETURN TrainIdType;
-			-- return the index in the table of PhysSlotNum or 0 if not found     
+         -- return the index in the table of PhysSlotNum or 0 if not found     
       procedure VirtSlotNumToTrainId(VirtSlotNum: SlotType; trainId : out trainIdType; found : out boolean);
-			-- return the index in the table of VirtSlotNum or 0 if not found     
+         -- return the index in the table of VirtSlotNum or 0 if not found     
       FUNCTION IsPhysAddrInTable(PhysAddr: LocoAddressType) RETURN Boolean;
-			-- return true if PhysAddr in table else return false
+         -- return true if PhysAddr in table else return false
       FUNCTION PhysAddrToTrainId(PhysAddr: LocoAddressType) RETURN TrainIdType;
-			-- return the index in the table of PhysAddr or 0 if not found     
+         -- return the index in the table of PhysAddr or 0 if not found     
       FUNCTION VirtAddrToTrainId(VirtAddr: LocoAddressType) RETURN TrainIdType;
-			-- return the index in the table of VirtAddr or 0 if not found     
-			
+         -- return the index in the table of VirtAddr or 0 if not found     
+         
       function addressToVirtSlotNum(address : natural) return SlotType;  -- mo 1/12/12
       -- return 0 if there is no completed entry in the table containing this address
       --          as either a physical or virtual address

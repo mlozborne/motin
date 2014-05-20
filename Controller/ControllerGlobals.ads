@@ -17,7 +17,7 @@ PACKAGE ControllerGlobals IS
    kSpeedSlowStop   : constant natural := 1;      -- mo 1/9/12   0/1 = gradual/abrupt stopping
 
    WaitTime               : CONSTANT duration := 1.0;                     -- mo 12/29/11
-   kTrainStopDelay 		  : constant duration := 1.5;
+   kTrainStopDelay         : constant duration := 1.5;
    kFirstVirtAddress      : constant natural := 11;     -- mo 1/15/12
    kLastVirtAddress       : constant natural := 99;     -- mo 1/15/12
    kFirstPhysAddress      : constant natural := 101;    -- mo 1/15/12
@@ -48,11 +48,11 @@ PACKAGE ControllerGlobals IS
    TYPE SensorArrayAccess IS ACCESS SensorArrayType;
    
    PROCEDURE disposeBasicSensorArray IS 
-      NEW Ada.Unchecked_Deallocation(Object=>SensorArrayType, Name=>SensorArrayAccess);	   
+      NEW Ada.Unchecked_Deallocation(Object=>SensorArrayType, Name=>SensorArrayAccess);      
    procedure disposeSensorArray(ptr : in out SensorArrayAccess); 
    
-	procedure convertSensorArrayToList(A : in sensorArrayAccess; L : in out naturalListType);
-	procedure convertSensorListToArray(L : in naturalListType; A : out sensorArrayAccess);
+   procedure convertSensorArrayToList(A : in sensorArrayAccess; L : in out naturalListType);
+   procedure convertSensorListToArray(L : in naturalListType; A : out sensorArrayAccess);
    
    ConnectSocket   : SocketType;
    -- ConnectSocket   : C.Double;

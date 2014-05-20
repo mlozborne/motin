@@ -31,5 +31,5 @@ PRIVATE
    LayoutPtr    : LayoutPkg.LayoutManagerAccess;
    SectionList  : Boolean := False;
    SwitchList   : Boolean := False;
-	
+   
 END XMLParser;

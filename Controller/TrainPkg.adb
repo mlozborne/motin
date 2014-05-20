@@ -53,15 +53,15 @@ PACKAGE BODY TrainPkg IS
          put_line("**************** EXCEPTION in TrainPkg:SetLayout" );
          raise;
    END SetLayout;
-	
-	function adjustedSpeed(direction : directionType; speed : speedType) return speedType is
-	begin	
-		if direction = backward and then speed > kMaxSpeedReverse then	
-			return kMaxSpeedReverse;
-		else
-			return speed;
-		end if;
-	end adjustedSpeed;
+   
+   function adjustedSpeed(direction : directionType; speed : speedType) return speedType is
+   begin   
+      if direction = backward and then speed > kMaxSpeedReverse then   
+         return kMaxSpeedReverse;
+      else
+         return speed;
+      end if;
+   end adjustedSpeed;
 
    TASK BODY TrainTask IS
       State     : TrainStateType;
@@ -332,12 +332,12 @@ PACKAGE BODY TrainPkg IS
                                     LayoutPtr.ReleaseReservation(TrainId);            
                                     SendToOutQueue(makePutTrainStateMsg(TrainId, State));
                                     SendToOutQueue(makeLocoSpdMsg(TrainId, kSpeedAbruptStop));      -- mo 1/9/12
-												for i in 1..3 loop
-													SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, on, Bell));
-													delay 1.0;
-													SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, off, Bell));
-													delay 0.5;
-												end loop;
+                                    for i in 1..3 loop
+                                       SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, on, Bell));
+                                       delay 1.0;
+                                       SendToOutQueue(makeLocoDirfMsg(TrainId, Direction, Light, off, Bell));
+                                       delay 0.5;
+                                    end loop;
                               END CASE;
                            WHEN MsgLoseReservation =>
                               IF State = Moving THEN
