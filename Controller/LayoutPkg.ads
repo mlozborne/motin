@@ -23,26 +23,26 @@ PACKAGE LayoutPkg IS
    TYPE SensorObjPtr IS ACCESS SensorObj;
    TYPE SensorNode IS PRIVATE;
    TYPE SensorNodePtr IS ACCESS SensorNode;
-   TYPE SensorObjList IS PRIVATE;
+   TYPE SensorNodeList IS PRIVATE;
 
    TYPE SwitchObj IS PRIVATE;
    TYPE SwitchObjPtr IS ACCESS SwitchObj;
    TYPE SwitchNode IS PRIVATE;
    TYPE SwitchNodePtr IS ACCESS SwitchNode;
-   TYPE SwitchObjList IS PRIVATE;
+   TYPE SwitchNodeList IS PRIVATE;
 
-   TYPE BlockingObj IS PRIVATE;
-   TYPE BlockingObjPtr IS ACCESS BlockingObj;
-   TYPE BlockingObjList IS PRIVATE;
+   TYPE BlockingNode IS PRIVATE;
+   TYPE BlockingNodePtr IS ACCESS BlockingNode;
+   TYPE BlockingNodejList IS PRIVATE;
 
    TYPE SectionObj IS PRIVATE;
    TYPE SectionObjPtr IS ACCESS SectionObj;
    TYPE SectionNode IS PRIVATE;
    TYPE SectionNodePtr IS ACCESS SectionNode;
-   TYPE SectionObjList IS PRIVATE;
+   TYPE SectionNodeList IS PRIVATE;
 
-   TYPE TrainObj IS PRIVATE;
-   TYPE TrainObjPtr IS ACCESS TrainObj;
+   TYPE TrainNode IS PRIVATE;
+   TYPE TrainNodePtr IS ACCESS TrainNode;
 	
 	type ArrayOfSensorObjPtrType         is array(positive range <>) of sensorObjPtr;
 	type AccessToArrayOfSensorObjPtrType is access ArrayOfSensorObjPtrType;	
@@ -288,17 +288,17 @@ PACKAGE LayoutPkg IS
 		------------------------------- 2c ----------------------------------
 		----------------- Begin debug print data structures -----------------
       PROCEDURE Print_Sections (
-            Sections    : SectionObjList;
+            Sections    : SectionNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean        := False);
       PROCEDURE Print_Sensors (
-            Sensors     : SensorObjList;
+            Sensors     : SensorNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
       PROCEDURE Print_Switchs (
-            Switchs     : SwitchObjList;
+            Switchs     : SwitchNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
@@ -316,10 +316,10 @@ PACKAGE LayoutPkg IS
    PRIVATE
 		--------------------------- 2e --------------------------------------
 		-------------------- Begin data structures ------------------------- 
-      SectionList    : SectionObjList;
-      SensorList     : SensorObjList;
-      SwitchList     : SwitchObjList;
-      TrainList      : TrainObjPtr;
+      SectionList    : SectionNodeList;
+      SensorList     : SensorNodeList;
+      SwitchList     : SwitchNodeList;
+      TrainList      : TrainNodePtr;
       XMLFilename    : Unbounded_String;
       CurrentSection : SectionObjPtr;
       CurrentSwitch  : SwitchObjPtr;
@@ -337,7 +337,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE SendToAllTrainQueues(Cmd : MessageType);
 		
 		-- IdentifyTrain, ReleaseReservation, RepositionTrain
-		 PROCEDURE ReleaseBlockings(BlockingList : BlockingObjList);
+		 PROCEDURE ReleaseBlockings(BlockingList : BlockingNodejList);
 
 		-- IdentifyTrain helpers
 		procedure PutTrainPositionMsg(TrainId : trainIdType);
@@ -419,7 +419,7 @@ PACKAGE LayoutPkg IS
 		--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		
       -- PositionTrain and build data structures from XML
-      PROCEDURE FindSensor(Sensors : SensorObjList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);
+      PROCEDURE FindSensor(Sensors : SensorNodeList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);
 		
 		-- PositionTrain and MakeReservation helpers
       FUNCTION  IsSectionUseable(SectionPtr : SectionObjPtr) RETURN Boolean;
@@ -429,28 +429,28 @@ PACKAGE LayoutPkg IS
                             SectionPtr : OUT SectionNodePtr);
 									 
 		-- MakeReservation and PositionTrain helpers
-      PROCEDURE BlockSections (BlockingList : BlockingObjList);
+      PROCEDURE BlockSections (BlockingList : BlockingNodejList);
 		
 		-- PositionTrain helpers 
-      FUNCTION  AllFree(SectList : SectionObjList) RETURN Boolean;
-      PROCEDURE FindAllSections(OutSectList : OUT SectionObjList; Sensors : SensorArrayType);
-      PROCEDURE PlaceTrainInSections(SectList : SectionObjList; TrainId : TrainIdType);
+      FUNCTION  AllFree(SectList : SectionNodeList) RETURN Boolean;
+      PROCEDURE FindAllSections(OutSectList : OUT SectionNodeList; Sensors : SensorArrayType);
+      PROCEDURE PlaceTrainInSections(SectList : SectionNodeList; TrainId : TrainIdType);
       PROCEDURE GetSensor(SensorId : Positive; Sensor : OUT SensorObjPtr); 
       function  isNewTrain(TrainId : TrainIdType) return boolean;
-		procedure makeEmptySensorObjList(sol : in out sensorObjList);
+		procedure makeEmptySensorNodeList(sol : in out SensorNodeList);
 		procedure updateTrainSensors(TrainId : TrainIdType; Sensors : SensorArrayType);
 		PROCEDURE AddNewTrain(TrainId : TrainIdType; Sensors : SensorArrayType);
 		
 		-- AreTrainSensorsLegal helpers
-      FUNCTION IsIn(Sections : SectionObjList; Id: Positive) return boolean;
+      FUNCTION IsIn(Sections : SectionNodeList; Id: Positive) return boolean;
 		
 		-- MakeReservation helpers
-      PROCEDURE GetFreeSection(SectList : SectionObjList; OutSectPtr : OUT SectionObjPtr);
-      PROCEDURE GetTrainSensorList(TrainId : TrainIdType; Sensors : OUT SensorObjList);	
+      PROCEDURE GetFreeSection(SectList : SectionNodeList; OutSectPtr : OUT SectionObjPtr);
+      PROCEDURE GetTrainSensorList(TrainId : TrainIdType; Sensors : OUT SensorNodeList);	
 		
       -- MoveSwitch and MoveNextSwitch helpers	
       PROCEDURE GetSections(SwitchPtr  : SwitchObjPtr;
-                            ThrownList : OUT SectionObjList; ClosedList : OUT SectionObjList); 
+                            ThrownList : OUT SectionNodeList; ClosedList : OUT SectionNodeList); 
       PROCEDURE GetSection(SectionPtr : OUT SectionNodePtr; 
 		                     FrontSensorId : Positive; BackSensorId  :  Positive);
       PROCEDURE SendLoseReservationMessages(SwitchPtr : SwitchNodePtr);
@@ -481,100 +481,103 @@ PRIVATE
 
 	---------------------------- 4 -------------------------------------
 	-------- Begin definition of types used by LayoutManagerPkg --------  
-   TYPE LayoutObj IS TAGGED
-      RECORD
-         Id : Positive;
-      END RECORD;
-
-   TYPE SensorObj IS NEW LayoutObj WITH
-      RECORD
-         State     : SensorStateType := Open;
-         -- StartTime : Time := Clock;
-      END RECORD;
+   TYPE LayoutObj IS TAGGED RECORD
+      Id : Positive;
+   END RECORD;
+   
+   -------------------------------------------
+   
+   TYPE SensorObj IS NEW LayoutObj WITH RECORD
+      State     : SensorStateType := Open;
+      -- StartTime : Time := Clock;
+   END RECORD;
       
-   TYPE SensorNode IS
-      RECORD
-         Sensor : SensorObjPtr;
-         Next   : SensorNodePtr;
-      END RECORD;      
+   TYPE SensorNode IS RECORD
+      Sensor : SensorObjPtr;
+      Next   : SensorNodePtr;
+   END RECORD;  
+   
    PROCEDURE disposeBasicSensorNode IS 
       NEW Ada.Unchecked_Deallocation(Object=>SensorNode, Name=>SensorNodePtr);	   
          
-   TYPE SensorObjList IS
-      RECORD
-         Head : SensorNodePtr;
-         Tail : SensorNodePtr;
-      END RECORD;
-      
-   TYPE SwitchObj IS NEW LayoutObj WITH
-      RECORD
-         State         : SwitchStateType := Closed;
-         TypeOfSwitch  : ControllerGlobals.SwitchType  := Normal;
-         ClosedSensors : SensorObjList;
-         NarrowSensors : SensorObjList;
-         ThrownSensor  : SensorObjPtr;
-      END RECORD;
-      
-   TYPE SwitchNode IS
-      RECORD
-         Switch : SwitchObjPtr;
-         Next   : SwitchNodePtr;
-      END RECORD;
-      
-   TYPE SwitchObjList IS
-      RECORD
-         Head : SwitchNodePtr;
-         Tail : SwitchNodePtr;
-      END RECORD;
-
-   TYPE BlockingObj IS NEW LayoutObj WITH RECORD
-         Next : BlockingObjPtr;
+   TYPE SensorNodeList IS RECORD
+      Head : SensorNodePtr;
+      Tail : SensorNodePtr;
    END RECORD;
       
-   TYPE BlockingObjList IS RECORD
-         Head : BlockingObjPtr;
-         Tail : BlockingObjPtr;
+-------------------------------------------
+
+   TYPE SwitchObj IS NEW LayoutObj WITH RECORD
+      State         : SwitchStateType := Closed;
+      TypeOfSwitch  : ControllerGlobals.SwitchType  := Normal;
+      ClosedSensors : SensorNodeList;
+      NarrowSensors : SensorNodeList;
+      ThrownSensor  : SensorObjPtr;
+   END RECORD;
+      
+   TYPE SwitchNode IS RECORD
+      Switch : SwitchObjPtr;
+      Next   : SwitchNodePtr;
+   END RECORD;
+      
+   TYPE SwitchNodeList IS RECORD
+      Head : SwitchNodePtr;
+      Tail : SwitchNodePtr;
    END RECORD;
 
-   TYPE SectionObj IS NEW LayoutObj WITH
-      RECORD
-         State           : SectionStateType    := Free;
-         IsUseable       : Boolean             := True;
-         SensorList      : SensorObjList;
-         SwitchList      : SwitchObjList;
-         NextSectionList : SectionObjList;
-         PrevSectionList : SectionObjList;
-         BlockingList    : BlockingObjList;
-         BlockCount      : Natural             := 0;
-         TrainId         : TrainIdType         := 0;
-      END RECORD;
-      
-   TYPE SectionNode IS
-      RECORD
-         Section : SectionObjPtr;
-         Next    : SectionNodePtr;
-      END RECORD;
-      
-   TYPE SectionObjList IS
-      RECORD
-         Head : SectionNodePtr;
-         Tail : SectionNodePtr;
-      END RECORD;
+-------------------------------------------
 
-   TYPE TrainObj IS
-      RECORD
-         TrainId     : TrainIdType;
-         SensorCount : Positive;
-         SensorList  : SensorObjList;
-         Queue       : CommandQueueManager.QueuePtr;
-         Next        : TrainObjPtr;
-      END RECORD;
+   TYPE BlockingNode IS NEW LayoutObj WITH RECORD
+         Next : BlockingNodePtr;
+   END RECORD;
+      
+   TYPE BlockingNodejList IS RECORD
+         Head : BlockingNodePtr;
+         Tail : BlockingNodePtr;
+   END RECORD;
 
-   PROCEDURE disposeBasicTrainObj IS 
-      NEW Ada.Unchecked_Deallocation(Object=>TrainObj, Name=>TrainObjPtr);	   
+-------------------------------------------
+
+   TYPE SectionObj IS NEW LayoutObj WITH RECORD
+      State           : SectionStateType    := Free;
+      IsUseable       : Boolean             := True;
+      SensorList      : SensorNodeList;
+      SwitchList      : SwitchNodeList;
+      NextSectionList : SectionNodeList;
+      PrevSectionList : SectionNodeList;
+      BlockingList    : BlockingNodejList;
+      BlockCount      : Natural             := 0;
+      TrainId         : TrainIdType         := 0;
+   END RECORD;
+      
+   TYPE SectionNode IS RECORD
+      Section : SectionObjPtr;
+      Next    : SectionNodePtr;
+   END RECORD;
+      
+   TYPE SectionNodeList IS RECORD
+      Head : SectionNodePtr;
+      Tail : SectionNodePtr;
+   END RECORD;
+
+-------------------------------------------
+
+   TYPE TrainNode IS RECORD
+      TrainId     : TrainIdType;
+      SensorCount : Positive;
+      SensorList  : SensorNodeList;
+      Queue       : CommandQueueManager.QueuePtr;
+      Next        : TrainNodePtr;
+   END RECORD;
+
+-------------------------------------------
+
+   PROCEDURE disposeBasicTrainNode IS 
+      NEW Ada.Unchecked_Deallocation(Object=>TrainNode, Name=>TrainNodePtr);	   
    
    PROCEDURE Free_Section IS
-		NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);		
+		NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);	
+      
 	-------- End definition of types used by LayoutManager -------------  
 	--------------------------- 4 --------------------------------------
 		   

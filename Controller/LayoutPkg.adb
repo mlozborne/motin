@@ -85,7 +85,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- Change a train's direction
       PROCEDURE ChangeDirectionOf (TrainId : TrainIdType) IS
-         TrainPtr      : TrainObjPtr   := TrainList;
+         TrainPtr      : TrainNodePtr   := TrainList;
          ThisSensorPtr : SensorNodePtr;
          PrevSensorPtr : SensorNodePtr := null; 
          NextSensorPtr : SensorNodePtr;
@@ -165,10 +165,9 @@ PACKAGE BODY LayoutPkg IS
 		PROCEDURE IdentifyTrainV3 (sx : Positive) IS
 		   expectationError	 : boolean;
          SensorPtr          : SensorNodePtr;
-			s1,sf   				 : sensorObjPtr;
+			s1     				 : sensorObjPtr;
          leftSectionPtr     : SectionObjPtr;
          rightSectionPtr    : SectionObjPtr;
-			nextFreeSection	 : sectionObjPtr;
 			section            : sectionObjPtr;
 			sectionNode        : sectionNodePtr;
 			oldSensorState     : sensorStateType;
@@ -642,10 +641,9 @@ PACKAGE BODY LayoutPkg IS
          SensorPtr          : SensorNodePtr;
          section1           : SectionObjPtr;
          section2           : SectionObjPtr;
-			nextFreeSection    : sectionObjPtr;
 			section            : sectionObjPtr;
 			sectionNode        : sectionNodePtr;
-			sf, s1, sn         : sensorObjPtr;
+			s1, sn             : sensorObjPtr;
 			-- sf front of reserved section, s1 front of train, sn back of train
 			oldSensorState     : sensorStateType;
 			newSensorState     : sensorStateType;
@@ -916,7 +914,7 @@ PACKAGE BODY LayoutPkg IS
             TrainId :        TrainIdType;
             Result  :    OUT Boolean) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
-         Sensors    : SensorObjList;
+         Sensors    : SensorNodeList;
          OutSectPtr : SectionObjPtr;
       BEGIN
          Result := False;
@@ -950,7 +948,7 @@ PACKAGE BODY LayoutPkg IS
       END MakeReservation;
 		
 		procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive) is 
-			sectionNPtr :  SectionNodePtr;
+			-- sectionNPtr :  SectionNodePtr;
 		begin
          null;
 			-- This is a preliminary simplified version
@@ -961,13 +959,8 @@ PACKAGE BODY LayoutPkg IS
 			-- findSection(sensor1, sensor2, sectionNPtr);
 			-- swNPtr := sectionNPtr.section.switchList.head;
 			-- while swNPtr /= null loop
-				
-			
-			-- 2) Move each switch in the section
-			
-			
-			
-			
+							
+			-- 2) Move each switch in the section			
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MakeSectionUseable: " & Exception_Information(Error));
@@ -978,7 +971,7 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE MoveNextSwitch (
             TrainId : TrainIdType;
             State   : SwitchStateType) IS
-         TrainPtr      : TrainObjPtr    := TrainList;
+         TrainPtr      : TrainNodePtr    := TrainList;
          SectionPtr    : SectionNodePtr;
          FrontSensorId : Positive;
          Result        : Boolean;
@@ -1091,7 +1084,7 @@ PACKAGE BODY LayoutPkg IS
             Count   :        Positive;
             Sensors :        SensorArrayType;
             Result  :    OUT Boolean) IS
-         OutSectList : SectionObjList;
+         OutSectList : SectionNodeList;
          SectionPtr  : SectionNodePtr;
       BEGIN
          IF Sensors'Length /= Count OR Count < 2 THEN
@@ -1150,7 +1143,7 @@ PACKAGE BODY LayoutPkg IS
       END ReleaseReservation;
 
       procedure removeFromTrainList(trainId : TrainIdType) is
-         prev, curr      : trainObjPtr;
+         prev, curr      : TrainNodePtr;
       begin
          prev := null;
          curr := trainList;
@@ -1211,8 +1204,8 @@ PACKAGE BODY LayoutPkg IS
             SwitchId : Positive;
             State    : SwitchStateType) IS
          SwitchPtr         : SwitchNodePtr  := SwitchList.Head;
-         ThrownSectionList : SectionObjList;
-         ClosedSectionList : SectionObjList;
+         ThrownSectionList : SectionNodeList;
+         ClosedSectionList : SectionNodeList;
          ThrownUseable     : Boolean        := False;
          ClosedUseable     : Boolean        := False;
       BEGIN
@@ -1279,7 +1272,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- Add a section to the end of a section list
       PROCEDURE AddToEnd (
-            OutSectList : IN OUT SectionObjList;
+            OutSectList : IN OUT SectionNodeList;
             NodePtr     :        SectionNodePtr) IS
       BEGIN
          IF OutSectList.Head = NULL THEN
@@ -1298,10 +1291,10 @@ PACKAGE BODY LayoutPkg IS
 
       -- check if a section is in a blocking list
       FUNCTION IsIn (
-            BlockList : BlockingObjList;
+            BlockList : BlockingNodejList;
             Id        : Positive)
         RETURN Boolean IS
-         BlockingPtr : BlockingObjPtr := BlockList.Head;
+         BlockingPtr : BlockingNodePtr := BlockList.Head;
       BEGIN
          WHILE BlockingPtr /= NULL LOOP
             IF BlockingPtr.Id = Id THEN
@@ -1319,8 +1312,8 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE FindAllSections (
             SensorId         :        Positive;
             CurrentSectId    :        Positive;
-            CurSectBlockList :        BlockingObjList;
-            OutSectList      :    OUT SectionObjList) IS
+            CurSectBlockList :        BlockingNodejList;
+            OutSectList      :    OUT SectionNodeList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          WHILE SectionPtr /= NULL LOOP
@@ -1347,7 +1340,7 @@ PACKAGE BODY LayoutPkg IS
       -- Set the NextSectionList for each section
       PROCEDURE SetNextSectionList IS
          SectionPtr     : SectionNodePtr := SectionList.Head;
-         OutSectionList : SectionObjList;
+         OutSectionList : SectionNodeList;
       BEGIN
          WHILE SectionPtr/= NULL LOOP
             FindAllSections(SectionPtr.Section.SensorList.Tail.Sensor.Id,
@@ -1367,7 +1360,7 @@ PACKAGE BODY LayoutPkg IS
       -- Set the PrevSectionList for each section
       PROCEDURE SetPrevSectionList IS
          SectionPtr     : SectionNodePtr := SectionList.Head;
-         OutSectionList : SectionObjList;
+         OutSectionList : SectionNodeList;
       BEGIN
          WHILE SectionPtr/= NULL LOOP
             FindAllSections(SectionPtr.Section.SensorList.Head.Sensor.Id,
@@ -1395,7 +1388,7 @@ PACKAGE BODY LayoutPkg IS
       END bldEndSectionList;
 
       FUNCTION CheckSensors (
-            Sensors  : SensorObjList;
+            Sensors  : SensorNodeList;
             FirstId  : Positive;
             SecondId : Positive)
         RETURN Boolean IS
@@ -1410,8 +1403,8 @@ PACKAGE BODY LayoutPkg IS
 
       PROCEDURE GetSections (
             SwitchPtr  :        SwitchObjPtr;
-            ThrownList :    OUT SectionObjList;
-            ClosedList :    OUT SectionObjList) IS
+            ThrownList :    OUT SectionNodeList;
+            ClosedList :    OUT SectionNodeList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
          SensorPtr  : SensorNodePtr;
       BEGIN
@@ -1450,8 +1443,8 @@ PACKAGE BODY LayoutPkg IS
       -- Finish things up when the SwitchList is all read in
       PROCEDURE bldEndSwitchList IS
          SwitchPtr         : SwitchNodePtr  := SwitchList.Head;
-         ClosedSectionList : SectionObjList;
-         ThrownSectionList : SectionObjList;
+         ClosedSectionList : SectionNodeList;
+         ThrownSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          WHILE SwitchPtr /= NULL LOOP
@@ -1497,7 +1490,7 @@ PACKAGE BODY LayoutPkg IS
       END bldEndSwitchList;
 
       PROCEDURE FindSwitch (
-            Switchs   :        SwitchObjList;
+            Switchs   :        SwitchNodeList;
             SwitchId  :        Positive;
             SwitchPtr :    OUT SwitchNodePtr) IS
       BEGIN
@@ -1698,11 +1691,11 @@ PACKAGE BODY LayoutPkg IS
             Id : Positive) IS
       BEGIN
          IF CurrentSection.BlockingList.Head = NULL THEN
-            CurrentSection.BlockingList.Head := NEW BlockingObj;
+            CurrentSection.BlockingList.Head := NEW BlockingNode;
             CurrentSection.BlockingList.Tail :=
                CurrentSection.BlockingList.Head;
          ELSE
-            CurrentSection.BlockingList.Tail.Next := NEW BlockingObj;
+            CurrentSection.BlockingList.Tail.Next := NEW BlockingNode;
             CurrentSection.BlockingList.Tail :=
                CurrentSection.BlockingList.Tail.Next;
          END IF;
@@ -1738,7 +1731,7 @@ PACKAGE BODY LayoutPkg IS
       END Print;
 
       PROCEDURE Print_Sensors (
-            Sensors     : SensorObjList;
+            Sensors     : SensorNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False) IS
@@ -1760,7 +1753,7 @@ PACKAGE BODY LayoutPkg IS
       END Print_Sensors;
 
       PROCEDURE Print_Switchs (
-            Switchs     : SwitchObjList;
+            Switchs     : SwitchNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False) IS
@@ -1791,10 +1784,10 @@ PACKAGE BODY LayoutPkg IS
       END Print_Switchs;
 
       PROCEDURE Print_Blockings (
-            BlockingList : BlockingObjList;
+            BlockingList : BlockingNodejList;
             Indent       : Natural;
             Output       : File_Type) IS
-         BlockingPtr : BlockingObjPtr := BlockingList.Head;
+         BlockingPtr : BlockingNodePtr := BlockingList.Head;
       BEGIN
          WHILE BlockingPtr /= NULL LOOP
             Print("Blocking ID: " & Positive'Image(BlockingPtr.Id), Indent, Output);
@@ -1807,7 +1800,7 @@ PACKAGE BODY LayoutPkg IS
       END Print_Blockings;
 
       PROCEDURE Print_Sections (
-            Sections    : SectionObjList;
+            Sections    : SectionNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean        := False) IS
@@ -1882,7 +1875,7 @@ PACKAGE BODY LayoutPkg IS
 -------------------- Begin helper function ------------------------- 
 
       PROCEDURE FindSensor (
-            Sensors   :        SensorObjList;
+            Sensors   :        SensorNodeList;
             SensorId  :        Positive;
             SensorPtr :    OUT SensorNodePtr) IS
       BEGIN
@@ -1901,7 +1894,7 @@ PACKAGE BODY LayoutPkg IS
       END FindSensor;
 
       PROCEDURE ReleaseBlockings (
-            BlockingList : BlockingObjList) IS
+            BlockingList : BlockingNodejList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          IF BlockingList.Head /= NULL THEN
@@ -1925,7 +1918,7 @@ PACKAGE BODY LayoutPkg IS
 		
 		-- Get a train's sensor numbers 
 		function getTrainsSensorNumbers(trainId : trainIdType) return naturalListType is
-			TrainPtr  : TrainObjPtr   := TrainList;
+			TrainPtr  : TrainNodePtr   := TrainList;
          SensorPtr : SensorNodePtr := null;
 			sList     : naturalListType;
 		begin
@@ -1950,7 +1943,7 @@ PACKAGE BODY LayoutPkg IS
 		
       -- Add a new sensor to the front of a train's sensor list
       PROCEDURE AddNewSensorToFront (TrainId : TrainIdType; Sensor  : SensorObjPtr) IS
-         TrainPtr  : TrainObjPtr   := TrainList;
+         TrainPtr  : TrainNodePtr   := TrainList;
          SensorPtr : SensorNodePtr;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
@@ -1973,7 +1966,7 @@ PACKAGE BODY LayoutPkg IS
       END AddNewSensorToFront;
          
       FUNCTION GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType IS
-         TrainPtr  : TrainObjPtr       := TrainList;
+         TrainPtr  : TrainNodePtr       := TrainList;
          SensorPtr : SensorNodePtr;
          Sensors   : AccessToArrayOfSensorObjPtrType;
          I         : Positive          := 1;
@@ -2007,7 +2000,7 @@ PACKAGE BODY LayoutPkg IS
       END GetSensorPtrs;    
 
       FUNCTION GetSensors (TrainId : TrainIdType) RETURN SensorArrayAccess IS
-         TrainPtr  : TrainObjPtr       := TrainList;
+         TrainPtr  : TrainNodePtr       := TrainList;
          SensorPtr : SensorNodePtr;
          Sensors   : SensorArrayAccess;
          I         : Positive          := 1;
@@ -2041,7 +2034,7 @@ PACKAGE BODY LayoutPkg IS
       END GetSensors;
 
       function countSensors(trainId : trainIdType) return natural is
-         TrainPtr  : TrainObjPtr       := TrainList;
+         TrainPtr  : TrainNodePtr       := TrainList;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
             IF TrainPtr.TrainId = TrainId THEN
@@ -2136,7 +2129,7 @@ PACKAGE BODY LayoutPkg IS
       -- Remove the last sensor in a train's sensor list
       PROCEDURE RemoveLastSensor (
             TrainId : TrainIdType) IS
-         TrainPtr  : TrainObjPtr   := TrainList;
+         TrainPtr  : TrainNodePtr   := TrainList;
          SensorPtr : SensorNodePtr;
          sPtr      : sensorNodePtr;
       BEGIN
@@ -2251,7 +2244,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- Get a train's front sensor ptr
 		function GetFrontSensorPtr(TrainId : TrainIdType) return sensorObjPtr is
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
 			ptr      : sensorObjPtr := null;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
@@ -2271,7 +2264,7 @@ PACKAGE BODY LayoutPkg IS
 		
       -- Get a train's back sensor ptr
 		function GetBackSensorPtr(TrainId : TrainIdType) return sensorObjPtr is
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
 			ptr      : sensorObjPtr := null;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
@@ -2291,7 +2284,7 @@ PACKAGE BODY LayoutPkg IS
 		
       -- Get a train's front sensor
 		function GetFrontSensor(TrainId : TrainIdType) return Positive is
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
 			frontId   : positive;
       BEGIN
          frontId := Positive'Last;
@@ -2312,7 +2305,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- Get a train's back sensor
 		function GetBackSensor(TrainId : TrainIdType) return Positive is
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
 			backId   : positive;
       BEGIN
          BackId := Positive'Last;
@@ -2332,7 +2325,7 @@ PACKAGE BODY LayoutPkg IS
 		end GetBackSensor;
 
       PROCEDURE GetBackSensor (TrainId : TrainIdType; BackId  : OUT Positive) IS
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
       BEGIN
          BackId := Positive'Last;
          WHILE TrainPtr /= NULL LOOP
@@ -2430,7 +2423,7 @@ PACKAGE BODY LayoutPkg IS
 										 leftSectionPtr   : out sectionObjPtr;
 										 rightSectionPtr  : out sectionObjPtr) is
 			sensorPtr                  : sensorObjPtr;
-			trainPtr                   : trainObjPtr;
+			trainPtr                   : TrainNodePtr;
 			sId                        : positive;
 			section1Ptr, section2Ptr   : sectionObjPtr;
 			searchOutcome              : natural;
@@ -2564,7 +2557,7 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE SendToTrainQueue (
             Cmd : MessageType;
             Id  : Positive) IS
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
       BEGIN
          myPutLine("      " & toEnglish(cmd) & "       LayoutPkg to train queue");
          WHILE TrainPtr /= NULL LOOP
@@ -2583,7 +2576,7 @@ PACKAGE BODY LayoutPkg IS
       -- Send a message to every TrainQueue
       PROCEDURE SendToAllTrainQueues (
             Cmd : MessageType) IS
-         TrainPtr : TrainObjPtr := TrainList;
+         TrainPtr : TrainNodePtr := TrainList;
       BEGIN
          myPutLine("      " & toEnglish(cmd) & "       LayoutPkg to all train queues");
          WHILE TrainPtr /= NULL LOOP
@@ -2681,7 +2674,7 @@ PACKAGE BODY LayoutPkg IS
       END IsSectionUseable;
 
       FUNCTION AllFree (
-            SectList : SectionObjList)
+            SectList : SectionNodeList)
         RETURN Boolean IS
          SectionPtr : SectionNodePtr := SectList.Head;
       BEGIN
@@ -2727,7 +2720,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- Get the sections based on the list of sensors
       PROCEDURE FindAllSections (
-            OutSectList :    OUT SectionObjList;
+            OutSectList :    OUT SectionNodeList;
             Sensors     :        SensorArrayType) IS
          SectionPtr : SectionNodePtr;
          FirstId    : Positive;
@@ -2750,7 +2743,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- Place the train
       PROCEDURE PlaceTrainInSections (
-            SectList : SectionObjList;
+            SectList : SectionNodeList;
             TrainId  : TrainIdType) IS
          SectionPtr : SectionNodePtr := SectList.Head;
       BEGIN
@@ -2767,7 +2760,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END PlaceTrainInSections;
 
-      PROCEDURE BlockSections (BlockingList : BlockingObjList) IS
+      PROCEDURE BlockSections (BlockingList : BlockingNodejList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          IF BlockingList.Head /= NULL THEN
@@ -2808,7 +2801,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- mo 1/18/12
       function isNewTrain(TrainId : TrainIdType) return boolean is
-         TrainPtr  : TrainObjPtr := trainList;
+         TrainPtr  : TrainNodePtr := trainList;
       begin
          while trainPtr /= null loop
             if trainPtr.trainId = trainId then
@@ -2826,7 +2819,7 @@ PACKAGE BODY LayoutPkg IS
   
       
       FUNCTION IsIn (
-            Sections : SectionObjList;
+            Sections : SectionNodeList;
             Id       : Positive)
         RETURN Boolean IS
          SectionPtr : SectionNodePtr := Sections.Head;
@@ -2847,7 +2840,7 @@ PACKAGE BODY LayoutPkg IS
 
 
       PROCEDURE GetFreeSection (
-            SectList   :        SectionObjList;
+            SectList   :        SectionNodeList;
             OutSectPtr :    OUT SectionObjPtr) IS
          SectionPtr : SectionNodePtr := SectList.Head;
       BEGIN
@@ -2868,8 +2861,8 @@ PACKAGE BODY LayoutPkg IS
 
       PROCEDURE GetTrainSensorList (
             TrainId :        TrainIdType;
-            Sensors :    OUT SensorObjList) IS
-         TrainPtr : TrainObjPtr := TrainList;
+            Sensors :    OUT SensorNodeList) IS
+         TrainPtr : TrainNodePtr := TrainList;
       BEGIN
          WHILE TrainPtr /= NULL LOOP
             IF TrainPtr.TrainId = TrainId THEN
@@ -2888,8 +2881,8 @@ PACKAGE BODY LayoutPkg IS
 
       -- PROCEDURE SetNotUseable (
             -- SwitchPtr : SwitchNodePtr) IS
-         -- ThrownSectionList : SectionObjList;
-         -- ClosedSectionList : SectionObjList;
+         -- ThrownSectionList : SectionNodeList;
+         -- ClosedSectionList : SectionNodeList;
          -- SectionPtr        : SectionNodePtr;
       -- BEGIN
          -- GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
@@ -2936,8 +2929,8 @@ PACKAGE BODY LayoutPkg IS
             SwitchPtr :        SwitchNodePtr;
             TrainId   :        TrainIdType;
             Result    :    OUT Boolean) IS
-         ThrownSectionList : SectionObjList;
-         ClosedSectionList : SectionObjList;
+         ThrownSectionList : SectionNodeList;
+         ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
@@ -2973,8 +2966,8 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE MoveSwitchPossible (
             SwitchPtr :        SwitchNodePtr;
             Result    :    OUT Boolean) IS
-         ThrownSectionList : SectionObjList;
-         ClosedSectionList : SectionObjList;
+         ThrownSectionList : SectionNodeList;
+         ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
@@ -3004,8 +2997,8 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE FindIdOfTrainLoosingReservation (SwitchPtr : SwitchNodePtr; 
 		                                           trainId : out TrainIdType; 
 																 thereIsReservation : out boolean) IS
-         ThrownSectionList : SectionObjList;
-         ClosedSectionList : SectionObjList;
+         ThrownSectionList : SectionNodeList;
+         ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          thereIsReservation := false;
@@ -3036,8 +3029,8 @@ PACKAGE BODY LayoutPkg IS
       END FindIdOfTrainLoosingReservation;
 
       PROCEDURE SendLoseReservationMessages (SwitchPtr : SwitchNodePtr) IS
-         ThrownSectionList : SectionObjList;
-         ClosedSectionList : SectionObjList;
+         ThrownSectionList : SectionNodeList;
+         ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
@@ -3071,7 +3064,7 @@ PACKAGE BODY LayoutPkg IS
 			end if;
 		end disposeSensorNode;
 					
-		procedure makeEmptySensorObjList(sol : in out sensorObjList) is 
+		procedure makeEmptySensorNodeList(sol : in out SensorNodeList) is 
 			cur, temp  : sensorNodePtr;
 		begin
 			cur := sol.head;
@@ -3080,19 +3073,19 @@ PACKAGE BODY LayoutPkg IS
 				cur := cur.next;
 				disposeSensorNode(temp);
 			end loop;
-		end makeEmptySensorObjList;
+		end makeEmptySensorNodeList;
 		
-		-- procedure disposeTrainObj(ptr : in out TrainObjPtr) is
+		-- procedure disposeTrainNode(ptr : in out TrainNodePtr) is
 		-- begin
 			-- if ptr /= null then
-				-- makeEmptySensorObjList(ptr.sensorList);
-				-- disposeBasicTrainObj(ptr);
+				-- makeEmptySensorNodeList(ptr.sensorList);
+				-- disposeBasicTrainNode(ptr);
 			-- end if;
-		-- end disposeTrainObj;
+		-- end disposeTrainNode;
 
 		procedure updateTrainSensors(TrainId : TrainIdType; Sensors : SensorArrayType) IS
 		-- pre TrainId is in TrainList
-			TrainPtr  : TrainObjPtr := trainList;
+			TrainPtr  : TrainNodePtr := trainList;
 			SensorPtr : SensorObjPtr;
 		begin
 		
@@ -3102,7 +3095,7 @@ PACKAGE BODY LayoutPkg IS
 			end loop;
 			
 			-- Remove old sensors
-			makeEmptySensorObjList(trainPtr.sensorList);              
+			makeEmptySensorNodeList(trainPtr.sensorList);              
 			
 			-- Add the new sensors   
 			TrainPtr.SensorCount := Sensors'Length;
@@ -3124,11 +3117,11 @@ PACKAGE BODY LayoutPkg IS
 		 end updateTrainSensors;
 	 
 		PROCEDURE AddNewTrain (TrainId : TrainIdType; Sensors : SensorArrayType) IS
-			TrainPtr  : TrainObjPtr;
+			TrainPtr  : TrainNodePtr;
 			SensorPtr : SensorObjPtr;
 		BEGIN
 			IF TrainList = NULL THEN
-				TrainList := NEW TrainObj;
+				TrainList := NEW TrainNode;
 				TrainList.TrainId := TrainId;
 				CommandQueueManager.TrainIdQueueList.GetQueue(TrainId, TrainList.Queue);
 				TrainPtr := TrainList;
@@ -3137,7 +3130,7 @@ PACKAGE BODY LayoutPkg IS
 				WHILE TrainPtr.Next /= NULL LOOP
 					TrainPtr := TrainPtr.Next;
 				END LOOP;
-				TrainPtr.Next := NEW TrainObj;
+				TrainPtr.Next := NEW TrainNode;
 				TrainPtr.Next.TrainId := TrainId;
 				CommandQueueManager.TrainIdQueueList.GetQueue(TrainId, TrainPtr.Next.Queue);
 				TrainPtr := TrainPtr.Next;
