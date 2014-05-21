@@ -52,15 +52,15 @@ PACKAGE BODY XMLParser IS
    PROCEDURE Get_Switch_Values (
          Atts : Sax.Attributes.Attributes'Class) IS
       Id    : Positive;
-      -- State : SwitchStateType;
+      State : SwitchStateType;
    BEGIN
       IF Get_Index(Atts, "id") /= -1 THEN
          Id := Positive'Value(Get_Value(Atts, "id"));
       END IF;
-      -- IF Get_Index(Atts, "state") /= -1 THEN
-         -- State := SwitchStateType'Value(Get_Value(Atts, "state"));
-      -- END IF;
-      LayoutPtr.bldAddSwitch(Id);
+      IF Get_Index(Atts, "state") /= -1 THEN
+         State := SwitchStateType'Value(Get_Value(Atts, "state"));
+      END IF;
+      LayoutPtr.bldAddSwitch(Id, State);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************* EXCEPTION Error adding switch:" & Positive'Image(Id) & " " & Exception_Information(Error));
