@@ -31,6 +31,10 @@ PACKAGE LayoutPkg IS
    TYPE SwitchNodePtr IS ACCESS SwitchNode;
    TYPE SwitchNodeList IS PRIVATE;
 
+   type switchStateNode is private;
+   type SwitchStateNodePtr is access switchStateNode;
+   type switchStateList is private;
+
    TYPE BlockingNode IS PRIVATE;
    TYPE BlockingNodePtr IS ACCESS BlockingNode;
    TYPE BlockingNodejList IS PRIVATE;
@@ -125,33 +129,7 @@ PACKAGE LayoutPkg IS
          --                 tell train front sensor has fired
          --                 put train position
          --              end if
-         --            end if
-         
-         --xxx            if open-->closed then
-         --xxx              display "C2 IGNORE front of train approaching sf. Fix when leaving"
-         --xxx            else
-         --xxx              display "C2 FIXING front of train leaving sf."
-         --xxx                section1 reserved-->occupied
-         --xxx              get next free section (nextFreeSection)
-         --xxx                if not found then
-         --xxx                display "C2 ERROR couldn't fix, next section blocked. Error stop train"
-         --xxx                 error stop train
-         --xxx              else found
-         --xxx                   nextFreeSection.state = occupied
-         --xxx                 SAFETY set s1 open
-         --xxx                 add sf to front of train  (one end of nextFreeSection)
-         --xxx                 add sf+1 to front of train (other end of nextFreeSection)
-         --xxx                 if train is now too long then
-         --xxx                    display "C2 ERROR train" + trainId + "is too long"
-         --xxx                    error stop train
-         --xxx                 else
-         --xxx                   tell train front sensor has fired
-         --xxx                   put train position
-         --xxx                 end if
-         --xxx              end if
-         --xxx            end if
-         
-         
+         --            end if         
          --          else 
          --            display "C2 ERROR no clue what went wrong. Erro stop train"
          --            error stop train
@@ -527,6 +505,19 @@ PRIVATE
 
 -------------------------------------------
 
+   type switchStateNode is record
+      switch      : switchObjPtr := null;
+      myState     : switchStateType;
+      next        : SwitchStateNodePtr := null;
+   end record;
+
+   type switchStateList is record
+      Head : SwitchStateNodePtr := null;
+      Tail : SwitchStateNodePtr := null;
+    end record;
+    
+-------------------------------------------
+
    TYPE BlockingNode IS NEW LayoutObj WITH RECORD
          Next : BlockingNodePtr;
    END RECORD;
@@ -539,15 +530,16 @@ PRIVATE
 -------------------------------------------
 
    TYPE SectionObj IS NEW LayoutObj WITH RECORD
-      State           : SectionStateType    := Free;
-      IsUseable       : Boolean             := True;
-      SensorList      : SensorNodeList;
-      SwitchList      : SwitchNodeList;
-      NextSectionList : SectionNodeList;
-      PrevSectionList : SectionNodeList;
-      BlockingList    : BlockingNodejList;
-      BlockCount      : Natural             := 0;
-      TrainId         : TrainIdType         := 0;
+      State             : SectionStateType    := Free;
+      IsUseable         : Boolean             := True;
+      SensorList        : SensorNodeList;
+      SwitchList        : SwitchNodeList;
+      mySwitchStateList : switchStateList;
+      NextSectionList   : SectionNodeList;
+      PrevSectionList   : SectionNodeList;
+      BlockingList      : BlockingNodejList;
+      BlockCount        : Natural             := 0;
+      TrainId           : TrainIdType         := 0;
    END RECORD;
       
    TYPE SectionNode IS RECORD

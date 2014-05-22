@@ -1511,20 +1511,28 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE bldAddSwitch (
             Id    : Positive;
             state : switchStateType) IS
-         SwitchPtr : SwitchNodePtr;
+         globalSwitchNodePtr  : SwitchNodePtr;
+         localSwitchNodePtr   : SwitchNodePtr;
+         switchOPtr           : switchObjPtr;
+         
       BEGIN
+         -- Create a mew SwitchNode and link it into the section's SwitchNodeList
          IF CurrentSection.SwitchList.Head = NULL THEN
             CurrentSection.SwitchList.Head := NEW SwitchNode;
-            CurrentSection.SwitchList.Tail :=
-               CurrentSection.SwitchList.Head;
+            CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Head;
          ELSE
             CurrentSection.SwitchList.Tail.Next := NEW SwitchNode;
-            CurrentSection.SwitchList.Tail :=
-               CurrentSection.SwitchList.Tail.Next;
+            CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Tail.Next;
          END IF;
 
-         FindSwitch(SwitchList, Id, SwitchPtr);
-         IF SwitchPtr = NULL THEN
+         -- Look for the switch node in SwitchList (the global list of switch nodes) 
+         FindSwitch(SwitchList, Id, globalSwitchNodePtr);
+         IF globalSwitchNodePtr /= NULL THEN
+            -- The node is found: link the section's new SwitchNode to the global switch object
+            switchOPtr := globalSwitchNodePtr.Switch;
+            CurrentSection.SwitchList.Tail.Switch := switchOPtr;
+         ELSE
+            -- The node isn't found: create it and link it into the global SwitchList.
             IF SwitchList.Head = NULL THEN
                SwitchList.Head := NEW SwitchNode;
                SwitchList.Tail := SwitchList.Head;
@@ -1532,13 +1540,26 @@ PACKAGE BODY LayoutPkg IS
                SwitchList.Tail.Next := NEW SwitchNode;
                SwitchList.Tail := SwitchList.Tail.Next;
             END IF;
-            SwitchPtr := CurrentSection.SwitchList.Tail;
-            SwitchPtr.Switch := NEW SwitchObj;
-            SwitchPtr.Switch.Id := Id;
-            SwitchList.Tail.Switch := SwitchPtr.Switch;
-         ELSE
-            CurrentSection.SwitchList.Tail.Switch := SwitchPtr.Switch;
+            globalSwitchNodePtr := SwitchList.Tail;
+            -- Create a new SwitchObj and link it to both the global SwitchList and the section's
+            -- SwitchList.
+            switchOPtr := new switchObj;
+            switchOPtr.Id := Id;
+            globalSwitchNodePtr.Switch := switchOPtr;            -- the global SwitchList
+            localSwitchNodePtr := CurrentSection.SwitchList.Tail;
+            localSwitchNodePtr.Switch := switchOPtr;             -- the section's SwitchList
          END IF;
+         
+         -- Create a new SwitchStateNode and link it into the section's SwitchStateList
+         IF CurrentSection.mySwitchStateList.Head = NULL THEN
+            CurrentSection.mySwitchStateList.Head := NEW switchStateNode;
+            CurrentSection.mySwitchStateList.Tail := CurrentSection.mySwitchStateList.Head;
+         ELSE
+            CurrentSection.mySwitchStateList.Tail.Next := NEW switchStateNode;
+            CurrentSection.mySwitchStateList.Tail := CurrentSection.mySwitchStateList.Tail.Next;
+         END IF;
+         currentSection.mySwitchStateList.tail.switch := switchOPtr;
+         currentSection.mySwitchStateList.tail.myState := state;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in bldAddSwitch: " & Exception_Information(Error));
