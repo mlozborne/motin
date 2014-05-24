@@ -39,7 +39,7 @@ PACKAGE BODY CommandQueueManager IS
                WHEN DoLocoInit=>--send to SSI queue
                   myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to SSI queue... ");
                   SSIQueue.putMessage(Message);                
-               when GetSwitchSuccessor | DoReadLayout | GetSwitchStates | DoMakeSectionUseable =>
+               when GetSwitchSuccessor | DoReadLayout | GetSwitchStates | DoMakeSectionUsable =>
                   myPutLine("  " & toEnglish(message) & "            ComQuMngr.Put to layout queue... ");
                   LayoutQueue.putMessage(Message);
                WHEN OTHERS =>

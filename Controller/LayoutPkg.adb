@@ -415,7 +415,7 @@ PACKAGE BODY LayoutPkg IS
          -- SendToOutQueue(makePutSensorStateMsg(SensorId, newSensorState));
          
          -- -- Find the two sections that contain the sensor
-         -- getUnbockedUsableSectionsContainingSensor(sx.Sensor.Id, t1, t2);
+         -- getUnblockedUsableSectionsContainingSensor(sx.Sensor.Id, t1, t2);
          -- if t1 /= null then
             -- myPutLine("      xxxxxxxxxxxxx: 1st section id, state, trainId = " 
                       -- & integer'image(t1.id) & " " 
@@ -940,6 +940,7 @@ PACKAGE BODY LayoutPkg IS
             END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
+         
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MakeReservation: " & Exception_Information(Error));
@@ -947,26 +948,38 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END MakeReservation;
       
-      procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive) is 
-         -- sectionNPtr :  SectionNodePtr;
+      procedure MakeSectionUsable   (sensor1 : positive; sensor2 : positive) is 
+         sectionNPtr     :  SectionNodePtr;
+         switchStateNPtr : SwitchStateNodePtr;
       begin
          null;
          -- This is a preliminary simplified version
          -- Move all switches in the section to their proper positions and send
          -- a response message back to all OThrottles.
          
-         -- 1) Find the section defined by the sensors
-         -- findSection(sensor1, sensor2, sectionNPtr);
-         -- swNPtr := sectionNPtr.section.switchList.head;
-         -- while swNPtr /= null loop
+         -- Find the section defined by the sensors
+         findSection(sensor1, sensor2, sectionNPtr);
                      
-         -- 2) Move each switch in the section         
+         -- Make the section usable by moving the switches to the needed settings
+         --x Need to consider if the section is available
+         switchStateNPtr := sectionNPtr.section.mySwitchStateList.head;
+         while switchStateNPtr /= null loop
+            if switchStateNPtr.myState /= switchStateNPtr.switch.state then
+               moveSwitch(switchStateNPtr.switch.id, switchStateNPtr.myState);
+            end if;
+            switchStateNPtr := switchStateNPtr.next;
+         end loop;
+         
+         -- Send a positive response to all OThrottles
+         --x Need to consider a negative response
+         sendToOutQueue(makePutMakeSectionUsableResponseMsg(sensor1, sensor2, 1));
+         
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in MakeSectionUseable: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in MakeSectionUsable: " & Exception_Information(Error));
             put_line("    sensor1/sensor2" & integer'image(sensor1) & integer'image(sensor2));
             raise;
-      END MakeSectionUseable;      
+      END MakeSectionUsable;      
 
       PROCEDURE MoveNextSwitch (
             TrainId : TrainIdType;
@@ -1206,8 +1219,8 @@ PACKAGE BODY LayoutPkg IS
          SwitchPtr         : SwitchNodePtr  := SwitchList.Head;
          ThrownSectionList : SectionNodeList;
          ClosedSectionList : SectionNodeList;
-         ThrownUseable     : Boolean        := False;
-         ClosedUseable     : Boolean        := False;
+         Thrownusable     : Boolean        := False;
+         Closedusable     : Boolean        := False;
       BEGIN
          WHILE SwitchPtr /= NULL LOOP
             IF SwitchPtr.Switch.Id = SwitchId THEN
@@ -1452,13 +1465,13 @@ PACKAGE BODY LayoutPkg IS
             IF SwitchPtr.Switch.State = Closed THEN
                SectionPtr := ThrownSectionList.Head;
                WHILE SectionPtr /= NULL LOOP
-                  SectionPtr.Section.IsUseable := False;
+                  SectionPtr.Section.Isusable := False;
                   SectionPtr := SectionPtr.Next;
                END LOOP;
             ELSE
                SectionPtr := ClosedSectionList.Head;
                WHILE SectionPtr /= NULL LOOP
-                  SectionPtr.Section.IsUseable := False;
+                  SectionPtr.Section.Isusable := False;
                   SectionPtr := SectionPtr.Next;
                END LOOP;
             END IF;
@@ -1835,7 +1848,7 @@ PACKAGE BODY LayoutPkg IS
                Print("Section ID: " & Positive'Image(SectionPtr.Section.Id), Indent, Output);
                Print("Section State: " & SectionStateType'Image(
                      SectionPtr.Section.State), Indent, Output);
-               Print("Section Is Useable: " & Boolean'Image(SectionPtr.Section.IsUseable), Indent, Output);
+               Print("Section Is usable: " & Boolean'Image(SectionPtr.Section.Isusable), Indent, Output);
                IF SectionPtr.Section.State = Occupied OR SectionPtr.Section.State = Reserved THEN
                   Print("Section TrainAddr: " & TrainIdType'Image(SectionPtr.Section.TrainId), Indent, Output);
                END IF;
@@ -2071,7 +2084,7 @@ PACKAGE BODY LayoutPkg IS
       END countSensors;
 
         -- Get the two sections surrounding the sensor 
-      PROCEDURE getUnbockedUsableSectionsContainingSensor (
+      PROCEDURE getUnblockedUsableSectionsContainingSensor (
             SensorID      :        Positive;
             FirstSection  :    OUT SectionObjPtr;
             SecondSection :    OUT SectionObjPtr) IS
@@ -2083,7 +2096,7 @@ PACKAGE BODY LayoutPkg IS
             IF      (SectionPtr.Section.state /= blocked)
             AND THEN(SectionPtr.Section.SensorList.Head.Sensor.Id = SensorId OR
                      SectionPtr.Section.SensorList.Tail.Sensor.Id = SensorId)         
-            AND THEN (IsSectionUseable(sectionPtr.section))
+            AND THEN (IsSectionusable(sectionPtr.section))
             THEN
                IF FirstSection = NULL THEN
                   FirstSection := SectionPtr.Section;
@@ -2096,10 +2109,10 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in getUnbockedUsableSectionsContainingSensor: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in getUnblockedUsableSectionsContainingSensor: " & Exception_Information(Error));
             put_line("    sensor id #" & Positive'Image(sensorId));
             RAISE;
-      END getUnbockedUsableSectionsContainingSensor;
+      END getUnblockedUsableSectionsContainingSensor;
 
       -- Get the two sections surrounding the sensor that
       --   are either occupied or reserved
@@ -2611,12 +2624,23 @@ PACKAGE BODY LayoutPkg IS
       END SendToAllTrainQueues;
 
       -- Check if it is possible to reserve this section based on switch states
-      FUNCTION IsSectionUseable (SectionPtr : SectionObjPtr) RETURN Boolean IS
-         SwitchPtr : SwitchNodePtr := SectionPtr.SwitchList.Head;
-         Result    : Boolean;      -- := False;                         -- mo 1/6/12
-         SensorPtr : SensorNodePtr;
-         Id        : Positive;
+      FUNCTION IsSectionusable (SectionPtr : SectionObjPtr) RETURN Boolean IS
+         SwitchPtr        : SwitchNodePtr := SectionPtr.SwitchList.Head;
+         switchStateNPtr  : SwitchStateNodePtr := sectionPtr.mySwitchStateList.head;
+         Result           : Boolean;      -- := False;                         -- mo 1/6/12
+         SensorPtr        : SensorNodePtr;
+         Id               : Positive;
       BEGIN
+         --x NEW since I added mySwitchStateList to SectionObj
+         while switchStateNPtr /= null loop
+            if switchStateNPtr.myState /= switchStateNPtr.switch.state then
+               return false;
+            end if;
+            switchStateNPtr := switchStateNPtr.next;
+         end loop;
+         return true;
+                 
+         --x OLD which will be thrown away once the NEW one works
          -- Loop through all switches in this section to see 
          -- if they are all set correctly for usability of this section.
          WHILE SwitchPtr /= NULL LOOP
@@ -2690,9 +2714,9 @@ PACKAGE BODY LayoutPkg IS
          RETURN True;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in IsSectionUseable: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in IsSectionusable: " & Exception_Information(Error));
             raise;
-      END IsSectionUseable;
+      END IsSectionusable;
 
       FUNCTION AllFree (
             SectList : SectionNodeList)
@@ -2703,7 +2727,7 @@ PACKAGE BODY LayoutPkg IS
             RETURN False;
          END IF;
          WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State /= Free OR NOT IsSectionUseable(SectionPtr.Section) THEN
+            IF SectionPtr.Section.State /= Free OR NOT IsSectionusable(SectionPtr.Section) THEN
                RETURN False;
             END IF;
             SectionPtr := SectionPtr.Next;
@@ -2867,7 +2891,7 @@ PACKAGE BODY LayoutPkg IS
       BEGIN
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Free 
-            AND IsSectionUseable(SectionPtr.Section) THEN
+            AND IsSectionusable(SectionPtr.Section) THEN
                OutSectPtr := SectionPtr.Section;
                RETURN;
             END IF;
@@ -2900,7 +2924,7 @@ PACKAGE BODY LayoutPkg IS
       END GetTrainSensorList;
 
 
-      -- PROCEDURE SetNotUseable (
+      -- PROCEDURE SetNotusable (
             -- SwitchPtr : SwitchNodePtr) IS
          -- ThrownSectionList : SectionNodeList;
          -- ClosedSectionList : SectionNodeList;
@@ -2909,19 +2933,19 @@ PACKAGE BODY LayoutPkg IS
          -- GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
          -- SectionPtr := ThrownSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
-            -- SectionPtr.Section.IsUseable := False;
+            -- SectionPtr.Section.Isusable := False;
             -- SectionPtr := SectionPtr.Next;
          -- END LOOP;
          -- SectionPtr := ClosedSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
-            -- SectionPtr.Section.IsUseable := False;
+            -- SectionPtr.Section.Isusable := False;
             -- SectionPtr := SectionPtr.Next;
          -- END LOOP;
       -- EXCEPTION
          -- WHEN Error : OTHERS =>
-            -- put_line("**************** EXCEPTION Layout pkg in SetNotUseable: " & Exception_Information(Error));
+            -- put_line("**************** EXCEPTION Layout pkg in SetNotusable: " & Exception_Information(Error));
             -- raise;
-      -- END SetNotUseable;
+      -- END SetNotusable;
 
       PROCEDURE GetSection (
             SectionPtr    :    OUT SectionNodePtr;
@@ -3282,12 +3306,12 @@ PACKAGE BODY LayoutPkg IS
                               END;
                            WHEN GetSwitchStates =>
                               LayoutPtr.GetSwitchStates;
-                           when doMakeSectionUseable =>
+                           when doMakeSectionUsable =>
                               declare
                                  sensor1, sensor2 : positive;
                               begin
-                                 splitDoMakeSectionUseableMsg(cmd, sensor1, sensor2);
-                                 LayoutPtr.makeSectionUseable(sensor1, sensor2);
+                                 splitDoMakeSectionUsableMsg(cmd, sensor1, sensor2);
+                                 LayoutPtr.MakeSectionUsable(sensor1, sensor2);
                               end;
                            WHEN OTHERS =>
                               NULL;

@@ -16,7 +16,7 @@
 	Line 2399: 		function sectionOccupied(sp : sectionObjPtr) return boolean is
 	
 	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	Line 2583:       FUNCTION IsSectionUseable (SectionPtr : SectionObjPtr) RETURN Boolean IS
+	Line 2583:       FUNCTION IsSectionusable (SectionPtr : SectionObjPtr) RETURN Boolean IS
 	
 	Line 2665:       FUNCTION AllFree (
 	Line 2792:       function isNewTrain(TrainId : TrainIdType) return boolean is
@@ -35,7 +35,7 @@
 	
 	               ===========================================
 						============================================
-	Line 952: 		procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive) is 
+	Line 952: 		procedure MakeSectionUsable   (sensor1 : positive; sensor2 : positive) is 
 	
 	Line 962:       PROCEDURE MoveNextSwitch (
 	Line 1021:       PROCEDURE MoveSwitch (SwitchId : Positive; State    : SwitchStateType) IS
@@ -80,7 +80,7 @@
 	Line 1935:       PROCEDURE AddNewSensorToFront (TrainId : TrainIdType; Sensor  : SensorObjPtr) IS
 	
 	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	Line 2043:       PROCEDURE getUnbockedUsableSectionsContainingSensor (
+	Line 2043:       PROCEDURE getUnblockedUsableSectionsContainingSensor (
 	
 	Line 2075:       PROCEDURE GetOccResSections (
 	Line 2120:       PROCEDURE RemoveLastSensor (
@@ -105,7 +105,7 @@
 	Line 2771:       PROCEDURE GetSensor(
 	Line 2831:       PROCEDURE GetFreeSection (
 	Line 2851:       PROCEDURE GetTrainSensorList (
-	Line 2871:       -- PROCEDURE SetNotUseable (
+	Line 2871:       -- PROCEDURE SetNotusable (
 	Line 2894:       PROCEDURE GetSection (
 	
 	                 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

@@ -76,7 +76,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
-      procedure MakeSectionUseable   (sensor1 : positive; sensor2 : positive);
+      procedure MakeSectionUsable   (sensor1 : positive; sensor2 : positive);
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
       PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;
@@ -324,7 +324,7 @@ PACKAGE LayoutPkg IS
       FUNCTION  GetSensorPtrs (TrainId : TrainIdType) RETURN AccessToArrayOfSensorObjPtrType;
       FUNCTION  GetSensors    (TrainId : TrainIdType) RETURN SensorArrayAccess; 
       function  countSensors(trainId : trainIdType) return natural;
-      procedure getUnbockedUsableSectionsContainingSensor(
+      procedure getUnblockedUsableSectionsContainingSensor(
                                   SensorID : Positive;
                                   FirstSection : OUT SectionObjPtr; 
                                   SecondSection : OUT SectionObjPtr);
@@ -400,7 +400,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE FindSensor(Sensors : SensorNodeList; SensorId  : Positive; SensorPtr :OUT SensorNodePtr);
       
       -- PositionTrain and MakeReservation helpers
-      FUNCTION  IsSectionUseable(SectionPtr : SectionObjPtr) RETURN Boolean;
+      FUNCTION  IsSectionusable(SectionPtr : SectionObjPtr) RETURN Boolean;
       
       -- PositionTrain and AreTrainSensorsLegal helpers
       PROCEDURE FindSection(FirstId : Positive; SecondId : Positive;
@@ -531,7 +531,7 @@ PRIVATE
 
    TYPE SectionObj IS NEW LayoutObj WITH RECORD
       State             : SectionStateType    := Free;
-      IsUseable         : Boolean             := True;
+      Isusable         : Boolean             := True;
       SensorList        : SensorNodeList;
       SwitchList        : SwitchNodeList;
       mySwitchStateList : switchStateList;

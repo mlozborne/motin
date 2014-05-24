@@ -82,7 +82,7 @@ package MessageTranslationTypes is
    msgTrainTaskQuit      				: constant unsigned_8 := unsigned_8(24);
    msgReinitializeTrain  				: constant unsigned_8 := unsigned_8(25);
 	putPowerChangeComplete 				: constant unsigned_8 := unsigned_8(26);
-	doMakeSectionUseable   				: constant unsigned_8 := unsigned_8(33);
-	putMakeSectionUseableResponse    : constant unsigned_8 := unsigned_8(34);
+	doMakeSectionUsable   				: constant unsigned_8 := unsigned_8(33);
+	putMakeSectionUsableResponse    : constant unsigned_8 := unsigned_8(34);
    
 end MessageTranslationTypes;
