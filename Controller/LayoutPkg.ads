@@ -532,7 +532,7 @@ PRIVATE
    TYPE SectionObj IS NEW LayoutObj WITH RECORD
       State             : SectionStateType    := Free;
       Isusable         : Boolean             := True;
-      SensorList        : SensorNodeList;
+      SensorList        : SensorNodeList;    --x replace this with firstSensor and secondSensor
       SwitchList        : SwitchNodeList;
       mySwitchStateList : switchStateList;
       NextSectionList   : SectionNodeList;

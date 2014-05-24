@@ -990,18 +990,24 @@ PACKAGE BODY LayoutPkg IS
          Result        : Boolean;
          switchPtr     : switchNodePtr;
       BEGIN
+         -- Find the train corresponding to TrainId
          WHILE TrainPtr /= NULL LOOP
             IF TrainPtr.TrainId = TrainId THEN
+               -- Get a pointer to the section at the front of the train
                GetSection(SectionPtr, TrainPtr.SensorList.Head.Sensor.Id, TrainPtr.SensorList.Head.Next.Sensor.Id);
-               IF SectionPtr /= NULL THEN
+               IF SectionPtr /= NULL THEN   -- I wonder how this could possibly be null??????????
                   FrontSensorId := TrainPtr.SensorList.Head.Sensor.Id;
+                  -- Loop forward through the sections until reaching one that has a switch
                   LOOP
+                     -- Determine if the next section is in PrevSectionList or the NextSectionList
                      IF SectionPtr.Section.SensorList.Head.Sensor.Id = FrontSensorId THEN
                         SectionPtr := SectionPtr.Section.PrevSectionList.Head;
                      ELSE
                         SectionPtr := SectionPtr.Section.NextSectionList.Head;
                      END IF;
-                     EXIT WHEN SectionPtr.Section.SwitchList.Head /= NULL;
+                     -- Exit if the section contains a switch
+                     EXIT WHEN SectionPtr.Section.SwitchList.Head /= NULL;      
+                     -- Determine the sensor at the front of the section and go round the loop again
                      IF SectionPtr.Section.SensorList.Head.Sensor.Id = FrontSensorId THEN
                         FrontSensorId := SectionPtr.Section.SensorList.Tail.Sensor.Id;
                      ELSE
@@ -1009,16 +1015,20 @@ PACKAGE BODY LayoutPkg IS
                      END IF;
                   END LOOP;
                   
+                  -- Get a pointer to the first switch in the section
                   switchPtr := SectionPtr.Section.SwitchList.Head;
+                  -- If the current state is the same as the request state, then return.
                   if switchPtr.switch.state = state or else
                      (switchPtr.switch.state = beginThrown and state = thrown) or else
                      (switchPtr.switch.state = beginClosed and state = closed)        
                   then
                      return;
                   end if;
-                                  
+                  
+                  -- Determine if it is possible to move the switch                  
                   MoveSwitchPossible(SectionPtr.Section.SwitchList.Head, TrainId, Result);
                   IF Result THEN
+                     -- It is possible
                      IF State = Thrown THEN
                         SectionPtr.Section.SwitchList.Head.Switch.State := BeginThrown;
                      ELSE
@@ -1029,9 +1039,9 @@ PACKAGE BODY LayoutPkg IS
                      SendToOutQueue(makeSwReqMsg(SectionPtr.Section.SwitchList.Head.Switch.Id, State));
                   END IF;
                END IF;
-               return;                   -- mo 1/31/12
+               return;                   -- finised processing the train so done
             END IF;
-            TrainPtr := TrainPtr.Next;
+            TrainPtr := TrainPtr.Next;   -- still looking for the train
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
@@ -1529,7 +1539,7 @@ PACKAGE BODY LayoutPkg IS
          switchOPtr           : switchObjPtr;
          
       BEGIN
-         -- Create a mew SwitchNode and link it into the section's SwitchNodeList
+         -- Create a new SwitchNode and link it into the section's SwitchNodeList
          IF CurrentSection.SwitchList.Head = NULL THEN
             CurrentSection.SwitchList.Head := NEW SwitchNode;
             CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Head;
