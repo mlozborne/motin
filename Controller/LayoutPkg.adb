@@ -988,7 +988,7 @@ PACKAGE BODY LayoutPkg IS
          SectionPtr    : SectionNodePtr;
          FrontSensorId : Positive;
          Result        : Boolean;
-         switchPtr     : switchNodePtr;
+         switchPtr     : switchObjPtr;
       BEGIN
          -- Find the train corresponding to TrainId
          WHILE TrainPtr /= NULL LOOP
@@ -1006,7 +1006,7 @@ PACKAGE BODY LayoutPkg IS
                         SectionPtr := SectionPtr.Section.NextSectionList.Head;
                      END IF;
                      -- Exit if the section contains a switch
-                     EXIT WHEN SectionPtr.Section.SwitchList.Head /= NULL;      
+                     EXIT WHEN SectionPtr.Section.mySwitchStateList.Head /= NULL;      
                      -- Determine the sensor at the front of the section and go round the loop again
                      IF SectionPtr.Section.SensorList.Head.Sensor.Id = FrontSensorId THEN
                         FrontSensorId := SectionPtr.Section.SensorList.Tail.Sensor.Id;
@@ -1016,27 +1016,28 @@ PACKAGE BODY LayoutPkg IS
                   END LOOP;
                   
                   -- Get a pointer to the first switch in the section
-                  switchPtr := SectionPtr.Section.SwitchList.Head;
+                  switchPtr := SectionPtr.Section.mySwitchStateList.Head.switch;
                   -- If the current state is the same as the request state, then return.
-                  if switchPtr.switch.state = state or else
-                     (switchPtr.switch.state = beginThrown and state = thrown) or else
-                     (switchPtr.switch.state = beginClosed and state = closed)        
+                  if switchPtr.state = state or else
+                     (switchPtr.state = beginThrown and state = thrown) or else
+                     (switchPtr.state = beginClosed and state = closed)        
                   then
                      return;
                   end if;
                   
                   -- Determine if it is possible to move the switch                  
-                  MoveSwitchPossible(SectionPtr.Section.SwitchList.Head, TrainId, Result);
+                  MoveSwitchPossible(SectionPtr.Section.mySwitchStateList.Head.switch, TrainId, Result);
                   IF Result THEN
                      -- It is possible
                      IF State = Thrown THEN
-                        SectionPtr.Section.SwitchList.Head.Switch.State := BeginThrown;
+                        SectionPtr.Section.mySwitchStateList.Head.Switch.State := BeginThrown;
                      ELSE
-                        SectionPtr.Section.SwitchList.Head.Switch.State := BeginClosed;
+                        SectionPtr.Section.mySwitchStateList.Head.Switch.State := BeginClosed;
                      END IF;
-                     SendLoseReservationMessages(SectionPtr.Section.SwitchList.Head);          -- mo 1/8/12
-                     SendToOutQueue(makePutSwitchStateMsg(SectionPtr.Section.SwitchList.Head.Switch.Id, SectionPtr.Section.SwitchList.Head.Switch.State));
-                     SendToOutQueue(makeSwReqMsg(SectionPtr.Section.SwitchList.Head.Switch.Id, State));
+                     SendLoseReservationMessages(SectionPtr.Section.mySwitchStateList.Head.switch);          -- mo 1/8/12
+                     SendToOutQueue(makePutSwitchStateMsg(SectionPtr.Section.mySwitchStateList.Head.Switch.Id, 
+                                                          SectionPtr.Section.mySwitchStateList.Head.Switch.State));
+                     SendToOutQueue(makeSwReqMsg(SectionPtr.Section.mySwitchStateList.Head.Switch.Id, State));
                   END IF;
                END IF;
                return;                   -- finised processing the train so done
@@ -1071,7 +1072,7 @@ PACKAGE BODY LayoutPkg IS
             return;
          end if;
          
-         MoveSwitchPossible(SwitchPtr, Result);
+         MoveSwitchPossible(SwitchPtr.switch, Result);
          IF Result THEN
             FindIdOfTrainLoosingReservation(switchPtr, trainId, thereIsReservation);
             if thereIsReservation then
@@ -1535,25 +1536,28 @@ PACKAGE BODY LayoutPkg IS
             Id    : Positive;
             state : switchStateType) IS
          globalSwitchNodePtr  : SwitchNodePtr;
-         localSwitchNodePtr   : SwitchNodePtr;
+         -- localSwitchNodePtr   : SwitchNodePtr;
          switchOPtr           : switchObjPtr;
          
       BEGIN
          -- Create a new SwitchNode and link it into the section's SwitchNodeList
-         IF CurrentSection.SwitchList.Head = NULL THEN
-            CurrentSection.SwitchList.Head := NEW SwitchNode;
-            CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Head;
-         ELSE
-            CurrentSection.SwitchList.Tail.Next := NEW SwitchNode;
-            CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Tail.Next;
-         END IF;
+         --x OLD not needed
+         -- IF CurrentSection.SwitchList.Head = NULL THEN
+            -- CurrentSection.SwitchList.Head := NEW SwitchNode;
+            -- CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Head;
+         -- ELSE
+            -- CurrentSection.SwitchList.Tail.Next := NEW SwitchNode;
+            -- CurrentSection.SwitchList.Tail := CurrentSection.SwitchList.Tail.Next;
+         -- END IF;
 
          -- Look for the switch node in SwitchList (the global list of switch nodes) 
          FindSwitch(SwitchList, Id, globalSwitchNodePtr);
          IF globalSwitchNodePtr /= NULL THEN
             -- The node is found: link the section's new SwitchNode to the global switch object
-            switchOPtr := globalSwitchNodePtr.Switch;
-            CurrentSection.SwitchList.Tail.Switch := switchOPtr;
+            --x OLD not needed
+            -- switchOPtr := globalSwitchNodePtr.Switch;
+            -- CurrentSection.SwitchList.Tail.Switch := switchOPtr;
+            null;
          ELSE
             -- The node isn't found: create it and link it into the global SwitchList.
             IF SwitchList.Head = NULL THEN
@@ -1569,8 +1573,9 @@ PACKAGE BODY LayoutPkg IS
             switchOPtr := new switchObj;
             switchOPtr.Id := Id;
             globalSwitchNodePtr.Switch := switchOPtr;            -- the global SwitchList
-            localSwitchNodePtr := CurrentSection.SwitchList.Tail;
-            localSwitchNodePtr.Switch := switchOPtr;             -- the section's SwitchList
+            --x OLD not needed
+            -- localSwitchNodePtr := CurrentSection.SwitchList.Tail;
+            -- localSwitchNodePtr.Switch := switchOPtr;             -- the section's SwitchList
          END IF;
          
          -- Create a new SwitchStateNode and link it into the section's SwitchStateList
@@ -1867,8 +1872,10 @@ PACKAGE BODY LayoutPkg IS
                END IF;
                Print("Section Sensors:", Indent, Output);
                Print_Sensors(SectionPtr.Section.SensorList, Indent + 2, Output, True);
-               Print("Section Switchs:", Indent, Output);
-               Print_Switchs(SectionPtr.Section.SwitchList, Indent + 2, Output, True);
+               --x OLD not needed
+               -- Print("Section Switchs:", Indent, Output);
+               -- Print_Switchs(SectionPtr.Section.SwitchList, Indent + 2, Output, True);
+               --x NEW print mySwitchStateList
                Print("Next Sections:", Indent, Output);
                Print_Sections(SectionPtr.Section.NextSectionList, Indent + 2, Output, True);
                Print("Previous Sections:", Indent, Output);
@@ -2635,11 +2642,11 @@ PACKAGE BODY LayoutPkg IS
 
       -- Check if it is possible to reserve this section based on switch states
       FUNCTION IsSectionusable (SectionPtr : SectionObjPtr) RETURN Boolean IS
-         SwitchPtr        : SwitchNodePtr := SectionPtr.SwitchList.Head;
+         -- SwitchPtr        : SwitchNodePtr := SectionPtr.SwitchList.Head;  --x OLD
          switchStateNPtr  : SwitchStateNodePtr := sectionPtr.mySwitchStateList.head;
-         Result           : Boolean;      -- := False;                         -- mo 1/6/12
-         SensorPtr        : SensorNodePtr;
-         Id               : Positive;
+         -- Result           : Boolean;      -- := False;                         -- mo 1/6/12
+         -- SensorPtr        : SensorNodePtr;
+         -- Id               : Positive;
       BEGIN
          --x NEW since I added mySwitchStateList to SectionObj
          while switchStateNPtr /= null loop
@@ -2653,75 +2660,75 @@ PACKAGE BODY LayoutPkg IS
          --x OLD which will be thrown away once the NEW one works
          -- Loop through all switches in this section to see 
          -- if they are all set correctly for usability of this section.
-         WHILE SwitchPtr /= NULL LOOP
-            -- Assume the section is not usable because this switch is set incorrectly wrong
-            result := false;                                             -- mo 1/6/12
-            CASE SwitchPtr.Switch.TypeOfSwitch IS
-               WHEN Normal =>
-                  -- The switch is normal
-                  -- Let Id = the section sensor that is at the closed/thrown end of the switch
-                  IF SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id THEN
-                     Id := SectionPtr.SensorList.Tail.Sensor.Id;
-                  ELSE
-                     Id := SectionPtr.SensorList.Head.Sensor.Id;
-                  END IF;
-                  CASE SwitchPtr.Switch.State IS
-                     WHEN Closed =>
-                        -- The switch is closed
-                        SensorPtr := SwitchPtr.Switch.ClosedSensors.Head;
-                        WHILE SensorPtr /= NULL LOOP
-                           IF SensorPtr.Sensor.Id = Id THEN
-                              -- Sensor Id matches one of the sensors in the switch's closed list
-                              -- Therefore from the perspective of this switch the section is usable.
-                              Result := True;
-                              exit;
-                           END IF;
-                           SensorPtr := SensorPtr.Next;
-                        END LOOP;
-                        IF NOT Result THEN
-                           -- Sensor Id did not match one of the sensors in the switch's closed list
-                           -- so the section is NOT usable
-                           RETURN False;
-                        END IF;
-                     WHEN Thrown =>
-                        -- The switch is thrown
-                        IF Id /= SwitchPtr.Switch.ThrownSensor.Id THEN
-                           -- Sensor Id did not match the sensor at the switch's thrown end
-                           -- so the section is NOT usable
-                           RETURN False;
-                        END IF;
-                     WHEN OTHERS =>
-                        -- The switch is moving, so the section is NOT usable
-                        RETURN False;
-                  END CASE;
-               WHEN Crossover =>
-                  -- The switch is part of a crossover pair
-                  CASE SwitchPtr.Switch.State IS
-                     WHEN Closed =>
-                        IF NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
-                              SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Head.Sensor.Id) AND
-                              NOT (SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
-                              SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Head.Sensor.Id) AND
-                              NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id AND
-                              SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Tail.Sensor.Id) AND
-                              NOT (SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id AND
-                              SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Tail.Sensor.Id) THEN
-                           RETURN False;
-                        END IF;
-                     WHEN Thrown =>
-                        IF NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
-                              SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id) AND
-                              NOT (SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
-                              SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id) THEN
-                           RETURN False;
-                        END IF;
-                     WHEN OTHERS =>
-                        RETURN False;
-                  END CASE;
-            END CASE;
-            SwitchPtr := SwitchPtr.Next;
-         END LOOP;
-         RETURN True;
+         -- WHILE SwitchPtr /= NULL LOOP
+            -- -- Assume the section is not usable because this switch is set incorrectly wrong
+            -- result := false;                                             -- mo 1/6/12
+            -- CASE SwitchPtr.Switch.TypeOfSwitch IS
+               -- WHEN Normal =>
+                  -- -- The switch is normal
+                  -- -- Let Id = the section sensor that is at the closed/thrown end of the switch
+                  -- IF SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id THEN
+                     -- Id := SectionPtr.SensorList.Tail.Sensor.Id;
+                  -- ELSE
+                     -- Id := SectionPtr.SensorList.Head.Sensor.Id;
+                  -- END IF;
+                  -- CASE SwitchPtr.Switch.State IS
+                     -- WHEN Closed =>
+                        -- -- The switch is closed
+                        -- SensorPtr := SwitchPtr.Switch.ClosedSensors.Head;
+                        -- WHILE SensorPtr /= NULL LOOP
+                           -- IF SensorPtr.Sensor.Id = Id THEN
+                              -- -- Sensor Id matches one of the sensors in the switch's closed list
+                              -- -- Therefore from the perspective of this switch the section is usable.
+                              -- Result := True;
+                              -- exit;
+                           -- END IF;
+                           -- SensorPtr := SensorPtr.Next;
+                        -- END LOOP;
+                        -- IF NOT Result THEN
+                           -- -- Sensor Id did not match one of the sensors in the switch's closed list
+                           -- -- so the section is NOT usable
+                           -- RETURN False;
+                        -- END IF;
+                     -- WHEN Thrown =>
+                        -- -- The switch is thrown
+                        -- IF Id /= SwitchPtr.Switch.ThrownSensor.Id THEN
+                           -- -- Sensor Id did not match the sensor at the switch's thrown end
+                           -- -- so the section is NOT usable
+                           -- RETURN False;
+                        -- END IF;
+                     -- WHEN OTHERS =>
+                        -- -- The switch is moving, so the section is NOT usable
+                        -- RETURN False;
+                  -- END CASE;
+               -- WHEN Crossover =>
+                  -- -- The switch is part of a crossover pair
+                  -- CASE SwitchPtr.Switch.State IS
+                     -- WHEN Closed =>
+                        -- IF NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
+                              -- SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Head.Sensor.Id) AND
+                              -- NOT (SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
+                              -- SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Head.Sensor.Id) AND
+                              -- NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id AND
+                              -- SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Tail.Sensor.Id) AND
+                              -- NOT (SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id AND
+                              -- SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.ClosedSensors.Tail.Sensor.Id) THEN
+                           -- RETURN False;
+                        -- END IF;
+                     -- WHEN Thrown =>
+                        -- IF NOT (SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
+                              -- SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id) AND
+                              -- NOT (SectionPtr.SensorList.Tail.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Head.Sensor.Id AND
+                              -- SectionPtr.SensorList.Head.Sensor.Id = SwitchPtr.Switch.NarrowSensors.Tail.Sensor.Id) THEN
+                           -- RETURN False;
+                        -- END IF;
+                     -- WHEN OTHERS =>
+                        -- RETURN False;
+                  -- END CASE;
+            -- END CASE;
+            -- SwitchPtr := SwitchPtr.Next;
+         -- END LOOP;
+         -- RETURN True;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in IsSectionusable: " & Exception_Information(Error));
@@ -2981,14 +2988,14 @@ PACKAGE BODY LayoutPkg IS
 
       -- Is it possible for a train to move this switch
       PROCEDURE MoveSwitchPossible (
-            SwitchPtr :        SwitchNodePtr;
+            SwitchPtr :        SwitchObjPtr;
             TrainId   :        TrainIdType;
             Result    :    OUT Boolean) IS
          ThrownSectionList : SectionNodeList;
          ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
-         GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         GetSections(SwitchPtr, ThrownSectionList, ClosedSectionList);
          SectionPtr := ThrownSectionList.Head;
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Occupied OR
@@ -3019,13 +3026,13 @@ PACKAGE BODY LayoutPkg IS
 
       -- Is it possible to move this switch
       PROCEDURE MoveSwitchPossible (
-            SwitchPtr :        SwitchNodePtr;
+            SwitchPtr :        SwitchObjPtr;
             Result    :    OUT Boolean) IS
          ThrownSectionList : SectionNodeList;
          ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
-         GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         GetSections(SwitchPtr, ThrownSectionList, ClosedSectionList);
          SectionPtr := ThrownSectionList.Head;
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Occupied THEN
@@ -3083,12 +3090,12 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END FindIdOfTrainLoosingReservation;
 
-      PROCEDURE SendLoseReservationMessages (SwitchPtr : SwitchNodePtr) IS
+      PROCEDURE SendLoseReservationMessages (SwitchPtr : SwitchObjPtr) IS
          ThrownSectionList : SectionNodeList;
          ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
-         GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         GetSections(SwitchPtr, ThrownSectionList, ClosedSectionList);
          SectionPtr := ThrownSectionList.Head;
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Reserved THEN

@@ -431,12 +431,12 @@ PACKAGE LayoutPkg IS
                             ThrownList : OUT SectionNodeList; ClosedList : OUT SectionNodeList); 
       PROCEDURE GetSection(SectionPtr : OUT SectionNodePtr; 
                            FrontSensorId : Positive; BackSensorId  :  Positive);
-      PROCEDURE SendLoseReservationMessages(SwitchPtr : SwitchNodePtr);
+      PROCEDURE SendLoseReservationMessages(SwitchPtr : SwitchObjPtr);
       PROCEDURE FindIdOfTrainLoosingReservation(SwitchPtr : SwitchNodePtr; 
                                                 trainId : out TrainIdType; 
                                                 thereIsReservation : out boolean);      
-      PROCEDURE MoveSwitchPossible(SwitchPtr : SwitchNodePtr; Result : OUT Boolean);
-      PROCEDURE MoveSwitchPossible(SwitchPtr : SwitchNodePtr; TrainId : TrainIdType; Result : OUT Boolean); 
+      PROCEDURE MoveSwitchPossible(SwitchPtr : SwitchObjPtr; Result : OUT Boolean);
+      PROCEDURE MoveSwitchPossible(SwitchPtr : SwitchObjPtr; TrainId : TrainIdType; Result : OUT Boolean); 
       -------------------- End helper function   -------------------------  
       -------------------------- 2f --------------------------------------
       
@@ -533,7 +533,7 @@ PRIVATE
       State             : SectionStateType    := Free;
       Isusable         : Boolean             := True;
       SensorList        : SensorNodeList;    --x replace this with firstSensor and secondSensor
-      SwitchList        : SwitchNodeList;
+      --x SwitchList        : SwitchNodeList;
       mySwitchStateList : switchStateList;
       NextSectionList   : SectionNodeList;
       PrevSectionList   : SectionNodeList;
