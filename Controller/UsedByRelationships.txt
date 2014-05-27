@@ -1,0 +1,9 @@
+Used by relationships
+
+AddSectionToEndOfList 
+   FindSectionsCorrespondingToListOfSensors
+   AddSectionToEndOfList
+   FindSectionsCorrespondingToListOfSensors
+   GetSectionsContainingSwitch
+   bldEndSwitchList
+   bldFindAllSections

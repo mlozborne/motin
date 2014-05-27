@@ -1108,14 +1108,14 @@ PACKAGE BODY LayoutPkg IS
             Count   :        Positive;
             Sensors :        SensorArrayType;
             Result  :    OUT Boolean) IS
-         OutSectList : SectionNodeList;
+         OutSectList : SectionNodeList;      --x should the sections be marked as occupied?????????
          SectionPtr  : SectionNodePtr;
       BEGIN
          IF Sensors'Length /= Count OR Count < 2 THEN
             result := false;
             RETURN;
          END IF;
-         FindAllSections(OutSectList, Sensors);
+         FindSectionsCorrespondingToListOfSensors(OutSectList, Sensors);
          IF not AllFree(OutSectList) THEN
             result := false;
             return;
@@ -1228,10 +1228,10 @@ PACKAGE BODY LayoutPkg IS
             SwitchId : Positive;
             State    : SwitchStateType) IS
          SwitchPtr         : SwitchNodePtr  := SwitchList.Head;
-         ThrownSectionList : SectionNodeList;
-         ClosedSectionList : SectionNodeList;
-         Thrownusable     : Boolean        := False;
-         Closedusable     : Boolean        := False;
+         -- ThrownSectionList : SectionNodeList;
+         -- ClosedSectionList : SectionNodeList;
+         -- Thrownusable     : Boolean        := False;
+         -- Closedusable     : Boolean        := False;
       BEGIN
          WHILE SwitchPtr /= NULL LOOP
             IF SwitchPtr.Switch.Id = SwitchId THEN
@@ -1295,7 +1295,7 @@ PACKAGE BODY LayoutPkg IS
      END bldEndSection;
 
       -- Add a section to the end of a section list
-      PROCEDURE AddToEnd (
+      PROCEDURE AddSectionToEndOfList (
             OutSectList : IN OUT SectionNodeList;
             NodePtr     :        SectionNodePtr) IS
       BEGIN
@@ -1309,9 +1309,9 @@ PACKAGE BODY LayoutPkg IS
          OutSectList.Tail.Section := NodePtr.Section;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in AddToEnd: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in AddSectionToEndOfList: " & Exception_Information(Error));
             RAISE;
-      END AddToEnd;
+      END AddSectionToEndOfList;
 
       -- check if a section is in a blocking list
       FUNCTION IsIn (
@@ -1333,7 +1333,7 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END IsIn;
 
-      PROCEDURE FindAllSections (
+      PROCEDURE bldFindAllSections (
             SensorId         :        Positive;
             CurrentSectId    :        Positive;
             CurSectBlockList :        BlockingNodejList;
@@ -1341,15 +1341,15 @@ PACKAGE BODY LayoutPkg IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section /= NULL THEN
+            IF SectionPtr.Section /= NULL THEN    --x how could it = null??????????
                IF SectionPtr.Section.Id /= CurrentSectId AND
-                     NOT IsIn(CurSectBlockList, SectionPtr.Section.Id) AND
-                     SectionPtr.Section.SensorList.Head /= NULL THEN
-                  IF SectionPtr.Section.SensorList.Head.Sensor.Id =
-                        SensorId OR
-                        SectionPtr.Section.SensorList.Tail.Sensor.Id =
-                        SensorId THEN
-                     AddToEnd(OutSectList, SectionPtr);
+                  NOT IsIn(CurSectBlockList, SectionPtr.Section.Id) AND
+                  SectionPtr.Section.SensorList.Head /= NULL 
+               THEN
+                  IF SectionPtr.Section.SensorList.Head.Sensor.Id = SensorId OR
+                     SectionPtr.Section.SensorList.Tail.Sensor.Id = SensorId 
+                  THEN
+                     AddSectionToEndOfList(OutSectList, SectionPtr);
                   END IF;
                END IF;
             END IF;
@@ -1357,54 +1357,56 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in FindAllSections: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldFindAllSections: " & Exception_Information(Error));
             RAISE;
-      END FindAllSections;
+      END bldFindAllSections;
 
       -- Set the NextSectionList for each section
-      PROCEDURE SetNextSectionList IS
+      PROCEDURE bldSetNextSectionList IS
          SectionPtr     : SectionNodePtr := SectionList.Head;
          OutSectionList : SectionNodeList;
       BEGIN
          WHILE SectionPtr/= NULL LOOP
-            FindAllSections(SectionPtr.Section.SensorList.Tail.Sensor.Id,
-               SectionPtr.Section.Id, SectionPtr.Section.BlockingList,
-               OutSectionList);
+            bldFindAllSections(SectionPtr.Section.SensorList.Tail.Sensor.Id,
+                               SectionPtr.Section.Id,  
+                               SectionPtr.Section.BlockingList,
+                               OutSectionList);
             SectionPtr.Section.NextSectionList := OutSectionList;
-            OutSectionList.Head := NULL;
+            OutSectionList.Head := NULL;       --x memory leak
             OutSectionList.Tail := NULL;
             SectionPtr := SectionPtr.Next;
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in SetNextSectionList: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldSetNextSectionList: " & Exception_Information(Error));
             RAISE;
-      END SetNextSectionList;
+      END bldSetNextSectionList;
 
       -- Set the PrevSectionList for each section
-      PROCEDURE SetPrevSectionList IS
+      PROCEDURE bldSetPrevSectionList IS
          SectionPtr     : SectionNodePtr := SectionList.Head;
          OutSectionList : SectionNodeList;
       BEGIN
          WHILE SectionPtr/= NULL LOOP
-            FindAllSections(SectionPtr.Section.SensorList.Head.Sensor.Id,
-               SectionPtr.Section.Id, SectionPtr.Section.BlockingList,
-               OutSectionList);
+            bldFindAllSections(SectionPtr.Section.SensorList.Head.Sensor.Id,
+                               SectionPtr.Section.Id, 
+                               SectionPtr.Section.BlockingList,
+                               OutSectionList);
             SectionPtr.Section.PrevSectionList := OutSectionList;
-            OutSectionList.Head := NULL;
+            OutSectionList.Head := NULL;     --x memory leak
             OutSectionList.Tail := NULL;
             SectionPtr := SectionPtr.Next;
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in SetPrevSectionList: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldSetPrevSectionList: " & Exception_Information(Error));
             RAISE;
-      END SetPrevSectionList;
+      END bldSetPrevSectionList;
 
       PROCEDURE bldEndSectionList IS
       BEGIN
-         SetNextSectionList;
-         SetPrevSectionList;
+         bldSetNextSectionList;
+         bldSetPrevSectionList;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in bldEndSectionList: " & Exception_Information(Error));
@@ -1425,7 +1427,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END CheckSensors;
 
-      PROCEDURE GetSections (
+      PROCEDURE GetSectionsContainingSwitch (
             SwitchPtr  :        SwitchObjPtr;
             ThrownList :    OUT SectionNodeList;
             ClosedList :    OUT SectionNodeList) IS
@@ -1436,12 +1438,12 @@ PACKAGE BODY LayoutPkg IS
             CASE SwitchPtr.TypeOfSwitch IS
                WHEN Normal =>
                   IF CheckSensors(SectionPtr.Section.SensorList, SwitchPtr.NarrowSensors.Head.Sensor.Id, SwitchPtr.ThrownSensor.Id) THEN
-                     AddToEnd(ThrownList, SectionPtr);
+                     AddSectionToEndOfList(ThrownList, SectionPtr);
                   ELSE
                      SensorPtr := SwitchPtr.ClosedSensors.Head;
                      WHILE SensorPtr /= NULL LOOP
                         IF CheckSensors(SectionPtr.Section.SensorList, SwitchPtr.NarrowSensors.Head.Sensor.Id, SensorPtr.Sensor.Id) THEN
-                           AddToEnd(ClosedList, SectionPtr);
+                           AddSectionToEndOfList(ClosedList, SectionPtr);
                            SensorPtr := NULL;
                         ELSE
                            SensorPtr := SensorPtr.Next;
@@ -1450,19 +1452,19 @@ PACKAGE BODY LayoutPkg IS
                   END IF;
                WHEN Crossover =>
                   IF CheckSensors(SectionPtr.Section.SensorList, SwitchPtr.NarrowSensors.Head.Sensor.Id, SwitchPtr.NarrowSensors.Tail.Sensor.Id) THEN
-                     AddToEnd(ThrownList, SectionPtr);
+                     AddSectionToEndOfList(ThrownList, SectionPtr);
                   ELSIF CheckSensors(SectionPtr.Section.SensorList, SwitchPtr.NarrowSensors.Head.Sensor.Id, SwitchPtr.ClosedSensors.Head.Sensor.Id) OR
                         CheckSensors(SectionPtr.Section.SensorList, SwitchPtr.NarrowSensors.Tail.Sensor.Id, SwitchPtr.ClosedSensors.Tail.Sensor.Id) THEN
-                     AddToEnd(ClosedList, SectionPtr);
+                     AddSectionToEndOfList(ClosedList, SectionPtr);
                   END IF;
             END CASE;
             SectionPtr := SectionPtr.Next;
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in GetSections: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in GetSectionsContainingSwitch: " & Exception_Information(Error));
             RAISE;
-      END GetSections;
+      END GetSectionsContainingSwitch;
 
       -- Finish things up when the SwitchList is all read in
       PROCEDURE bldEndSwitchList IS
@@ -1471,23 +1473,41 @@ PACKAGE BODY LayoutPkg IS
          ThrownSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
+         -- Loop through all switches in the global switch list
          WHILE SwitchPtr /= NULL LOOP
-            GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+            GetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
             IF SwitchPtr.Switch.State = Closed THEN
+               -- This switch will be set to CLOSED thus making all the sections on the thrown side
+               -- of the switch unusable.
                SectionPtr := ThrownSectionList.Head;
                WHILE SectionPtr /= NULL LOOP
                   SectionPtr.Section.Isusable := False;
                   SectionPtr := SectionPtr.Next;
                END LOOP;
             ELSE
+               -- This switch will be set to THROWN thus making all the sections on the closed side
+               -- of the switch unusable.
                SectionPtr := ClosedSectionList.Head;
                WHILE SectionPtr /= NULL LOOP
                   SectionPtr.Section.Isusable := False;
                   SectionPtr := SectionPtr.Next;
                END LOOP;
             END IF;
+            
+            --x Build a list of all sections containing this switch
+            sectionPtr := thrownSectionList.head;
+            while sectionPtr /= null loop
+               AddSectionToEndOfList(switchPtr.switch.sectionNList, sectionPtr);
+               sectionPtr := sectionPtr.next;
+            end loop;
+            sectionPtr := closedSectionList.head;
+            while sectionPtr /= null loop
+               AddSectionToEndOfList(switchPtr.switch.sectionNList, sectionPtr);
+               sectionPtr := sectionPtr.next;
+            end loop;
                        
-            if SwitchPtr.Switch.State = Read then
+            -- Move the physical switch to the proper setting and inform all OThrottles          
+            if SwitchPtr.Switch.State = Read then  --x never happens
                SendToOutQueue(makeSwStateMsg(SwitchPtr.Switch.Id));
             else
                SendToOutQueue(makeSwReqMsg(SwitchPtr.Switch.Id, SwitchPtr.Switch.State));
@@ -1501,10 +1521,13 @@ PACKAGE BODY LayoutPkg IS
                   SendToOutQueue(makePutSwitchStateMsg(SwitchPtr.Switch.Id, BeginThrown));
                end if;
             end if;
+            
+            -- Memory leak here
             ClosedSectionList.Head := NULL;
             ClosedSectionList.Tail := NULL;
             ThrownSectionList.Head := NULL;
             ThrownSectionList.Tail := NULL;
+            
             SwitchPtr := SwitchPtr.Next;
          END LOOP;
       EXCEPTION
@@ -2781,9 +2804,8 @@ PACKAGE BODY LayoutPkg IS
       END FindSection;
 
       -- Get the sections based on the list of sensors
-      PROCEDURE FindAllSections (
-            OutSectList :    OUT SectionNodeList;
-            Sensors     :        SensorArrayType) IS
+      PROCEDURE FindSectionsCorrespondingToListOfSensors (OutSectList :    OUT SectionNodeList;
+                                                          Sensors     :        SensorArrayType) IS
          SectionPtr : SectionNodePtr;
          FirstId    : Positive;
          SecondId   : Positive;
@@ -2793,15 +2815,15 @@ PACKAGE BODY LayoutPkg IS
             SecondId := Sensors(I);
             FindSection(FirstId, SecondId, SectionPtr);
             IF SectionPtr /= NULL THEN
-               AddToEnd(OutSectList, SectionPtr);
+               AddSectionToEndOfList(OutSectList, SectionPtr);
             END IF;
             FirstId := SecondId;
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in FindAllSections: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in FindSectionsCorrespondingToListOfSensors: " & Exception_Information(Error));
             raise;
-      END FindAllSections;
+      END FindSectionsCorrespondingToListOfSensors;
 
       -- Place the train
       PROCEDURE PlaceTrainInSections (
@@ -2947,7 +2969,7 @@ PACKAGE BODY LayoutPkg IS
          -- ClosedSectionList : SectionNodeList;
          -- SectionPtr        : SectionNodePtr;
       -- BEGIN
-         -- GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         -- GetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
          -- SectionPtr := ThrownSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
             -- SectionPtr.Section.Isusable := False;
@@ -2995,8 +3017,8 @@ PACKAGE BODY LayoutPkg IS
          ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
-         GetSections(SwitchPtr, ThrownSectionList, ClosedSectionList);
-         SectionPtr := ThrownSectionList.Head;
+         --x NEW version
+         sectionPtr := switchPtr.sectionNList.head;
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Occupied OR
                   (SectionPtr.Section.State = Reserved AND
@@ -3006,17 +3028,32 @@ PACKAGE BODY LayoutPkg IS
             END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
-         SectionPtr := ClosedSectionList.Head;
-         WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State = Occupied OR
-                  (SectionPtr.Section.State = Reserved AND
-                  SectionPtr.Section.TrainId /= TrainId) THEN
-               Result := False;
-               RETURN;
-            END IF;
-            SectionPtr := SectionPtr.Next;
-         END LOOP;
-         Result := True;
+         result := true;
+         return;
+
+         --x OLD can delete
+         -- GetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);
+         -- SectionPtr := ThrownSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Occupied OR
+                  -- (SectionPtr.Section.State = Reserved AND
+                  -- SectionPtr.Section.TrainId /= TrainId) THEN
+               -- Result := False;
+               -- RETURN;
+            -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
+         -- SectionPtr := ClosedSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Occupied OR
+                  -- (SectionPtr.Section.State = Reserved AND
+                  -- SectionPtr.Section.TrainId /= TrainId) THEN
+               -- Result := False;
+               -- RETURN;
+            -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
+         -- Result := True;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MoveSwitchPossible: " & Exception_Information(Error));
@@ -3024,7 +3061,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END MoveSwitchPossible;
 
-      -- Is it possible to move this switch
+      -- Is it possible to move this switch? Yes, if no section containing the switch is occupied.
       PROCEDURE MoveSwitchPossible (
             SwitchPtr :        SwitchObjPtr;
             Result    :    OUT Boolean) IS
@@ -3032,8 +3069,8 @@ PACKAGE BODY LayoutPkg IS
          ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
-         GetSections(SwitchPtr, ThrownSectionList, ClosedSectionList);
-         SectionPtr := ThrownSectionList.Head;
+         --x NEW version
+         sectionPtr := switchPtr.sectionNList.head;
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Occupied THEN
                Result := False;
@@ -3041,15 +3078,28 @@ PACKAGE BODY LayoutPkg IS
             END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
-         SectionPtr := ClosedSectionList.Head;
-         WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State = Occupied THEN
-               Result := False;
-               RETURN;
-            END IF;
-            SectionPtr := SectionPtr.Next;
-         END LOOP;
-         Result := True;
+         result := true;
+         return;
+         
+         --x OLD can delete
+         -- GetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);
+         -- SectionPtr := ThrownSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Occupied THEN
+               -- Result := False;
+               -- RETURN;
+            -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
+         -- SectionPtr := ClosedSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Occupied THEN
+               -- Result := False;
+               -- RETURN;
+            -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
+         -- Result := True;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in MoveSwitchPossible 2: " & Exception_Information(Error));
@@ -3065,8 +3115,9 @@ PACKAGE BODY LayoutPkg IS
       BEGIN
          thereIsReservation := false;
          trainId := trainIdType'first;
-         GetSections(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
-         SectionPtr := ThrownSectionList.Head;
+         
+         --x NEW version
+         sectionPtr := switchPtr.switch.sectionNList.head;
          WHILE SectionPtr /= NULL LOOP
             IF SectionPtr.Section.State = Reserved THEN
                thereIsReservation := true;
@@ -3075,15 +3126,28 @@ PACKAGE BODY LayoutPkg IS
                END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
-         SectionPtr := ClosedSectionList.Head;
-         WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State = Reserved THEN
-               thereIsReservation := true;
-               trainId := SectionPtr.Section.TrainId;
-               return;
-            END IF;
-            SectionPtr := SectionPtr.Next;
-         END LOOP;
+         return;
+         
+         --x OLD can delete
+         -- GetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         -- SectionPtr := ThrownSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Reserved THEN
+               -- thereIsReservation := true;
+               -- trainId := SectionPtr.Section.TrainId;
+               -- return;
+               -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
+         -- SectionPtr := ClosedSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Reserved THEN
+               -- thereIsReservation := true;
+               -- trainId := SectionPtr.Section.TrainId;
+               -- return;
+            -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in FindIdOfTrainLoosingReservation: " & Exception_Information(Error));
@@ -3095,23 +3159,37 @@ PACKAGE BODY LayoutPkg IS
          ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
-         GetSections(SwitchPtr, ThrownSectionList, ClosedSectionList);
-         SectionPtr := ThrownSectionList.Head;
+         --x NEW version
+         sectionPtr := switchPtr.sectionNList.head;
          WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State = Reserved THEN
+            IF SectionPtr.Section.State = Reserved THEN   --x at most one section should be reserved
                SendToTrainQueue(makeLoseReservationMsg(SectionPtr.Section.TrainId), SectionPtr.Section.TrainId);
                return;
                END IF;
             SectionPtr := SectionPtr.Next;
          END LOOP;
-         SectionPtr := ClosedSectionList.Head;
-         WHILE SectionPtr /= NULL LOOP
-            IF SectionPtr.Section.State = Reserved THEN
-               SendToTrainQueue(makeLoseReservationMsg(SectionPtr.Section.TrainId), SectionPtr.Section.TrainId);
-               return;
-            END IF;
-            SectionPtr := SectionPtr.Next;
-         END LOOP;
+         return;   --x none of the sections containing this switch might have been reserved
+          
+         -- --x OLD can delete
+         -- GetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);  
+                  -- --x memory leak whenever this procedure is called unless the two lists are
+                  -- --x disposed of corretly                                                                               
+         -- SectionPtr := ThrownSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Reserved THEN
+               -- SendToTrainQueue(makeLoseReservationMsg(SectionPtr.Section.TrainId), SectionPtr.Section.TrainId);
+               -- return;
+               -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
+         -- SectionPtr := ClosedSectionList.Head;
+         -- WHILE SectionPtr /= NULL LOOP
+            -- IF SectionPtr.Section.State = Reserved THEN
+               -- SendToTrainQueue(makeLoseReservationMsg(SectionPtr.Section.TrainId), SectionPtr.Section.TrainId);
+               -- return;
+            -- END IF;
+            -- SectionPtr := SectionPtr.Next;
+         -- END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in SendLoseReservationMessage: " & Exception_Information(Error));

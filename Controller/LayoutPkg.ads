@@ -411,7 +411,7 @@ PACKAGE LayoutPkg IS
       
       -- PositionTrain helpers 
       FUNCTION  AllFree(SectList : SectionNodeList) RETURN Boolean;
-      PROCEDURE FindAllSections(OutSectList : OUT SectionNodeList; Sensors : SensorArrayType);
+      PROCEDURE FindSectionsCorrespondingToListOfSensors(OutSectList : OUT SectionNodeList; Sensors : SensorArrayType);
       PROCEDURE PlaceTrainInSections(SectList : SectionNodeList; TrainId : TrainIdType);
       PROCEDURE GetSensor(SensorId : Positive; Sensor : OUT SensorObjPtr); 
       function  isNewTrain(TrainId : TrainIdType) return boolean;
@@ -427,7 +427,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE GetTrainSensorList(TrainId : TrainIdType; Sensors : OUT SensorNodeList);   
       
       -- MoveSwitch and MoveNextSwitch helpers   
-      PROCEDURE GetSections(SwitchPtr  : SwitchObjPtr;
+      PROCEDURE GetSectionsContainingSwitch(SwitchPtr  : SwitchObjPtr;
                             ThrownList : OUT SectionNodeList; ClosedList : OUT SectionNodeList); 
       PROCEDURE GetSection(SectionPtr : OUT SectionNodePtr; 
                            FrontSensorId : Positive; BackSensorId  :  Positive);
@@ -471,16 +471,16 @@ PRIVATE
    END RECORD;
       
    TYPE SensorNode IS RECORD
-      Sensor : SensorObjPtr;
-      Next   : SensorNodePtr;
+      Sensor : SensorObjPtr := null;
+      Next   : SensorNodePtr := null;
    END RECORD;  
    
    PROCEDURE disposeBasicSensorNode IS 
       NEW Ada.Unchecked_Deallocation(Object=>SensorNode, Name=>SensorNodePtr);      
          
    TYPE SensorNodeList IS RECORD
-      Head : SensorNodePtr;
-      Tail : SensorNodePtr;
+      Head : SensorNodePtr := null;
+      Tail : SensorNodePtr := null;
    END RECORD;
       
 -------------------------------------------
@@ -490,17 +490,18 @@ PRIVATE
       TypeOfSwitch  : ControllerGlobals.SwitchType  := Normal;
       ClosedSensors : SensorNodeList;
       NarrowSensors : SensorNodeList;
-      ThrownSensor  : SensorObjPtr;
+      ThrownSensor  : SensorObjPtr := null;    --x To generalize make this a list
+      SectionNList  : SectionNodeList;   --x all sections containing this switch
    END RECORD;
       
    TYPE SwitchNode IS RECORD
-      Switch : SwitchObjPtr;
-      Next   : SwitchNodePtr;
+      Switch : SwitchObjPtr := null;
+      Next   : SwitchNodePtr := null;
    END RECORD;
       
    TYPE SwitchNodeList IS RECORD
-      Head : SwitchNodePtr;
-      Tail : SwitchNodePtr;
+      Head : SwitchNodePtr := null;
+      Tail : SwitchNodePtr := null;
    END RECORD;
 
 -------------------------------------------
@@ -519,19 +520,19 @@ PRIVATE
 -------------------------------------------
 
    TYPE BlockingNode IS NEW LayoutObj WITH RECORD
-         Next : BlockingNodePtr;
+         Next : BlockingNodePtr := null;
    END RECORD;
       
    TYPE BlockingNodejList IS RECORD
-         Head : BlockingNodePtr;
-         Tail : BlockingNodePtr;
+         Head : BlockingNodePtr := null;
+         Tail : BlockingNodePtr := null;
    END RECORD;
 
 -------------------------------------------
 
    TYPE SectionObj IS NEW LayoutObj WITH RECORD
       State             : SectionStateType    := Free;
-      Isusable         : Boolean             := True;
+      Isusable          : Boolean             := True;
       SensorList        : SensorNodeList;    --x replace this with firstSensor and secondSensor
       --x SwitchList        : SwitchNodeList;
       mySwitchStateList : switchStateList;
@@ -543,13 +544,13 @@ PRIVATE
    END RECORD;
       
    TYPE SectionNode IS RECORD
-      Section : SectionObjPtr;
-      Next    : SectionNodePtr;
+      Section : SectionObjPtr := null;
+      Next    : SectionNodePtr := null;
    END RECORD;
       
    TYPE SectionNodeList IS RECORD
-      Head : SectionNodePtr;
-      Tail : SectionNodePtr;
+      Head : SectionNodePtr := null;
+      Tail : SectionNodePtr := null;
    END RECORD;
 
 -------------------------------------------
@@ -559,7 +560,7 @@ PRIVATE
       SensorCount : Positive;
       SensorList  : SensorNodeList;
       Queue       : CommandQueueManager.QueuePtr;
-      Next        : TrainNodePtr;
+      Next        : TrainNodePtr := null;
    END RECORD;
 
 -------------------------------------------
