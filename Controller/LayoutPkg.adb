@@ -1108,19 +1108,19 @@ PACKAGE BODY LayoutPkg IS
             Count   :        Positive;
             Sensors :        SensorArrayType;
             Result  :    OUT Boolean) IS
-         OutSectList : SectionNodeList;      --x should the sections be marked as occupied?????????
+         OutSectList : SectionNodeList;     
          SectionPtr  : SectionNodePtr;
       BEGIN
          IF Sensors'Length /= Count OR Count < 2 THEN
             result := false;
             RETURN;
          END IF;
+         
          FindSectionsCorrespondingToListOfSensors(OutSectList, Sensors);
          IF not AllFree(OutSectList) THEN
             result := false;
-            return;
          else
-            PlaceTrainInSections(OutSectList, TrainId);
+            PlaceTrainInSections(OutSectList, TrainId);  
             
             if isNewTrain(trainId) then                          -- mo 1/18/12
                AddNewTrain(TrainId, Sensors);
@@ -1134,8 +1134,9 @@ PACKAGE BODY LayoutPkg IS
                SectionPtr := SectionPtr.Next;
             END LOOP;
             Result := True;
-            return;
          END IF;
+        makeEmptySectionNodeList(OutSectList); -- memory leak fixed here
+        return;   
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in PositionTrain: " & Exception_Information(Error));
@@ -1372,7 +1373,7 @@ PACKAGE BODY LayoutPkg IS
                                SectionPtr.Section.BlockingList,
                                OutSectionList);
             SectionPtr.Section.NextSectionList := OutSectionList;
-            OutSectionList.Head := NULL;       --x memory leak
+            OutSectionList.Head := NULL;       --x not memory leak
             OutSectionList.Tail := NULL;
             SectionPtr := SectionPtr.Next;
          END LOOP;
@@ -1393,7 +1394,7 @@ PACKAGE BODY LayoutPkg IS
                                SectionPtr.Section.BlockingList,
                                OutSectionList);
             SectionPtr.Section.PrevSectionList := OutSectionList;
-            OutSectionList.Head := NULL;     --x memory leak
+            OutSectionList.Head := NULL;     -- not a memory leak
             OutSectionList.Tail := NULL;
             SectionPtr := SectionPtr.Next;
          END LOOP;
@@ -1427,7 +1428,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END CheckSensors;
 
-      PROCEDURE GetSectionsContainingSwitch (
+      PROCEDURE bldGetSectionsContainingSwitch (
             SwitchPtr  :        SwitchObjPtr;
             ThrownList :    OUT SectionNodeList;
             ClosedList :    OUT SectionNodeList) IS
@@ -1462,9 +1463,9 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in GetSectionsContainingSwitch: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldGetSectionsContainingSwitch: " & Exception_Information(Error));
             RAISE;
-      END GetSectionsContainingSwitch;
+      END bldGetSectionsContainingSwitch;
 
       -- Finish things up when the SwitchList is all read in
       PROCEDURE bldEndSwitchList IS
@@ -1475,7 +1476,7 @@ PACKAGE BODY LayoutPkg IS
       BEGIN
          -- Loop through all switches in the global switch list
          WHILE SwitchPtr /= NULL LOOP
-            GetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+            bldGetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
             IF SwitchPtr.Switch.State = Closed THEN
                -- This switch will be set to CLOSED thus making all the sections on the thrown side
                -- of the switch unusable.
@@ -1522,11 +1523,9 @@ PACKAGE BODY LayoutPkg IS
                end if;
             end if;
             
-            -- Memory leak here
-            ClosedSectionList.Head := NULL;
-            ClosedSectionList.Tail := NULL;
-            ThrownSectionList.Head := NULL;
-            ThrownSectionList.Tail := NULL;
+            -- Memory leak fixed here
+            makeEmptySectionNodeList(closedSectionList);
+            makeEmptySectionNodeList(thrownSectionList);
             
             SwitchPtr := SwitchPtr.Next;
          END LOOP;
@@ -2758,9 +2757,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END IsSectionusable;
 
-      FUNCTION AllFree (
-            SectList : SectionNodeList)
-        RETURN Boolean IS
+      FUNCTION AllFree (SectList : SectionNodeList) RETURN Boolean IS
          SectionPtr : SectionNodePtr := SectList.Head;
       BEGIN
          IF SectionPtr = NULL THEN
@@ -2969,7 +2966,7 @@ PACKAGE BODY LayoutPkg IS
          -- ClosedSectionList : SectionNodeList;
          -- SectionPtr        : SectionNodePtr;
       -- BEGIN
-         -- GetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         -- bldGetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
          -- SectionPtr := ThrownSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
             -- SectionPtr.Section.Isusable := False;
@@ -3013,8 +3010,8 @@ PACKAGE BODY LayoutPkg IS
             SwitchPtr :        SwitchObjPtr;
             TrainId   :        TrainIdType;
             Result    :    OUT Boolean) IS
-         ThrownSectionList : SectionNodeList;
-         ClosedSectionList : SectionNodeList;
+         -- ThrownSectionList : SectionNodeList;
+         -- ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          --x NEW version
@@ -3032,7 +3029,7 @@ PACKAGE BODY LayoutPkg IS
          return;
 
          --x OLD can delete
-         -- GetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);
+         -- bldGetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);
          -- SectionPtr := ThrownSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
             -- IF SectionPtr.Section.State = Occupied OR
@@ -3065,8 +3062,8 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE MoveSwitchPossible (
             SwitchPtr :        SwitchObjPtr;
             Result    :    OUT Boolean) IS
-         ThrownSectionList : SectionNodeList;
-         ClosedSectionList : SectionNodeList;
+         -- ThrownSectionList : SectionNodeList;
+         -- ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          --x NEW version
@@ -3082,7 +3079,7 @@ PACKAGE BODY LayoutPkg IS
          return;
          
          --x OLD can delete
-         -- GetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);
+         -- bldGetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);
          -- SectionPtr := ThrownSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
             -- IF SectionPtr.Section.State = Occupied THEN
@@ -3109,8 +3106,8 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE FindIdOfTrainLoosingReservation (SwitchPtr : SwitchNodePtr; 
                                                  trainId : out TrainIdType; 
                                                  thereIsReservation : out boolean) IS
-         ThrownSectionList : SectionNodeList;
-         ClosedSectionList : SectionNodeList;
+         -- ThrownSectionList : SectionNodeList;
+         -- ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          thereIsReservation := false;
@@ -3129,7 +3126,7 @@ PACKAGE BODY LayoutPkg IS
          return;
          
          --x OLD can delete
-         -- GetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
+         -- bldGetSectionsContainingSwitch(SwitchPtr.Switch, ThrownSectionList, ClosedSectionList);
          -- SectionPtr := ThrownSectionList.Head;
          -- WHILE SectionPtr /= NULL LOOP
             -- IF SectionPtr.Section.State = Reserved THEN
@@ -3155,8 +3152,8 @@ PACKAGE BODY LayoutPkg IS
       END FindIdOfTrainLoosingReservation;
 
       PROCEDURE SendLoseReservationMessages (SwitchPtr : SwitchObjPtr) IS
-         ThrownSectionList : SectionNodeList;
-         ClosedSectionList : SectionNodeList;
+         -- ThrownSectionList : SectionNodeList;
+         -- ClosedSectionList : SectionNodeList;
          SectionPtr        : SectionNodePtr;
       BEGIN
          --x NEW version
@@ -3171,7 +3168,7 @@ PACKAGE BODY LayoutPkg IS
          return;   --x none of the sections containing this switch might have been reserved
           
          -- --x OLD can delete
-         -- GetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);  
+         -- bldGetSectionsContainingSwitch(SwitchPtr, ThrownSectionList, ClosedSectionList);  
                   -- --x memory leak whenever this procedure is called unless the two lists are
                   -- --x disposed of corretly                                                                               
          -- SectionPtr := ThrownSectionList.Head;
@@ -3204,16 +3201,38 @@ PACKAGE BODY LayoutPkg IS
          end if;
       end disposeSensorNode;
                
-      procedure makeEmptySensorNodeList(sol : in out SensorNodeList) is 
+      procedure disposeSectionNode(ptr : in out sectionNodePtr) is
+      begin
+         if ptr /= null then
+            disposeBasicSectionNode(ptr);
+         end if;
+      end disposeSectionNode;
+               
+      procedure makeEmptySensorNodeList(snl : in out SensorNodeList) is 
          cur, temp  : sensorNodePtr;
       begin
-         cur := sol.head;
+         cur := snl.head;
          while cur /= null loop
             temp := cur;
             cur := cur.next;
             disposeSensorNode(temp);
          end loop;
+         snl.head := null;
+         snl.tail := null;
       end makeEmptySensorNodeList;
+      
+      procedure makeEmptySectionNodeList(snl : in out SectionNodeList) is 
+         cur, temp  : sectionNodePtr;
+      begin
+         cur := snl.head;
+         while cur /= null loop
+            temp := cur;
+            cur := cur.next;
+            disposeSectionNode(temp);
+         end loop;
+         snl.head := null;
+         snl.tail := null;
+      end makeEmptySectionNodeList;
       
       -- procedure disposeTrainNode(ptr : in out TrainNodePtr) is
       -- begin

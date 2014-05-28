@@ -309,6 +309,7 @@ PACKAGE LayoutPkg IS
       -------------------- Begin helper function ------------------------- 
       
       procedure disposeSensorNode(ptr : in out sensorNodePtr);
+      procedure disposeSectionNode(ptr : in out sectionNodePtr);
       
       -- Used everywhere 
       PROCEDURE SendToTrainQueue(Cmd : MessageType; Id : Positive);
@@ -415,7 +416,8 @@ PACKAGE LayoutPkg IS
       PROCEDURE PlaceTrainInSections(SectList : SectionNodeList; TrainId : TrainIdType);
       PROCEDURE GetSensor(SensorId : Positive; Sensor : OUT SensorObjPtr); 
       function  isNewTrain(TrainId : TrainIdType) return boolean;
-      procedure makeEmptySensorNodeList(sol : in out SensorNodeList);
+      procedure makeEmptySensorNodeList(snl : in out SensorNodeList);
+      procedure makeEmptySectionNodeList(snl : in out SectionNodeList);
       procedure updateTrainSensors(TrainId : TrainIdType; Sensors : SensorArrayType);
       PROCEDURE AddNewTrain(TrainId : TrainIdType; Sensors : SensorArrayType);
       
@@ -427,7 +429,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE GetTrainSensorList(TrainId : TrainIdType; Sensors : OUT SensorNodeList);   
       
       -- MoveSwitch and MoveNextSwitch helpers   
-      PROCEDURE GetSectionsContainingSwitch(SwitchPtr  : SwitchObjPtr;
+      PROCEDURE bldGetSectionsContainingSwitch(SwitchPtr  : SwitchObjPtr;
                             ThrownList : OUT SectionNodeList; ClosedList : OUT SectionNodeList); 
       PROCEDURE GetSection(SectionPtr : OUT SectionNodePtr; 
                            FrontSensorId : Positive; BackSensorId  :  Positive);
@@ -548,7 +550,10 @@ PRIVATE
       Next    : SectionNodePtr := null;
    END RECORD;
       
-   TYPE SectionNodeList IS RECORD
+   PROCEDURE disposeBasicSectionNode IS 
+      NEW Ada.Unchecked_Deallocation(Object=>SectionNode, Name=>SectionNodePtr); 
+      
+    TYPE SectionNodeList IS RECORD
       Head : SectionNodePtr := null;
       Tail : SectionNodePtr := null;
    END RECORD;

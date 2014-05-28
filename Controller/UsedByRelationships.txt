@@ -4,6 +4,6 @@ AddSectionToEndOfList
    FindSectionsCorrespondingToListOfSensors
    AddSectionToEndOfList
    FindSectionsCorrespondingToListOfSensors
-   GetSectionsContainingSwitch
+   bldGetSectionsContainingSwitch
    bldEndSwitchList
    bldFindAllSections
