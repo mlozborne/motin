@@ -102,22 +102,25 @@ PACKAGE BODY LayoutPkg IS
                   ThisSensorPtr := NextSensorPtr;
                END LOOP;
                ReleaseReservation(TrainId);
+               
                declare   
                   sensorCount : natural := TrainPtr.SensorCount;                                                                    
                   mySensors   : sensorArrayAccess := new sensorArrayType(1..sensorCount);
                   I           : positive := 1;
                   sensorPtr   : sensorNodePtr;
                begin
+                  --vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                  --x this code seems pointless and creates a memory leak
                   SensorPtr := TrainPtr.SensorList.Head;
                   WHILE SensorPtr /= NULL LOOP
                      mySensors(I) := sensorPtr.sensor.id;
                      I := I + 1;
                      SensorPtr := SensorPtr.Next;
                   END LOOP;
-              
+                  --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                   PutTrainPositionMsg(TrainId);
-              
                end;
+               
                RETURN;
             END IF;
             TrainPtr := TrainPtr.Next;

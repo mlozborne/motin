@@ -275,7 +275,7 @@ PACKAGE BODY TrainPkg IS
                      END;
                   when OPC_SW_REQ =>
                      -- This is a request for the train to forward the message. 
-                     -- Thereby, introducting a delay.
+                     -- Thereby, introducing a delay.
                      CommandQueueManager.put(cmd);
                   WHEN UZero =>
                      -- Extended Messages

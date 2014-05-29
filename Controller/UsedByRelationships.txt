@@ -7,3 +7,20 @@ AddSectionToEndOfList
    bldGetSectionsContainingSwitch
    bldEndSwitchList
    bldFindAllSections
+   
+   
+   
+Need to figure out 
+   o all uses of SensorArrayType and DisposeSensorArray
+   o in CommandQueueManager record below what is the field Sensors for. Can I get rid of it????????
+   
+   TYPE LookupEntry IS RECORD
+      VirtTrainAddr   : LocoAddressType := LocoAddressType'first;
+      VirtSlotNum     : SlotType := slotType'first;
+      HasVirtSlot     : Boolean := False;
+      PhysTrainAddr   : LocoAddressType := LocoAddressType'first;
+      PhysSlotNum     : SlotType := slotType'first;
+      HasPhySlot      : Boolean := False;
+      InUse           : Boolean := False;
+      Sensors         : SensorArrayAccess := null;      --x why is this needed???????????
+   END RECORD;

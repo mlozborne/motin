@@ -57,7 +57,7 @@ PACKAGE CommandQueueManager IS
       PhysSlotNum     : SlotType := slotType'first;
       HasPhySlot      : Boolean := False;
       InUse           : Boolean := False;
-      Sensors         : SensorArrayAccess := null;
+      Sensors         : SensorArrayAccess := null;      --x why is this needed???????????
    END RECORD;
 
    TYPE LookUpTableType IS ARRAY (1..KNumTrains) OF LookupEntry;
