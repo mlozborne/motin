@@ -210,8 +210,8 @@ PACKAGE BODY SSIPkg IS
                      VirtSlot              : SlotType;
                      TrainId               : TrainIdType;
                      Sensors               : SensorArrayAccess;
-                     sList                   : naturalListType;
-                     address                : locoAddressType;
+                     sList                 : naturalListType;
+                     address               : locoAddressType;
                      addressIsAlreadyInUse : boolean;
                   BEGIN
                      splitSlRdDataMsg(cmd, address, addressIsAlreadyInUse, slot);
@@ -245,7 +245,7 @@ PACKAGE BODY SSIPkg IS
                         IF IsPhy THEN
                            TrainId := SlotLookupTable.PhysAddrToTrainId(PhysAddr);
                            VirtAddr := SlotLookupTable.TrainIdToVirtAddr(TrainId);
-                     SendToOutQueue(makeLocoAdrMsg(registeringVirtualAddr));  -- Now start registering the virtual address
+                           SendToOutQueue(makeLocoAdrMsg(registeringVirtualAddr));  -- Now start registering the virtual address
                         ELSE
                            TrainId := SlotLookupTable.VirtAddrToTrainId(VirtAddr);
                            PhysAddr := SlotLookupTable.TrainIdToPhysAddr(TrainId);
