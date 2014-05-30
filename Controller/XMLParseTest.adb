@@ -2,8 +2,7 @@ WITH LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager
 USE LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Interfaces, Ada.Exceptions;
 
 PROCEDURE XMLParseTest IS
-   LayoutPtr : LayoutPkg.LayoutManagerAccess :=
-   NEW LayoutPkg.LayoutManager;
+   LayoutPtr : LayoutPkg.LayoutManagerAccess := NEW LayoutPkg.LayoutManager;
    Output      : File_Type;
    XMLFilename : String      := "xxx";
    Result      : Boolean;
