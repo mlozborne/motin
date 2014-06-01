@@ -37,7 +37,7 @@ PACKAGE LayoutPkg IS
 
    TYPE BlockingNode IS PRIVATE;
    TYPE BlockingNodePtr IS ACCESS BlockingNode;
-   TYPE BlockingNodejList IS PRIVATE;
+   TYPE BlockingNodeList IS PRIVATE;
 
    TYPE SectionObj IS PRIVATE;
    TYPE SectionObjPtr IS ACCESS SectionObj;
@@ -266,17 +266,17 @@ PACKAGE LayoutPkg IS
       ------------------------------- 2c ----------------------------------
       ----------------- Begin debug print data structures -----------------
       PROCEDURE Print_Sections (
-            Sections    : SectionNodeList;
+            -- Sections    : SectionNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean        := False);
       PROCEDURE Print_Sensors (
-            Sensors     : SensorNodeList;
+            -- Sensors     : SensorNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
       PROCEDURE Print_Switchs (
-            Switchs     : SwitchNodeList;
+            -- Switchs     : SwitchNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
@@ -316,7 +316,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE SendToAllTrainQueues(Cmd : MessageType);
       
       -- IdentifyTrain, ReleaseReservation, RepositionTrain
-       PROCEDURE ReleaseBlockings(BlockingList : BlockingNodejList);
+       PROCEDURE ReleaseBlockings(BlockingList : BlockingNodeList);
 
       -- IdentifyTrain helpers
       procedure PutTrainPositionMsg(TrainId : trainIdType);
@@ -408,7 +408,7 @@ PACKAGE LayoutPkg IS
                             SectionPtr : OUT SectionNodePtr);
                             
       -- MakeReservation and PositionTrain helpers
-      PROCEDURE BlockSections (BlockingList : BlockingNodejList);
+      PROCEDURE BlockSections (BlockingList : BlockingNodeList);
       
       -- PositionTrain helpers 
       FUNCTION  AllFree(SectList : SectionNodeList) RETURN Boolean;
@@ -525,7 +525,7 @@ PRIVATE
          Next : BlockingNodePtr := null;
    END RECORD;
       
-   TYPE BlockingNodejList IS RECORD
+   TYPE BlockingNodeList IS RECORD
          Head : BlockingNodePtr := null;
          Tail : BlockingNodePtr := null;
    END RECORD;
@@ -540,7 +540,7 @@ PRIVATE
       mySwitchStateList : switchStateList;
       NextSectionList   : SectionNodeList;
       PrevSectionList   : SectionNodeList;
-      BlockingList      : BlockingNodejList;
+      BlockingList      : BlockingNodeList;
       BlockCount        : Natural             := 0;
       TrainId           : TrainIdType         := 0;
    END RECORD;

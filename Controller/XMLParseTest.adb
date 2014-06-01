@@ -1,10 +1,12 @@
-WITH LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Interfaces, Ada.Exceptions;
-USE LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Interfaces, Ada.Exceptions;
+-- WITH LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Interfaces, Ada.Exceptions;
+-- USE LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Globals, CommandQueueManager, Interfaces, Ada.Exceptions;
+WITH LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Interfaces, Ada.Exceptions;
+USE LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Interfaces, Ada.Exceptions;
 
 PROCEDURE XMLParseTest IS
    LayoutPtr : LayoutPkg.LayoutManagerAccess := NEW LayoutPkg.LayoutManager;
    Output      : File_Type;
-   XMLFilename : String      := "xxx";
+   XMLFilename : String      := "layout.txt";
    Result      : Boolean;
 BEGIN
    LayoutPtr.SetXMLFilename(To_Unbounded_String(XMLFilename));

@@ -1319,7 +1319,7 @@ PACKAGE BODY LayoutPkg IS
 
       -- check if a section is in a blocking list
       FUNCTION IsIn (
-            BlockList : BlockingNodejList;
+            BlockList : BlockingNodeList;
             Id        : Positive)
         RETURN Boolean IS
          BlockingPtr : BlockingNodePtr := BlockList.Head;
@@ -1340,7 +1340,7 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE bldFindAllSections (
             SensorId         :        Positive;
             CurrentSectId    :        Positive;
-            CurSectBlockList :        BlockingNodejList;
+            CurSectBlockList :        BlockingNodeList;
             OutSectList      :    OUT SectionNodeList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
@@ -1805,11 +1805,11 @@ PACKAGE BODY LayoutPkg IS
       END Print;
 
       PROCEDURE Print_Sensors (
-            Sensors     : SensorNodeList;
+            -- Sensors     : SensorNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False) IS
-         SensorPtr : SensorNodePtr := Sensors.Head;
+         SensorPtr : SensorNodePtr := SensorList;
       BEGIN
          WHILE SensorPtr /= NULL LOOP
             Print("Sensor ID: " & Positive'Image(SensorPtr.Sensor.Id),
@@ -1827,11 +1827,11 @@ PACKAGE BODY LayoutPkg IS
       END Print_Sensors;
 
       PROCEDURE Print_Switchs (
-            Switchs     : SwitchNodeList;
+            -- Switchs     : SwitchNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False) IS
-         SwitchPtr : SwitchNodePtr := Switchs.Head;
+         SwitchPtr : SwitchNodePtr := SwitchsList;
       BEGIN
          WHILE SwitchPtr /= NULL LOOP
             Print("----------------------", Indent, Output);
@@ -1858,7 +1858,7 @@ PACKAGE BODY LayoutPkg IS
       END Print_Switchs;
 
       PROCEDURE Print_Blockings (
-            BlockingList : BlockingNodejList;
+            BlockingList : BlockingNodeList;
             Indent       : Natural;
             Output       : File_Type) IS
          BlockingPtr : BlockingNodePtr := BlockingList.Head;
@@ -1874,11 +1874,11 @@ PACKAGE BODY LayoutPkg IS
       END Print_Blockings;
 
       PROCEDURE Print_Sections (
-            Sections    : SectionNodeList;
+            -- Sections    : SectionNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean        := False) IS
-         SectionPtr : SectionNodePtr := Sections.Head;
+         SectionPtr : SectionNodePtr := SectionList;
       BEGIN
          WHILE SectionPtr /= NULL LOOP
             if printOnlyId then
@@ -1970,7 +1970,7 @@ PACKAGE BODY LayoutPkg IS
       END FindSensor;
 
       PROCEDURE ReleaseBlockings (
-            BlockingList : BlockingNodejList) IS
+            BlockingList : BlockingNodeList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          IF BlockingList.Head /= NULL THEN
@@ -2844,7 +2844,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END PlaceTrainInSections;
 
-      PROCEDURE BlockSections (BlockingList : BlockingNodejList) IS
+      PROCEDURE BlockSections (BlockingList : BlockingNodeList) IS
          SectionPtr : SectionNodePtr := SectionList.Head;
       BEGIN
          IF BlockingList.Head /= NULL THEN
