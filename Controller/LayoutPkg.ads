@@ -266,20 +266,23 @@ PACKAGE LayoutPkg IS
       ------------------------------- 2c ----------------------------------
       ----------------- Begin debug print data structures -----------------
       PROCEDURE Print_Sections (
-            -- Sections    : SectionNodeList;
+            Sections    : SectionNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean        := False);
       PROCEDURE Print_Sensors (
-            -- Sensors     : SensorNodeList;
+            Sensors     : SensorNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
       PROCEDURE Print_Switchs (
-            -- Switchs     : SwitchNodeList;
+            Switchs     : SwitchNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
+      function getSectionList return sectionNodeList;
+      function getSensorList return sensorNodeList;
+      function getSwitchList return switchNodeList;
       ----------------- End debug print data structures ------------------
       ---------------------------- 2c ------------------------------------
 

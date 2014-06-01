@@ -1805,11 +1805,11 @@ PACKAGE BODY LayoutPkg IS
       END Print;
 
       PROCEDURE Print_Sensors (
-            -- Sensors     : SensorNodeList;
+            Sensors     : SensorNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False) IS
-         SensorPtr : SensorNodePtr := SensorList;
+         SensorPtr : SensorNodePtr := SensorList.head;
       BEGIN
          WHILE SensorPtr /= NULL LOOP
             Print("Sensor ID: " & Positive'Image(SensorPtr.Sensor.Id),
@@ -1827,11 +1827,11 @@ PACKAGE BODY LayoutPkg IS
       END Print_Sensors;
 
       PROCEDURE Print_Switchs (
-            -- Switchs     : SwitchNodeList;
+            Switchs     : SwitchNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean       := False) IS
-         SwitchPtr : SwitchNodePtr := SwitchsList;
+         SwitchPtr : SwitchNodePtr := Switchs.head;
       BEGIN
          WHILE SwitchPtr /= NULL LOOP
             Print("----------------------", Indent, Output);
@@ -1874,11 +1874,11 @@ PACKAGE BODY LayoutPkg IS
       END Print_Blockings;
 
       PROCEDURE Print_Sections (
-            -- Sections    : SectionNodeList;
+            Sections    : SectionNodeList;
             Indent      : Natural;
             Output      : File_Type;
             PrintOnlyId : Boolean        := False) IS
-         SectionPtr : SectionNodePtr := SectionList;
+         SectionPtr : SectionNodePtr := Sections.head;
       BEGIN
          WHILE SectionPtr /= NULL LOOP
             if printOnlyId then
@@ -1916,6 +1916,21 @@ PACKAGE BODY LayoutPkg IS
             put_line("*************** EXCEPTION Layout pkg in Print_Sections: " & Exception_Information(Error));
             RAISE;
       END Print_Sections;
+      
+      function getSectionList return sectionNodeList is
+      begin 
+         return sectionList;
+      end;
+      
+      function getSensorList return sensorNodeList is
+      begin 
+         return sensorList;
+      end; 
+      
+      function getSwitchList return switchNodeList is
+      begin 
+         return switchList;
+      end;
 
 ----------------- End debug print data structures ------------------
 ---------------------------- 2c ------------------------------------
