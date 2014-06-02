@@ -15,13 +15,13 @@ BEGIN
       Put_Line("parsed");
       Create (Output, Out_File, "XMLParseTestOutput.txt");
       Put_Line(Output, "Section List:");
-      LayoutPtr.Print_Sections(LayoutPtr.GetSectionList, 0, Output);
+      LayoutPtr.Print_Sections(LayoutPtr.GetSectionList, 0, Output, false);
       Put_Line(Output, "");
       Put_Line(Output, "Sensor List:");
       LayoutPtr.Print_Sensors(LayoutPtr.GetSensorList, 0, Output);
       Put_Line(Output, "");
       Put_Line(Output, "Switch List:");
-      LayoutPtr.Print_Switchs(LayoutPtr.GetSwitchList, 0, Output);
+      LayoutPtr.Print_Switchs(LayoutPtr.GetSwitchList, 0, Output, false);
       Close(Output);
    END IF;
 EXCEPTION

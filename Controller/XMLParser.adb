@@ -60,7 +60,7 @@ PACKAGE BODY XMLParser IS
       IF Get_Index(Atts, "state") /= -1 THEN
          State := SwitchStateType'Value(Get_Value(Atts, "state"));
       END IF;
-      LayoutPtr.bldAddSwitch(Id, State);
+      LayoutPtr.bldAddSwitchToSection(Id, State);
    EXCEPTION
       WHEN Error : OTHERS =>
          put_line("************* EXCEPTION Error adding switch:" & Positive'Image(Id) & " " & Exception_Information(Error));

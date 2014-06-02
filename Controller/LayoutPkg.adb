@@ -1538,7 +1538,7 @@ PACKAGE BODY LayoutPkg IS
             RAISE;
       END bldEndSwitchList;
 
-      PROCEDURE FindSwitch (
+      PROCEDURE bldFindSwitch (
             Switchs   :        SwitchNodeList;
             SwitchId  :        Positive;
             SwitchPtr :    OUT SwitchNodePtr) IS
@@ -1552,12 +1552,12 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in FindSwitch: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldFindSwitch: " & Exception_Information(Error));
             put_line("    Looking for switch # " & Positive'Image(SwitchId));
             RAISE;
-      END FindSwitch;
+      END bldFindSwitch;
 
-      PROCEDURE bldAddSwitch (
+      PROCEDURE bldAddSwitchToSection (
             Id    : Positive;
             state : switchStateType) IS
          globalSwitchNodePtr  : SwitchNodePtr;
@@ -1576,11 +1576,11 @@ PACKAGE BODY LayoutPkg IS
          -- END IF;
 
          -- Look for the switch node in SwitchList (the global list of switch nodes) 
-         FindSwitch(SwitchList, Id, globalSwitchNodePtr);
+         bldFindSwitch(SwitchList, Id, globalSwitchNodePtr);
          IF globalSwitchNodePtr /= NULL THEN
             -- The node is found: link the section's new SwitchNode to the global switch object
+            switchOPtr := globalSwitchNodePtr.Switch;
             --x OLD not needed
-            -- switchOPtr := globalSwitchNodePtr.Switch;
             -- CurrentSection.SwitchList.Tail.Switch := switchOPtr;
             null;
          ELSE
@@ -1615,10 +1615,10 @@ PACKAGE BODY LayoutPkg IS
          currentSection.mySwitchStateList.tail.myState := state;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in bldAddSwitch: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in bldAddSwitchToSection: " & Exception_Information(Error));
             put_line("    adding switch #" & Positive'Image(Id));
             RAISE;
-      END bldAddSwitch;
+      END bldAddSwitchToSection;
 
       PROCEDURE bldUpdateSwitch (
             Id           : Positive;
@@ -1626,7 +1626,7 @@ PACKAGE BODY LayoutPkg IS
             state        : switchStateType) IS
          SwitchPtr : SwitchNodePtr;
       BEGIN
-         FindSwitch(SwitchList, Id, SwitchPtr);
+         bldFindSwitch(SwitchList, Id, SwitchPtr);
          IF SwitchPtr /= NULL THEN
             CurrentSwitch := SwitchPtr.Switch;
             CurrentSwitch.TypeOfSwitch := TypeOfSwitch;
@@ -1807,17 +1807,13 @@ PACKAGE BODY LayoutPkg IS
       PROCEDURE Print_Sensors (
             Sensors     : SensorNodeList;
             Indent      : Natural;
-            Output      : File_Type;
-            PrintOnlyId : Boolean       := False) IS
-         SensorPtr : SensorNodePtr := SensorList.head;
+            Output      : File_Type) IS
+         SensorPtr : SensorNodePtr := sensors.head;
       BEGIN
          WHILE SensorPtr /= NULL LOOP
-            Print("Sensor ID: " & Positive'Image(SensorPtr.Sensor.Id),
-               Indent, Output);
-            IF NOT PrintOnlyId THEN
-               Print("Sensor State: " & SensorStateType'Image(
-                     SensorPtr.Sensor.State), Indent, Output);
-            END IF;
+            Print("Sensor ID/state: " & Positive'Image(SensorPtr.Sensor.Id) & " " & 
+                                        SensorStateType'Image(SensorPtr.Sensor.State),
+                                        Indent, Output);
             SensorPtr := SensorPtr.Next;
          END LOOP;
       EXCEPTION
@@ -1841,12 +1837,14 @@ PACKAGE BODY LayoutPkg IS
                Print("Switch State: " & SwitchStateType'Image(SwitchPtr.Switch.State), Indent, Output);
                Print("Switch Type: " & ControllerGlobals.SwitchType'Image(SwitchPtr.Switch.TypeOfSwitch), Indent, Output);
                Print("Switch Narrow Sensors:", Indent, Output);
-               Print_Sensors(SwitchPtr.Switch.NarrowSensors, Indent + 2, Output, True);
+               Print_Sensors(SwitchPtr.Switch.NarrowSensors, Indent + 2, Output);
                Print("Switch Closed Sensors:", Indent, Output);
-               Print_Sensors(SwitchPtr.Switch.ClosedSensors, Indent + 2, Output, True);
-               IF SwitchPtr.Switch.ThrownSensor /= NULL THEN
+               Print_Sensors(SwitchPtr.Switch.ClosedSensors, Indent + 2, Output);
+               IF SwitchPtr.Switch.ThrownSensor /= NULL THEN    --x how could this be null?????????
                   Print("Switch Thrown Sensor: " & Positive'Image(SwitchPtr.Switch.ThrownSensor.Id), Indent, Output);
                END IF;
+               print("All sections containing this switch", indent, output);
+               print_sections(switchPtr.switch.sectionNList, indent + 2, output, true);
             END IF;
             Print("----------------------", Indent, Output);
             SwitchPtr := SwitchPtr.Next;
@@ -1869,9 +1867,26 @@ PACKAGE BODY LayoutPkg IS
          END LOOP;
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("*************** EXCEPTION Layout pkg in PrintBlockings: " & Exception_Information(Error));
+            put_line("*************** EXCEPTION Layout pkg in Print_Blockings: " & Exception_Information(Error));
             RAISE;
       END Print_Blockings;
+
+      PROCEDURE Print_mySwitchStateList (
+            mySwitchStateList : switchStateList;
+            Indent       : Natural;
+            Output       : File_Type) IS
+         ptr : SwitchStateNodePtr := mySwitchStateList.Head;
+      BEGIN
+         WHILE ptr /= NULL LOOP
+            Print("Switch ID/state: " & Positive'Image(ptr.switch.Id) & " " & 
+                                        SwitchStateType'Image(ptr.myState), Indent, Output);
+            ptr := ptr.Next;
+         END LOOP;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("*************** EXCEPTION Layout pkg in Print_mySwitchStateList: " & Exception_Information(Error));
+            RAISE;
+      END Print_mySwitchStateList;
 
       PROCEDURE Print_Sections (
             Sections    : SectionNodeList;
@@ -1896,11 +1911,12 @@ PACKAGE BODY LayoutPkg IS
                   Print("Section Block Count:" & Positive'Image(SectionPtr.Section.BlockCount), Indent, Output);
                END IF;
                Print("Section Sensors:", Indent, Output);
-               Print_Sensors(SectionPtr.Section.SensorList, Indent + 2, Output, True);
+               Print_Sensors(SectionPtr.Section.SensorList, Indent + 2, Output);
                --x OLD not needed
                -- Print("Section Switchs:", Indent, Output);
                -- Print_Switchs(SectionPtr.Section.SwitchList, Indent + 2, Output, True);
-               --x NEW print mySwitchStateList
+               print("MySwitchStateList:", indent, output);
+               print_mySwitchStateList(SectionPtr.section.mySwitchStateList, indent + 2, output);
                Print("Next Sections:", Indent, Output);
                Print_Sections(SectionPtr.Section.NextSectionList, Indent + 2, Output, True);
                Print("Previous Sections:", Indent, Output);

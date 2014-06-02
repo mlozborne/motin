@@ -226,7 +226,7 @@ PACKAGE LayoutPkg IS
 
       -- Adds a new switch to CurrentSection's SwitchList
       -- If the switch is not already in the Full SwitchList, it is added
-      PROCEDURE bldAddSwitch (
+      PROCEDURE bldAddSwitchToSection (
             Id    : Positive;
             state :  switchStateType);
 
@@ -274,8 +274,7 @@ PACKAGE LayoutPkg IS
       PROCEDURE Print_Sensors (
             Sensors     : SensorNodeList;
             Indent      : Natural;
-            Output      : File_Type;
-            PrintOnlyId : Boolean       := False);
+            Output      : File_Type);
       PROCEDURE Print_Switchs (
             Switchs     : SwitchNodeList;
             Indent      : Natural;

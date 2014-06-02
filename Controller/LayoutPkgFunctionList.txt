@@ -58,7 +58,7 @@
 	Line 1395:       PROCEDURE GetSections (
 	
 	Line 1435:       PROCEDURE EndSwitchList IS
-	Line 1483:       PROCEDURE FindSwitch (
+	Line 1483:       PROCEDURE bldFindSwitch (
 	Line 1502:       PROCEDURE AddSwitch (
 	Line 1539:       PROCEDURE UpdateSwitch (
 	Line 1560:       PROCEDURE UpdateSwitchNarrow (
