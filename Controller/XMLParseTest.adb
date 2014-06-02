@@ -4,16 +4,16 @@ WITH LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Interfaces, Ada.Exceptions;
 USE LayoutPkg, Ada.Strings.Unbounded, Ada.Text_IO, Interfaces, Ada.Exceptions;
 
 PROCEDURE XMLParseTest IS
-   LayoutPtr : LayoutPkg.LayoutManagerAccess := NEW LayoutPkg.LayoutManager;
+   LayoutPtr   : LayoutPkg.LayoutManagerAccess := NEW LayoutPkg.LayoutManager;
    Output      : File_Type;
-   XMLFilename : String      := "layout.txt";
+   XMLFilename : String      := "layout.xml";
    Result      : Boolean;
 BEGIN
    LayoutPtr.SetXMLFilename(To_Unbounded_String(XMLFilename));
    Result := ParseXML(LayoutPtr);
    IF Result THEN
       Put_Line("parsed");
-      Create (Output, Out_File, "out.txt");
+      Create (Output, Out_File, "XMLParseTestOutput.txt");
       Put_Line(Output, "Section List:");
       LayoutPtr.Print_Sections(LayoutPtr.GetSectionList, 0, Output);
       Put_Line(Output, "");

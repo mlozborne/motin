@@ -3350,11 +3350,6 @@ PACKAGE BODY LayoutPkg IS
 -------------------------- 3 -------------------------------------
 -------------------- Begin LayoutTaskType ------------------------
 
-   -- Give the XMLParser a pointer to the LayoutManager
-   -- Open the XML file
-   -- Have XMLParser parse the file and give the information
-   --   to LayoutManager to create data structures
-   -- Send PutReadLayoutResponse
    FUNCTION ParseXML (LayoutPtr : LayoutManagerAccess) RETURN Boolean IS
       My_Reader : XMLParser.Reader;
       Input     : File_Input;

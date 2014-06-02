@@ -206,7 +206,8 @@ PACKAGE LayoutPkg IS
 
       ------------------------------- 2b -----------------------------------------
       -------------------- Begin build data structures from XML ------------------
-      -- Creates a new section using private variable CurrentSection
+      
+     -- Creates a new section using private variable CurrentSection
       PROCEDURE bldNewSection (
             Id : Positive);
 
@@ -446,15 +447,21 @@ PACKAGE LayoutPkg IS
       -------------------------- 2f --------------------------------------
       
    END LayoutManager;
-
-   TYPE LayoutManagerAccess IS ACCESS LayoutManager;   
    -------------------- End LayoutManager ---------------------------
    --------------------------- 2 ------------------------------------
 
-
    -------------------------- 3 -------------------------------------
    -------------------- Begin LayoutTaskType ------------------------
-   TASK TYPE LayoutTaskType IS                                    --
+   TYPE LayoutManagerAccess IS ACCESS LayoutManager;
+   
+   -- Give the XMLParser a pointer to the LayoutManager
+   -- Open the XML file
+   -- Have XMLParser parse the file and give the information
+   --   to LayoutManager to create data structures
+   -- Send PutReadLayoutResponse
+   FUNCTION ParseXML (LayoutPtr : LayoutManagerAccess) RETURN Boolean ;
+
+    TASK TYPE LayoutTaskType IS                                    --
       ENTRY SetLayout (L : IN LayoutManagerAccess);               --
    END LayoutTaskType;                                            --
    -------------------- End LayoutTaskType --------------------------
