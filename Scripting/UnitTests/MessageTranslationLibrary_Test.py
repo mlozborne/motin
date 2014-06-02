@@ -81,6 +81,10 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 10, 3, ord('a'), ord('b'), ord('c')]
         self.assertEquals(bytes(utEx2(st)), makeMsgStr(msg))
 
+        msg = DoMakeSectionUsableMsg(sensor1=200, sensor2=300,)
+        st = [0, 33, (200 % 128), (200 // 128), (300 % 128), (300 // 128)]
+        self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
+
     # noinspection PyListCreation
     def testSplitMsgStr(self):
         pass
@@ -152,6 +156,9 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 26]
         self.assertEquals(PutPowerChangeCompleteMsg(dummy=0), splitMsgStr(st))
 
+        st = [0, 34, 200 % 128, 200 // 128, 300 % 128, 300 // 128, 1]
+        self.assertEquals(PutMakeSectionUsableResponseMsg(sensor1=200, sensor2=300,flag=1),
+                          splitMsgStr(st))
 
 if __name__ == "__main__":
     suite = unittest.makeSuite(TestMessageTranslationLibrary)

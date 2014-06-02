@@ -33,6 +33,8 @@ def makeMsgStr(msg):
         return makeDoLocoInitStr(msg)
     elif isinstance(msg, DoReadLayoutMsg):
         return makeDoReadLayoutStr(msg)
+    elif isinstance(msg, DoMakeSectionUsableMsg):
+        return makeDoMakeSectionUsableMsg(msg)
     else:
         return msg
 
@@ -68,6 +70,8 @@ def splitMsgStr(st):
         return splitPutTrainInformationStr(st)
     elif opCode == putPowerChangeComplete:
         return splitPutPowerChangeCompleteStr(st)
+    elif opCode == putMakeSectionUsableResponse:
+        return splitPutMakeSectionUsableResponseStr(st)
     else:
         return st
 
@@ -252,6 +256,22 @@ def makeDoReadLayoutStr(msg):
     return utConvertListToByteArray([lowByte, highByte] + st)
 
 
+def makeDoMakeSectionUsableMsg(msg):
+    #<0><33><sensor1><sensor2>       where sensor is 2 byte
+    assert (kSensorMin <= msg.sensor1 <= kSensorMax)
+    assert (kSensorMin <= msg.sensor2 <= kSensorMax)
+    st = [0]
+    st.append(doMakeSectionUsable)
+    lowByte, highByte = utConvertNaturalToBytes(msg.sensor1)
+    st.append(lowByte)
+    st.append(highByte)
+    lowByte, highByte = utConvertNaturalToBytes(msg.sensor2)
+    st.append(lowByte)
+    st.append(highByte)
+    lowByte, highByte = utConvertNaturalToBytes(len(st))
+    return utConvertListToByteArray([lowByte, highByte] + st)
+
+
 #######################################################################
 # Split routines
 def splitInputRepStr(st):
@@ -368,6 +388,14 @@ def splitPutTrainInformationStr(st):
 def splitPutPowerChangeCompleteStr(st):
     #<0><26>
     return PutPowerChangeCompleteMsg(dummy=0)
+
+
+def splitPutMakeSectionUsableResponseStr(st):
+    #<0><34><sensor1#> <sensor2#><flag>             where sensor# is 2 bytes
+    return PutMakeSectionUsableResponseMsg(
+        sensor1=utConvertBytesToNatural(st[2], st[3]),
+        sensor2=utConvertBytesToNatural(st[4], st[5]),
+        flag = st[6])
 
 
 

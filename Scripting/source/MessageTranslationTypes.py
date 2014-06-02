@@ -61,22 +61,24 @@ OPC_SW_STATE           = 0xBC # request state of a turnout
 doLocoInit             = 8
 doReadLayout           = 10
 getSwitchStates        = 22
+doMakeSectionUsable    = 33
 
 #######################################################################
 # Opcodes received from controller/railroad
-OPC_INPUT_REP          = 0xB2 # report sensor fired
-OPC_SW_REP             = 0xB1 # report turnout now closed/thrown
-OPC_LONG_ACK           = 0xB4 # if 2nd byte = 3F, then insufficient slots
-OPC_SL_RD_DATA         = 0xE7 # slot data response
-putTrainState          = 1
-putTrainPosition       = 2
-putSectionState        = 3
-putSwitchState         = 4
-putSensorState         = 5
-putInitOutcome         = 9
-putReadLayoutResponse  = 11
-putTrainInformation    = 21
-putPowerChangeComplete = 26
+OPC_INPUT_REP                  = 0xB2 # report sensor fired
+OPC_SW_REP                     = 0xB1 # report turnout now closed/thrown
+OPC_LONG_ACK                   = 0xB4 # if 2nd byte = 3F, then insufficient slots
+OPC_SL_RD_DATA                 = 0xE7 # slot data response
+putTrainState                  = 1
+putTrainPosition               = 2
+putSectionState                = 3
+putSwitchState                 = 4
+putSensorState                 = 5
+putInitOutcome                 = 9
+putReadLayoutResponse          = 11
+putTrainInformation            = 21
+putPowerChangeComplete         = 26
+putMakeSectionUsableResponse   = 34
 
 #######################################################################
 # Constants used in messages
@@ -107,30 +109,33 @@ LocoAdrMsg                 = namedtuple('LocoAdrMsg', 'address')
 WriteSlotDataToClearMsg    = namedtuple('WriteSlotDataToClearMsg', 'slot')
 DoLocoInitMsg              = namedtuple('DoLocoInitMsg', 'address, sensors')
 DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg', 'fileName')
+DoMakeSectionUsableMsg     = namedtuple('DoMakeSectionUsableMsg', 'sensor1, sensor2')
 
 #######################################################################
 # Received message formats
-InputRepMsg                 = namedtuple('InputRepMsg', 'sensor, isHi')
-SwRepMsg                    = namedtuple('SwRepMsg', 'switch, direction')
-LongAckMsg                  = namedtuple('LongAckMsg', 'responseToOpcode, switchState')
-SlRdDataMsg                 = namedtuple('SlRdDataMsg', 'address, isAddressAlreadyInUse, slot')
-PutTrainStateMsg            = namedtuple('PutTrainStateMsg', 'slot, state')
-PutTrainPositionMsg         = namedtuple('PutTrainPositionMsg', 'slot, sensors')
-PutSectionStateMsg          = namedtuple('PutSectionStateMsg', 'id, state')
-PutSwitchStateMsg           = namedtuple('PutSwitchStateMsg', 'id, state')
-PutSensorStateMsg           = namedtuple('PutSensorStateMsg', 'id, state')
-PutInitOutcomeMsg           = namedtuple('PutInitOutcomeMsg', 'physAdd, physSlot, virtAdd, virtSlot')
-PutReadLayoutResponseMsg    = namedtuple('PutReadLayoutResponseMsg', 'responseFlag, code')
-PutTrainInformationMsg      = namedtuple('PutTrainInformationMsg', 'slot, speed, direction, lights, bell, horn, mute')
-PutPowerChangeCompleteMsg   = namedtuple('PutPowerChangeCompleteMsg', 'dummy')
+InputRepMsg                     = namedtuple('InputRepMsg', 'sensor, isHi')
+SwRepMsg                        = namedtuple('SwRepMsg', 'switch, direction')
+LongAckMsg                      = namedtuple('LongAckMsg', 'responseToOpcode, switchState')
+SlRdDataMsg                     = namedtuple('SlRdDataMsg', 'address, isAddressAlreadyInUse, slot')
+PutTrainStateMsg                = namedtuple('PutTrainStateMsg', 'slot, state')
+PutTrainPositionMsg             = namedtuple('PutTrainPositionMsg', 'slot, sensors')
+PutSectionStateMsg              = namedtuple('PutSectionStateMsg', 'id, state')
+PutSwitchStateMsg               = namedtuple('PutSwitchStateMsg', 'id, state')
+PutSensorStateMsg               = namedtuple('PutSensorStateMsg', 'id, state')
+PutInitOutcomeMsg               = namedtuple('PutInitOutcomeMsg', 'physAdd, physSlot, virtAdd, virtSlot')
+PutReadLayoutResponseMsg        = namedtuple('PutReadLayoutResponseMsg', 'responseFlag, code')
+PutTrainInformationMsg          = namedtuple('PutTrainInformationMsg', 'slot, speed, direction, lights, bell, horn, mute')
+PutPowerChangeCompleteMsg       = namedtuple('PutPowerChangeCompleteMsg', 'dummy')
+PutMakeSectionUsableResponseMsg = namedtuple('PutMakeSectionUsableResponseMsg', 'sensor1, sensor2, flag')
 
 ControllerOutMsgs = (PowerMsg, LocoSpdMsg, LocoDirfMsg, LocoSndMsg, SwReqMsg,
                      MoveSlotsMsg, LocoAdrMsg, WriteSlotDataToClearMsg,
-                     DoLocoInitMsg, DoReadLayoutMsg)
+                     DoLocoInitMsg, DoReadLayoutMsg, DoMakeSectionUsableMsg)
 
 ControllerInMsgs = (PutTrainStateMsg, PutTrainPositionMsg, PutSectionStateMsg,
                     PutSwitchStateMsg, PutSensorStateMsg, PutInitOutcomeMsg,
                     PutReadLayoutResponseMsg, PutTrainInformationMsg,
-                    PutPowerChangeCompleteMsg, SwRepMsg, InputRepMsg, LongAckMsg, SlRdDataMsg)
+                    PutPowerChangeCompleteMsg, SwRepMsg, InputRepMsg, LongAckMsg, SlRdDataMsg,
+                    PutMakeSectionUsableResponseMsg)
 
 
