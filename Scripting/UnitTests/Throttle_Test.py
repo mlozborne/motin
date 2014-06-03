@@ -44,13 +44,13 @@ if __name__ == "__main__":
     sak.start("controller")
 
     # Create the communication resources for 1 user
-    comRes = CommunicationResources(name = 'throttle-test', host = 'localhost', port = 1235, numberOfPackages = 2)
+    comRes = CommunicationResources(name = 'throttle-test', host = 'localhost', port = 1235, numberOfPackages = 1)
     
-    throt1111 = Throttle(name = 'Bill', comPkg = comRes.getNextPackage())
+    myThrottle = Throttle(name = 'Bill', comPkg = comRes.getNextPackage())
     
     # Tell the throttle to read the layout file
     gLog.print("Main reading layout")
-    msg = throt1111.readLayout("../../runSoftware/Layout.xml")
+    msg = myThrottle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
 
     # Tell the throttle to initialize train 1111
@@ -64,27 +64,41 @@ if __name__ == "__main__":
 
     # Use the throttle to send messages to the controller
     # Option 1: using a command list
-    testing = 2222
-    if testing == 1111:
+    testing = 4
+    if testing == 1:
         commands = [[initTrain, 1111, [5, 1]],
                     [setBell, kOn], [blinkLights, 4], [setBell, kOff], [tootHorn], [setSpeed, 100],
                     [pause, 3], [throwNextSwitch], [moveSwitch, 12, kClosed], [pause, 4], [moveSwitch, 12, kThrown],
                     [addInterest, PutSensorStateMsg], [waitFor, PutSensorStateMsg(id = 59, state = kSensorOpen)],
                     [removeInterest, PutSensorStateMsg], [stopTrain]]
-        doCommands(throt1111, commands)
+        doCommands(myThrottle, commands)
         path = ((77, 18, kThrown), (77, 22, kClosed), (77, 15, kThrown), (77, 11, kClosed), (77, 9, kClosed),
                 (47, 5, kClosed), (27, 6, kClosed), (17, 7, kClosed), (12, 8, kClosed), (10, 4, kClosed),
                 (62, 13, kClosed), (80, 17, kClosed))
-        commands = ((pause, 1), (setLights, kOn), (setSpeed, 50), (followPath, path))
-        doCommands(throt1111, commands)
-    else:
-        throt2222 = Throttle(name = 'Mary', comPkg = comRes.getNextPackage())
+        commands = ((pause, 1), (setLights, kOn), (setSpeed, 50), (followSwitchPath, path))
+        doCommands(myThrottle, commands)
+    elif testing == 2:
         commandPath = ((6, (moveSwitch, 4, kThrown)), (6, (moveSwitch, 12, kThrown)), (6, (moveSwitch, 13, kClosed)),
                        (80, (blinkLights, 4)), (76, (moveSwitch, 17, kClosed)), (94, (setDirection, kBackward)),
                        (2, (setDirection, kForward)), (2, (stopTrain,)))
         commands = [[initTrain, 2222, [6, 2]], [setLights, kOn], [moveSwitch, 2, kThrown], [moveSwitch, 3, kClosed],
                     [moveSwitch, 4, kClosed], [setSpeed, 50], [followCommandPath, commandPath]]
-        doCommands(throt2222, commands)
+        doCommands(myThrottle, commands)
+    elif testing == 3:
+        commands = [(makeSectionUsable, 7, 33), (makeSectionUsable, 33, 35), (makeSectionUsable, 59, 80),
+                    (makeSectionUsable, 74, 94)]
+        doCommands(myThrottle, commands)
+    elif testing == 4:
+        msg = myThrottle.initTrain(4444, [8, 4])
+        myThrottle.setLights(kOn)
+        myThrottle.setSpeed(100)
+        myPath = [8,33,35,62,59,80,76,74,94,91,100,98]
+        myThrottle.followSensorPath(myPath)
+        myCommandPath = [(82, (setDirection, kBackward))]
+        myThrottle.do(stopTrain)
+        myThrottle.do(blinkLights, 4)
+
+
 
     # Option 2: using throttle commands
     """
@@ -108,7 +122,7 @@ if __name__ == "__main__":
 
     gLog.flush()
     raw_input("press enter to quit")
-    throt1111.close()
+    myThrottle.close()
     sak.kill("controller")
     sak.kill("simulator")
     gLog.close()

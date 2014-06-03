@@ -35,8 +35,11 @@ def doCommands(throttle, commands):
 def followCommandPath(self, commandPath):
     self.followCommandPath(commandPath)
 
-def followPath(self, path):
-    self.followPath(path)
+def followSwitchPath(self, path):
+    self.followSwitchPath(path)
+
+def followSensorPath(self, path):
+    self.followSwitchPath(path)
 
 def addInterest(self, interest):
     self.addInterest(interest)
@@ -69,16 +72,19 @@ def setMute(self, onOff):
     self.setMute(onOff)
 
 def closeNextSwitch(self):
-    self.closeNextSwitch();
+    self.closeNextSwitch()
 
 def throwNextSwitch(self):
-    self.throwNextSwitch();
+    self.throwNextSwitch()
 
 def moveSwitch(self, sId, direction):
     self.moveSwitch(sId, direction)
 
 def pause(self, secs):
     self.pause(secs)
+
+def makeSectionUsable(self, sensor1, sensor2):
+    self.makeSectionUsable(sensor1, sensor2)
 
 ####################################################################################################
 class Throttle(object):
@@ -128,9 +134,9 @@ class Throttle(object):
                 self.do(command[0], command[1], command[2])
         self.removeInterest(PutSensorStateMsg)
 
-    def followPath(self, path):
+    def followSwitchPath(self, path):
         """
-        A path is a list of triples (sensor#, switch#, direction)
+        A switch path is a list of triples (sensor#, switch#, direction)
         When the train reaches the sensor, the throttle moves the switch.
         """
         self.addInterest(PutSensorStateMsg)
@@ -144,6 +150,21 @@ class Throttle(object):
                 self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
             self.moveSwitch(switch, direction)
         self.removeInterest(PutSensorStateMsg)
+
+    def followSensorPath(self, path):
+        """
+        A sensor path is a list or tuple of sensor numbers defining the path which a train
+        desires to follow. As the train approaches section (i, i+1),  the throttle makes section (i+1, i+2)
+        usable. To get things started, the throttle makes the section (0, 1) usable,
+        where i indicates sensor i.
+        """
+        self.addInterest(PutSensorStateMsg)
+        self.makeSectionUsable(path[0], path[1])
+        for i in range(0,len(path)-2):
+            self.waitFor(PutSensorStateMsg(id = path[i], state = kSensorOpen))
+            self.makeSectionUsable(path[i+1], path[i+2])
+        self.removeInterest(PutSensorStateMsg)
+
 
     def addInterest(self, interest):
         gLog.print("Throttle {0}: adding interest {1}".format(self.name, interest))
@@ -215,7 +236,6 @@ class Throttle(object):
     def sendDirf(self):
         assert(self.virtSlot is not None)
         self.msgHandler.put(LocoDirfMsg(slot=self.virtSlot, direction=self.direction,
-
                             lights=self.lights, horn=self.horn, bell=self.bell))
 
     def sendSnd(self):
@@ -273,3 +293,8 @@ class Throttle(object):
 
     def pause(self, secs):
         sleep(secs)
+
+    def makeSectionUsable(self, sensor1, sensor2):
+        assert(sensor1 > 0)
+        assert(sensor2 > 0)
+        self.msgHandler.put(DoMakeSectionUsableMsg(sensor1=sensor1, sensor2=sensor2))
