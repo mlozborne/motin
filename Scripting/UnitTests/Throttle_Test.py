@@ -95,8 +95,10 @@ if __name__ == "__main__":
         myPath = [8,33,35,62,59,80,76,74,94,91,100,98]
         myThrottle.followSensorPath(myPath)
         myCommandPath = [(82, (setDirection, kBackward))]
-        myThrottle.do(stopTrain)
-        myThrottle.do(blinkLights, 4)
+        myThrottle.followCommandPath(myCommandPath)
+        myPath = [98,101,104,106,107]
+        myThrottle.followSensorPath(myPath)
+        myThrottle.do(blinkLights, 100)
 
 
 
