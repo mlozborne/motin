@@ -53,7 +53,7 @@ package MessageTranslationTypes is
    OPC_SL_RD_DATA : constant unsigned_8 := 16#E7#; -- slot data response
    OPC_WR_SL_DATA : constant unsigned_8 := 16#EF#; -- write data into a slot
 
-   -- Opcodes for extended messages
+   -- Opcodes for extended messages 
    -- Prefix of "msg" means the message is used only inside the controller
    -- Other messages are between an OThrottle and the controller
    putTrainState                    : constant unsigned_8 := unsigned_8(1);
@@ -84,5 +84,7 @@ package MessageTranslationTypes is
 	putPowerChangeComplete 				: constant unsigned_8 := unsigned_8(26);
 	doMakeSectionUsable   				: constant unsigned_8 := unsigned_8(33);
 	putMakeSectionUsableResponse     : constant unsigned_8 := unsigned_8(34);
+	getPath                          : constant unsigned_8 := unsigned_8(35);
+	putPath                          : constant unsigned_8 := unsigned_8(36);
    
 end MessageTranslationTypes;

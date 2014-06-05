@@ -85,6 +85,10 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 33, (200 % 128), (200 // 128), (300 % 128), (300 // 128)]
         self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
 
+        msg = GetPathMsg(preSensor=200, fromSensor=300, toSensor=400)
+        st = [0, 35, (200 % 128), (200 // 128), (300 % 128), (300 // 128) , (400 % 128), (400 // 128)]
+        self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
+
     # noinspection PyListCreation
     def testSplitMsgStr(self):
         pass
@@ -129,6 +133,10 @@ class TestMessageTranslationLibrary(unittest.TestCase):
 
         st = [0, 2, 1, 3, 73, 1, 74, 1, 75, 1]
         self.assertEquals(PutTrainPositionMsg(slot=1, sensors=[201, 202, 203]),
+                          splitMsgStr(st))
+
+        st = [0, 36, (6%128), (6//128), 73,1, 74,1, 75,1, 76,1, 77,1, 78,1]
+        self.assertEquals(PutPathMsg(sensors=[201, 202, 203, 204, 205, 206]),
                           splitMsgStr(st))
 
         st = [0, 3, 72, 1, kFree]

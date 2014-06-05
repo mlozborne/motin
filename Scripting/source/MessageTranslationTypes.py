@@ -62,6 +62,7 @@ doLocoInit             = 8
 doReadLayout           = 10
 getSwitchStates        = 22
 doMakeSectionUsable    = 33
+getPath                = 35
 
 #######################################################################
 # Opcodes received from controller/railroad
@@ -79,6 +80,7 @@ putReadLayoutResponse          = 11
 putTrainInformation            = 21
 putPowerChangeComplete         = 26
 putMakeSectionUsableResponse   = 34
+putPath                        = 36
 
 #######################################################################
 # Constants used in messages
@@ -110,6 +112,7 @@ WriteSlotDataToClearMsg    = namedtuple('WriteSlotDataToClearMsg', 'slot')
 DoLocoInitMsg              = namedtuple('DoLocoInitMsg', 'address, sensors')
 DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg', 'fileName')
 DoMakeSectionUsableMsg     = namedtuple('DoMakeSectionUsableMsg', 'sensor1, sensor2')
+GetPathMsg                 = namedtuple('GetPathMsg', 'preSensor, fromSensor, toSensor')
 
 #######################################################################
 # Received message formats
@@ -127,10 +130,11 @@ PutReadLayoutResponseMsg        = namedtuple('PutReadLayoutResponseMsg', 'respon
 PutTrainInformationMsg          = namedtuple('PutTrainInformationMsg', 'slot, speed, direction, lights, bell, horn, mute')
 PutPowerChangeCompleteMsg       = namedtuple('PutPowerChangeCompleteMsg', 'dummy')
 PutMakeSectionUsableResponseMsg = namedtuple('PutMakeSectionUsableResponseMsg', 'sensor1, sensor2, flag')
+PutPathMsg                      = namedtuple('PutPathMsg', 'sensors')
 
 ControllerOutMsgs = (PowerMsg, LocoSpdMsg, LocoDirfMsg, LocoSndMsg, SwReqMsg,
                      MoveSlotsMsg, LocoAdrMsg, WriteSlotDataToClearMsg,
-                     DoLocoInitMsg, DoReadLayoutMsg, DoMakeSectionUsableMsg)
+                     DoLocoInitMsg, DoReadLayoutMsg, DoMakeSectionUsableMsg, GetPathMsg)
 
 ControllerInMsgs = (PutTrainStateMsg, PutTrainPositionMsg, PutSectionStateMsg,
                     PutSwitchStateMsg, PutSensorStateMsg, PutInitOutcomeMsg,

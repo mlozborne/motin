@@ -6,7 +6,5 @@ PACKAGE NaturalListTypePkg IS
 	                                           toString    => toString);
    subtype naturalListType is naturalListPkg.ListType;
    procedure put (str : string; L : naturalListType);	
-	-- subtype protectNaturalListType is naturalListPkg.ProtectedListType;
-	
-	
+	-- subtype protectNaturalListType is naturalListPkg.ProtectedListType;	
  END;

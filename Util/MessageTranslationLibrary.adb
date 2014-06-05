@@ -1176,7 +1176,8 @@ package body MessageTranslationLibrary is
    procedure splitDoLocoInitMsg(msg : in MessageType; locoAddress : out locoAddressType; sensors : out naturalListType) is
    -- <00><opcode><physical loco address 2 byres><count><sensor# 2 bytes>…<sensor# 2 bytes>
       sensorCount : natural;
-      L,M         : naturalListType;
+      L         : naturalListType;
+      --x M         : naturalListType;
    begin
       makeEmpty(L);
       locoAddress := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
@@ -1185,7 +1186,7 @@ package body MessageTranslationLibrary is
 	      addEnd(L, convertBytesToNatural(msg.byteArray(5 + 2*i-1), msg.byteArray(5 + 2*i)));
       end loop;
       sensors := L;
-      addFront(M,1); makeEmpty(M);
+      --x addFront(M,1); makeEmpty(M);
    exception
 	   when error : others =>
 		   put_line("**************** UNPLANNED EXCEPTION in MessageTranslationLibrary.splitDoLocoInitMsg --" & kLFString & Exception_Information (error));
@@ -1447,7 +1448,7 @@ package body MessageTranslationLibrary is
             when others =>
                return "Unknown LocoNet opcode: " & toString(msg);
          end case;
-      end if;
+      end if; 
 
       case msg.byteArray(2) is
 			when putPowerChangeComplete =>
@@ -1460,6 +1461,8 @@ package body MessageTranslationLibrary is
 				count := getCount(sensors);
 				makeEmpty(sensors);
             return "putTrainPosition: [(trainId or slot)/num sensors] [" & natural'image(slotNum) & "/" & natural'image(count) & "]";
+         when putPath =>
+            xxxx
          when putSectionState =>
             splitPutSectionStateMsg(msg, sectionId, sectionState);
             return "putSectionState: sectionId/state" & natural'image(sectionId) & " " & sectionStateType'image(sectionState);

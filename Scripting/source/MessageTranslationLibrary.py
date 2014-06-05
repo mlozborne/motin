@@ -35,6 +35,8 @@ def makeMsgStr(msg):
         return makeDoReadLayoutStr(msg)
     elif isinstance(msg, DoMakeSectionUsableMsg):
         return makeDoMakeSectionUsableMsg(msg)
+    elif isinstance(msg, GetPathMsg):
+        return makeGetPathMsg(msg)
     else:
         return msg
 
@@ -72,6 +74,8 @@ def splitMsgStr(st):
         return splitPutPowerChangeCompleteStr(st)
     elif opCode == putMakeSectionUsableResponse:
         return splitPutMakeSectionUsableResponseStr(st)
+    elif opCode == putPath:
+        return splitPutPathStr(st)
     else:
         return st
 
@@ -271,6 +275,25 @@ def makeDoMakeSectionUsableMsg(msg):
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return utConvertListToByteArray([lowByte, highByte] + st)
 
+def makeGetPathMsg(msg):
+    #<0><35><preSensor><fromSensor><toSensor>   where sensor is 2 bytes
+    assert (kSensorMin <= msg.preSensor <= kSensorMax)
+    assert (kSensorMin <= msg.fromSensor <= kSensorMax)
+    assert (kSensorMin <= msg.toSensor <= kSensorMax)
+    st = [0]
+    st.append(getPath)
+    lowByte, highByte = utConvertNaturalToBytes(msg.preSensor)
+    st.append(lowByte)
+    st.append(highByte)
+    lowByte, highByte = utConvertNaturalToBytes(msg.fromSensor)
+    st.append(lowByte)
+    st.append(highByte)
+    lowByte, highByte = utConvertNaturalToBytes(msg.toSensor)
+    st.append(lowByte)
+    st.append(highByte)
+    lowByte, highByte = utConvertNaturalToBytes(len(st))
+    return utConvertListToByteArray([lowByte, highByte] + st)
+
 
 #######################################################################
 # Split routines
@@ -337,6 +360,15 @@ def splitPutTrainPositionStr(st):
     for i in range(1, sensorCount + 1):
         sensors.append(utConvertBytesToNatural(st[3 + 2 * i - 1], st[3 + 2 * i]))
     return PutTrainPositionMsg(slot=slot, sensors=sensors)
+
+
+def splitPutPathStr(st):
+    #<0><36><count><sensor#>...<sensor#>                where count and sensor# are 2 bytes
+    sensorCount = utConvertBytesToNatural(st[2],st[3])
+    sensors = []
+    for i in range(1, sensorCount + 1):
+        sensors.append(utConvertBytesToNatural(st[3 + 2 * i - 1], st[3 + 2 * i]))
+    return PutPathMsg(sensors=sensors)
 
 
 def splitPutSectionStateStr(st):
