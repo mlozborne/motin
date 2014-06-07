@@ -1,6 +1,7 @@
 WITH Unchecked_Deallocation;
 with ada.exceptions; use ada.exceptions;
 with ada.strings.unbounded; use ada.strings.unbounded;
+with ada.text_io; use ada.text_io;
 
 PACKAGE BODY ListGeneric IS
 
@@ -47,7 +48,7 @@ PACKAGE BODY ListGeneric IS
 			return to_String(str);
 		end if;
 	end;
-	
+
    -- procedure put (file : in out file_type; L : in out listType) is
    -- begin
      -- moveFront(L);
@@ -237,11 +238,11 @@ PACKAGE BODY ListGeneric IS
 		   put_line("UNPLANNED EXCEPTION in ListGeneric.RemoveEnd --" & kLFString & Exception_Information (error));
          raise;
    END RemoveEnd;
-	
+
 	procedure RemoveElement(L : in out ListType; E : in ElementType) is
 		ptr : nodePtrType;
 	begin
-		if isEmpty(L) then 
+		if isEmpty(L) then
 			return;
 		end if;
 		ptr := L.sentinel.next;
@@ -415,60 +416,60 @@ PACKAGE BODY ListGeneric IS
    end GetNextToEnd;
 
 	protected body ProtectedListType is
-	
+
 		function toString return string is
-		begin	
+		begin
 			return toString(list);
 		end;
-	
+
 		procedure makeEmpty is
 		begin
 			makeEmpty(list);
 		end;
-		
+
 		function isEmpty return boolean is
-		begin	
+		begin
 			return isEmpty(list);
 		end;
-		
+
 		procedure addFront(e : elementType) is
 		begin
 			addFront(list, e);
 		end;
-		
+
 		procedure addEnd(e : elementType) is
 		begin
 			addEnd(list, e);
 		end;
-		
+
 		procedure removeFront is
 		begin
-			if isEmpty(list) then	
+			if isEmpty(list) then
 				return;
 			else
 				removeFront(list);
 			end if;
 		end;
-		
+
 		procedure removeEnd is
-		begin	
-			if isEmpty(list) then	
+		begin
+			if isEmpty(list) then
 				return;
-			else	
+			else
 				removeEnd(list);
 			end if;
 		end;
-		
+
 		procedure removeElement(e : elementType) is
 		begin
 			removeElement(list, e);
 		end;
-		
+
 		function getCount return natural is
 		begin
 			return getCount(list);
 		end;
-		
+
 		procedure getFront(e : out elementType; found : out boolean) is
 		begin
 			if isEmpty(list) then
@@ -478,7 +479,7 @@ PACKAGE BODY ListGeneric IS
 				e := getFront(list);
 			end if;
 		end;
-		
+
 		procedure getEnd(e : out elementType; found : out boolean) is
 		begin
 			if isEmpty(list) then
@@ -487,7 +488,7 @@ PACKAGE BODY ListGeneric IS
 				found := true;
 				e := getEnd(list);
 			end if;
-		end;				
-				
+		end;
+
 	end ProtectedListType;
 END ListGeneric;

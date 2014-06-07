@@ -1,5 +1,5 @@
 -- A generic list with iterator
-with ada.text_io; use ada.text_io;
+-- with ada.text_io; use ada.text_io;
 
 GENERIC
 
@@ -10,7 +10,7 @@ PACKAGE ListGeneric IS
 
    TYPE ListType         IS PRIVATE;
 	type listIteratorType is private;
-	
+
 	protected type ProtectedListType is
 	   -- No exception thrown
 		function toString return string;
@@ -18,7 +18,7 @@ PACKAGE ListGeneric IS
 		function isEmpty return boolean;
 		procedure addFront(e : elementType);
 		procedure addEnd(e : elementType);
-		procedure removeFront; 
+		procedure removeFront;
 		procedure removeEnd;
 		procedure removeElement(e : elementType);
 		function getCount return natural;
@@ -31,11 +31,11 @@ PACKAGE ListGeneric IS
    ListEmpty              : EXCEPTION;
    NoCurrentPosition      : EXCEPTION;
    ListContainsOneElement : exception;
-	
+
 	function toString(L : listType)	return string;
 	-- pre:   L is defined.
 	-- post:  L is a string representation of the list
-	
+
    PROCEDURE MakeEmpty (L : IN OUT ListType);
    -- Pre:    L is defined.
    -- Post:   L is empty.
@@ -81,7 +81,7 @@ PACKAGE ListGeneric IS
 	procedure RemoveElement(L : in out ListType; E : in ElementType);
 	-- Pre:    L is defined.
 	-- Post:   First node containing E is removed from list, if there is one.
- 
+
    function MoveFront (L : IN ListType) return listIteratorType;
    -- Pre:    L is defined.
    -- Ret:    If list not empty then returns "pointer" to first node else returns "null".

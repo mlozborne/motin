@@ -3,40 +3,76 @@ with MessageTranslationLibrary; use MessageTranslationLibrary;
 with MessageTranslationTypes; use MessageTranslationTypes;
 with Ada.Text_IO; use Ada.Text_IO;
 
-procedure TestMessageTrans is 
+procedure TestMessageTrans is
 	msg     : MessageType;
-	sensor1 : positive;
-	sensor2 : positive;
-	flag    : natural;
-   sensors : naturalListType;
 begin
-	msg := makeDoMakeSectionUseableMsg(100, 200);
-	splitDoMakeSectionUseableMsg(msg, sensor1, sensor2);
-	if sensor1 /= 100 or sensor2 /= 200 then
-		put_line("makeDoMakeSectionUseableMsg/splitDoMakeSectionUseableMsg failed");
-		put_line(toEnglish(msg));
-		put_line("sensor1 = " & integer'image(sensor1));
-		put_line("sensor2 = " & integer'image(sensor2));
-	end if;
-	
-	msg := makePutMakeSectionUseableResponseMsg(100, 200, 1);
-	splitPutMakeSectionUseableResponseMsg(msg, sensor1, sensor2, flag);
-	if sensor1 /= 100 or sensor2 /= 200 or flag /= 1 then
-		put_line("makePutMakeSectionUseableResponseMsg/splitPutMakeSectionUseableResponseMsg failed");
-		put_line(toEnglish(msg));
-		put_line("sensor1 = " & integer'image(sensor1));
-		put_line("sensor2 = " & integer'image(sensor2));
-		put_line("flag    = " & integer'image(flag));
-	end if;	
-   
-   makeEmpty(sensors);
-	for i in 1..6 loop		
-	   addEnd(sensors, 200 + i);
-   end loop;
-   msg := makePutPathMsg(sensors);
-   put_line("makePutPathMsg expecting to see the numbers 201..2006");
-   put_line("     " & toEnglish(msg));
-	
+   declare
+      sensor1 : positive;
+      sensor2 : positive;
+      flag    : natural;
+   begin
+      -- Testing doMakeSectionUsable message
+      msg := makeDoMakeSectionUsableMsg(100, 200);
+      put_line(toEnglish(msg));
+      splitDoMakeSectionUsableMsg(msg, sensor1, sensor2);
+      if sensor1 /= 100 or sensor2 /= 200 then
+         put_line("    FAILED");
+         put_line("    sensor1 = " & integer'image(sensor1));
+         put_line("    sensor2 = " & integer'image(sensor2));
+      end if;
+
+      -- Testing putMakeSectionUsableResponse message
+      msg := makePutMakeSectionUsableResponseMsg(100, 200, 1);
+      put_line(toEnglish(msg));
+      splitPutMakeSectionUsableResponseMsg(msg, sensor1, sensor2, flag);
+      if sensor1 /= 100 or sensor2 /= 200 or flag /= 1 then
+         put_line("    FAILED");
+         put_line("    sensor1 = " & integer'image(sensor1));
+         put_line("    sensor2 = " & integer'image(sensor2));
+         put_line("    flag    = " & integer'image(flag));
+      end if;
+   end;
+
+   declare
+      iter               : listIteratorType;
+      msg                : messageType;
+      sensors            : naturalListType;
+      sensorCount        : natural;
+      PreSensor, FromSensor, ToSensor  : Positive;
+      value              : positive;
+   begin
+      -- Testing getPath message
+      msg := makeGetPathMsg(100, 200, 300);
+      put_line(toEnglish(msg));
+      splitGetPathMsg(msg, preSensor, fromSensor, toSensor);
+      if preSensor /= 100 or fromSensor /= 200 or toSensor /= 300 then
+         put_line("    FAILED sensors = " & integer'image(preSensor) & 
+                                            integer'image(fromSensor) & 
+                                            integer'image(toSensor));
+      end if;
+
+      -- Testing putPath message
+      makeEmpty(sensors);
+      for i in 1..6 loop
+         addEnd(sensors, 200 + i);
+      end loop;
+      msg := makePutPathMsg(sensors);
+      put_line(toEnglish(msg));
+      splitPutPathMsg(msg, sensors);
+      sensorCount := getCount(sensors);
+      if sensorCount /= 6 then
+         put_line("    FAILED sensorCount = " & integer'image(sensorCount));
+      end if;
+      iter := moveFront(sensors);
+      for i in 1..6 loop
+	   value := getCurrent(iter);
+         if value /= 200 + i then
+            put_line("    FAILED sensor" & integer'image(i) & " = " & integer'image(value));
+         end if;
+         Iter := MoveNext(Iter);
+      end loop;
+   end;
+
 	new_line;
 	put_line("Done");
 end;

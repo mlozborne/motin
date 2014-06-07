@@ -1,4 +1,4 @@
-with ada.strings.unbounded; use ada.strings.unbounded;
+--with ada.strings.unbounded; use ada.strings.unbounded;
 with ada.exceptions; use ada.exceptions;
 with ada.text_io; use ada.text_io;
 
@@ -120,8 +120,8 @@ package body MessageTranslationLibrary is
 
    ------------------------------------------------------------------------------
    ------------------------------------------------------------------------------
-   
-   PROCEDURE SplitTrainTaskQuitMsg(msg : IN MessageType; trainId : out trainIdType) is 
+
+   PROCEDURE SplitTrainTaskQuitMsg(msg : IN MessageType; trainId : out trainIdType) is
    begin
       trainId := natural(msg.byteArray(3));
    exception
@@ -139,8 +139,8 @@ package body MessageTranslationLibrary is
          raise;
    end splitReinitializeTrainMsg;
 
-   
-   procedure splitWriteSlotDataToClearMsg(msg : in messageType; slotId : out slotType) is 
+
+   procedure splitWriteSlotDataToClearMsg(msg : in messageType; slotId : out slotType) is
    begin
       slotId := natural(msg.byteArray(3));
    exception
@@ -157,7 +157,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitMoveSlots --" & kLFString & Exception_Information (error));
          raise;
    end splitMoveSlots;
-      
+
    procedure splitInputRepMsg(message : messageType; sensor : out positive; isHi : out boolean) is
       a, b, c   : natural;
       bitI      : unsigned_8 := 16#20#;
@@ -207,7 +207,7 @@ package body MessageTranslationLibrary is
          put_line("**************** EXCEPTION in MessageTranslationLibrary.splitSwReqMsg --" & kLFString & Exception_Information (error));
          raise;
    end splitSwReqMsg;
-	
+
    procedure splitSwStateMsg(message : messageType; switch : out switchIdType) is
 	begin
 		switch := 1 + natural(message.byteArray(2)) + 128 * (natural(message.byteArray(3) and 16#0F#));
@@ -288,7 +288,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitLocoDirfMsg --" & kLFString & Exception_Information (error));
          raise;
    end splitLocoDirfMsg;
-   
+
    PROCEDURE splitLocoAdrMsg (
          message : IN MessageType;
          Address : OUT locoAddressType) IS
@@ -306,7 +306,7 @@ package body MessageTranslationLibrary is
 		if responseToOpcode = OPC_SW_STATE then
 			if message.byteArray(3) = 16#30# then
 				state := closed;
-			else	
+			else
 				state := thrown;
 			end if;
 		end if;
@@ -359,7 +359,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeMoveSlotsMsg --" & kLFString & Exception_Information (error));
          raise;
    end makeMoveSlotsMsg;
-   
+
    FUNCTION makeInputRepMsg (
          Sensor : Positive;
          IsHigh : Boolean)
@@ -555,7 +555,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeChecksumByte procedure--" & kLFString & Exception_Information (error));
          raise;
    end makeChecksumByte;
-	
+
    FUNCTION makeChecksumByte (
          ByteArray : ByteArrayType;
          Size      : Integer) RETURN Unsigned_8 IS
@@ -610,7 +610,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makePutPowerChangeCompleteMsg --" & kLFString & Exception_Information (error));
          raise;
 	end makePutPowerChangeCompleteMsg;
-	
+
    function makePutTrainStateMsg (slot : slotType; state : trainStateType) return MessageType is
     -- <00><opcode><slot#><train state>
       msg : messageType := nullMessage;
@@ -633,8 +633,8 @@ package body MessageTranslationLibrary is
       lowByte, highByte : unsigned_8;
 	   sensorCount       : natural := getCount(sensors);
 	   value             : natural;
-		iter					: listIteratorType;
-		msg               : messageType := nullMessage;
+	   iter		   : listIteratorType;
+	   msg               : messageType := nullMessage;
    begin
       msg.byteArray(1) := 16#00#;
 	   msg.byteArray(2) := putTrainPosition;
@@ -655,6 +655,36 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makePutTrainPositionMsg --" & kLFString & Exception_Information (error));
          raise;
    end makePutTrainPositionMsg;
+
+   function makePutPathMsg(sensors : naturalListType) return  messageType is
+   -- <00> <opcode><count><sensor#>...<sensor#>         (where count and sensor# are 2 bytes each)
+   -- where sensor# are listed from path start to path end
+      lowByte, highByte : unsigned_8;
+	   sensorCount       : natural := getCount(sensors);
+	   value             : natural;
+	   iter	         : listIteratorType;
+	   msg               : messageType := nullMessage;
+   begin
+      msg.byteArray(1) := 16#00#;
+	   msg.byteArray(2) := putPath;
+      convertNaturalToBytes(sensorCount, lowByte, highByte);
+      msg.byteArray(3) := lowByte;
+      msg.byteArray(4) := highByte;
+	   iter := moveFront(sensors);
+	   for i in 1..sensorCount loop
+	      value := getCurrent(iter);
+	   	convertNaturalToBytes(value, lowByte, highByte);
+	 	   msg.byteArray(4 + 2*i-1) := lowByte;
+		   msg.byteArray(4 + 2*i)   := highByte;
+		   iter := moveNext(iter);
+	   end loop;
+	   msg.size := 4 + 2 * sensorCount;
+		return msg;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makePutPathMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end makePutPathMsg;
 
    function makePutSectionStateMsg(sectionId : positive; state : sectionStateType) return MessageType is
    -- <00><opcode><section# 2 bytes> <section state>
@@ -703,6 +733,23 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeDoMakeSectionUsableMsg --" & kLFString & Exception_Information (error));
          raise;
    end makeDoMakeSectionUsableMsg;
+
+   function makeGetPathMsg(preSensor: positive; fromSensor: positive; toSensor: positive) return MessageType is
+   -- <00><opcode><preSensor><fromSensor><toSensor>    (where sensor# is 2 bytes)
+		msg : messageType := nullMessage;
+   begin
+      msg.byteArray(1) := 16#00#;
+	   msg.byteArray(2) := getPath;
+	   convertNaturalToBytes(preSensor, msg.byteArray(3), msg.byteArray(4));
+	   convertNaturalToBytes(fromSensor, msg.byteArray(5), msg.byteArray(6));
+	   convertNaturalToBytes(toSensor, msg.byteArray(7), msg.byteArray(8));
+	   msg.size := 8;
+      return msg;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeGetPathMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end makeGetPathMsg;
 
    function makePutMakeSectionUsableResponseMsg(sensor1 : positive; sensor2 : positive; flag : natural) return MessageType is
    -- <00><opcode><sensor1 2 bytes><sensor2 2 bytes><flag 1 byte>
@@ -813,7 +860,7 @@ package body MessageTranslationLibrary is
    -- <00><opcode><count><XML file name>
    -- where count = number of bytes in file name
       msg : messageType := nullMessage;
-	   len : natural := fileName'length;
+	len : natural := fileName'length;
    begin
       msg.byteArray(1) := 16#00#;
 	   msg.byteArray(2) := DoReadLayout;
@@ -937,7 +984,7 @@ package body MessageTranslationLibrary is
       Cmd.ByteArray(1) := 16#00#;
       Cmd.ByteArray(2) := MsgSensorError;
       Cmd.ByteArray(3) := Unsigned_8(sensorId mod 128) AND 16#7F#;
-      Cmd.ByteArray(4) := Unsigned_8(sensorId / 128) AND 16#0F#;	
+      Cmd.ByteArray(4) := Unsigned_8(sensorId / 128) AND 16#0F#;
       return cmd;
    exception
 	   when error : others =>
@@ -995,7 +1042,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeGetSwitchStatesMsg --" & kLFString & Exception_Information (error));
          raise;
    end makeGetSwitchStatesMsg;
-   
+
     function makeLongAckMsg(opcode : unsigned_8) return MessageType is                           -- mo 1/12/12
       Cmd : MessageType;
    begin
@@ -1038,7 +1085,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeSlRdDataMsg --" & kLFString & Exception_Information (error));
          raise;
    end makeSlRdDataMsg;
-   
+
    function makeWriteSlotDataToClearMsg(slotId : slotType) return MessageType is   -- mo 1/15/12
       cmd                 : MessageType;
       addrLow, addrHigh   : unsigned_8;
@@ -1066,7 +1113,7 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeWriteSlotDataToClearMsg --" & kLFString & Exception_Information (error));
          raise;
    end makeWriteSlotDataToClearMsg;
-   
+
    -------------------------------------------------------------------------------------------
    -------------------------------------------------------------------------------------------
    -------------------------------------------------------------------------------------------
@@ -1098,6 +1145,22 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitPutTrainPositionMsg --" & kLFString & Exception_Information (error));
          raise;
    end splitPutTrainPositionMsg;
+
+   procedure splitPutPathMsg(msg : in MessageType; sensors : in out naturalListType) is
+   -- <00> <opcode> <count><sensor#>...<sensor#>      (where count and sensor# are 2 bytes each)
+   -- where sensor# are listed from start of path to end of path
+      sensorCount : natural;
+   begin
+	   sensorCount := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
+	   makeEmpty(sensors);
+	   for i in 1..sensorCount loop
+	      addEnd(sensors, convertBytesToNatural(msg.byteArray(4 + 2*i-1), msg.byteArray(4 + 2*i)));
+      end loop;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitPutPathMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end splitPutPathMsg;
 
    procedure splitPutSectionStateMsg(msg : in MessageType; sectionId : out positive; state : out sectionStateType) is
    -- <00><opcode><section# 2 bytes> <section state>
@@ -1131,6 +1194,20 @@ package body MessageTranslationLibrary is
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitDoMakeSectionUsableMsg --" & kLFString & Exception_Information (error));
          raise;
    end splitDoMakeSectionUsableMsg;
+
+   procedure splitGetPathMsg   (msg : in MessageType; preSensor  : out positive;
+                                                      fromSensor : out positive;
+                                                      toSensor   : out positive) is
+   -- <00><opcode><preSensor><fromSensor><toSensor>        (sensor# is 2 bytes)
+   begin
+      preSensor  := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
+      fromSensor := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
+      toSensor   := convertBytesToNatural(msg.byteArray(7), msg.byteArray(8));
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitGetPathMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end splitGetPathMsg;
 
    procedure splitPutMakeSectionUsableResponseMsg  (msg : in MessageType; sensor1 : out positive; sensor2 : out positive; flag : out natural) is
    -- <00><opcode><sensor# 2 bytes><sensor state>
@@ -1182,7 +1259,7 @@ package body MessageTranslationLibrary is
       makeEmpty(L);
       locoAddress := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
 	   sensorCount := natural(msg.byteArray(5));
-	   for i in 1..sensorCount loop		
+	   for i in 1..sensorCount loop
 	      addEnd(L, convertBytesToNatural(msg.byteArray(5 + 2*i-1), msg.byteArray(5 + 2*i)));
       end loop;
       sensors := L;
@@ -1278,13 +1355,13 @@ package body MessageTranslationLibrary is
          -- raise;
    -- end splitTryToMoveAgainMsg;
 
-   PROCEDURE SplitFrontSensorFiredMsg       (msg : IN MessageType; TrainId : OUT TrainIdType) is  
+   PROCEDURE SplitFrontSensorFiredMsg       (msg : IN MessageType; TrainId : OUT TrainIdType) is
    begin
       TrainId := trainIdType(msg.ByteArray(3));
    exception
 	   when error : others =>
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitFrontSensorFiredMsg --" & kLFString & Exception_Information (error));
-         raise;   
+         raise;
    end splitFrontSensorFiredMsg;
 
    procedure splitBackSensorFiredMsg        (msg : in MessageType; TrainId : OUT TrainIdType) is
@@ -1296,7 +1373,7 @@ package body MessageTranslationLibrary is
          raise;
    end splitBackSensorFiredMsg;
 
-   PROCEDURE SplitSensorErrorMsg            (msg : IN MessageType; SensorNum : OUT Positive) is    
+   PROCEDURE SplitSensorErrorMsg            (msg : IN MessageType; SensorNum : OUT Positive) is
    begin
       IF msg.ByteArray(3) /= 16#00# THEN
          SensorNum := Positive(msg.ByteArray(3));
@@ -1310,7 +1387,7 @@ package body MessageTranslationLibrary is
          raise;
    end splitSensorErrorMsg;
 
-   PROCEDURE SplitLoseReservationMsg        (msg : IN MessageType; TrainId : OUT TrainIdType) is 
+   PROCEDURE SplitLoseReservationMsg        (msg : IN MessageType; TrainId : OUT TrainIdType) is
    begin
       TrainId := trainIdType(msg.ByteArray(3));
    exception
@@ -1344,19 +1421,19 @@ package body MessageTranslationLibrary is
       slotNum, sectionId, switchId, physAdd, locoAdd,
       physSlot, virtAdd, virtSlot, responseFlag, trainId,
       responseCode, speed, sensorId     : natural;
-		sensor1, sensor2						 : positive;
-		flag										 : natural;
+	sensor1, sensor2, sensor3         : positive;
+	flag					    : natural;
       trainState                        : trainStateType;
       sectionState                      : sectionStateType;
       switchState                       : switchStateType;
       sensorState                       : sensorStateType;
       sensors                           : naturalListType;
-		count                             : natural;
+	count                             : natural;
       direction                         : directionType;
       light, bell, horn, mute, F5, F6   : onOffType;
       isHi                              : boolean;
       inUse                             : boolean;
-		responseTo								 : unsigned_8;
+	responseTo		                : unsigned_8;
    begin
       if msg.byteArray(1) /= 16#00# then
          case msg.byteArray(1) is
@@ -1375,7 +1452,7 @@ package body MessageTranslationLibrary is
                splitSwRepMsg(msg, switchId, switchState);
                return "OPC_SW_REP switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
             when OPC_SW_REQ =>
-               splitSwReqMsg(msg, switchId, switchState); 
+               splitSwReqMsg(msg, switchId, switchState);
                return "OPC_SW_REQ switch" & natural'image(switchId) & " " & switchStateType'image(switchState);
 				when OPC_SW_STATE =>
 					splitSwStateMsg(msg, switchId);
@@ -1386,19 +1463,19 @@ package body MessageTranslationLibrary is
             when OPC_LOCO_DIRF =>
                 splitLocoDirfMsg(msg, trainId, direction, light, horn, bell);
                 return "OPC_LOCO_DIRF"
-                       & " (trainId or slot)" & natural'image(trainId) 
+                       & " (trainId or slot)" & natural'image(trainId)
                        & " dir "  & directionType'image(direction)
-                       & " l " & onOffType'image(light) 
-                       & " b " & onOffType'image(bell) 
+                       & " l " & onOffType'image(light)
+                       & " b " & onOffType'image(bell)
                        & " h " & onOffType'image(horn);
 
             when OPC_LOCO_SND =>
                 splitLocoSndMsg(msg, trainId, F5, F6, mute);
                 return "OPC_LOCO_SND"
-                       & " (trainId or slot)" & natural'image(trainId) 
-                       & " F5 " & onOffType'image(F5) 
-                       & " F6 " & onOffType'image(F6) 
-                       & " mute " & onOffType'image(mute);                                             
+                       & " (trainId or slot)" & natural'image(trainId)
+                       & " F5 " & onOffType'image(F5)
+                       & " F6 " & onOffType'image(F6)
+                       & " mute " & onOffType'image(mute);
             when OPC_LOCO_ADR =>
                splitLocoAdrMsg(msg, locoAdd);
                return "OPC_LOCO_ADR request slot data for loco " & natural'image(locoAdd);
@@ -1448,7 +1525,7 @@ package body MessageTranslationLibrary is
             when others =>
                return "Unknown LocoNet opcode: " & toString(msg);
          end case;
-      end if; 
+      end if;
 
       case msg.byteArray(2) is
 			when putPowerChangeComplete =>
@@ -1462,7 +1539,15 @@ package body MessageTranslationLibrary is
 				makeEmpty(sensors);
             return "putTrainPosition: [(trainId or slot)/num sensors] [" & natural'image(slotNum) & "/" & natural'image(count) & "]";
          when putPath =>
-            xxxx
+            splitPutPathMsg(msg, sensors);
+				count := getCount(sensors);
+				makeEmpty(sensors);
+            return "putPath: [num sensors] [" & natural'image(count) & "]";
+         when getPath =>
+            splitGetPathMsg(msg, sensor1, sensor2, sensor3);
+            return "getPath: [pre, from, to sensors] [" & natural'image(sensor1) &
+                                                          natural'image(sensor2) &
+                                                          natural'image(sensor3) & "]";
          when putSectionState =>
             splitPutSectionStateMsg(msg, sectionId, sectionState);
             return "putSectionState: sectionId/state" & natural'image(sectionId) & " " & sectionStateType'image(sectionState);
@@ -1499,31 +1584,31 @@ package body MessageTranslationLibrary is
          when msgTryToMoveAgain =>
             return "msgTryToMoveAgain";
          when msgFrontSensorFired =>
-            SplitFrontSensorFiredMsg(msg, TrainId);  
+            SplitFrontSensorFiredMsg(msg, TrainId);
             return "msgFrontSensorFired for train " & natural'image(trainId);
          when msgBackSensorFired =>
-            SplitBackSensorFiredMsg(msg, TrainId);  
+            SplitBackSensorFiredMsg(msg, TrainId);
             return "msgBackSensorFired for train " & natural'image(trainId);
          when msgSensorError =>
-            SplitSensorErrorMsg(msg, SensorId);    
+            SplitSensorErrorMsg(msg, SensorId);
             return "msgSensorError for sensor " & natural'image(sensorId);
          when msgLoseReservation =>
-            SplitLoseReservationMsg(msg, TrainId);  
+            SplitLoseReservationMsg(msg, TrainId);
             return "msgLoseReservation for train " & natural'image(trainId);
          when putTrainInformation =>
             splitPutTrainInformationMsg(msg, slotNum, speed, direction, light, bell, horn, mute);
             return "putTrainInfo: [(trainId or slot) sp dir l b h m] [" &
-                   natural'image(slotNum) & natural'image(speed) & " " & directionType'image(direction) & 
-                   " " & onOffType'image(light) & " " & onOffType'image(bell) & 
+                   natural'image(slotNum) & natural'image(speed) & " " & directionType'image(direction) &
+                   " " & onOffType'image(light) & " " & onOffType'image(bell) &
 						 " " & onOffType'image(horn) & " " &onOffType'image(mute) & "]";
 			when doMakeSectionUsable =>
 				splitDoMakeSectionUsableMsg(msg, sensor1, sensor2);
-				return "doMakeSectionUsable: sensor1/sensor2 " & 
+				return "doMakeSectionUsable: sensor1/sensor2 " &
 				       natural'image(sensor1) & "/" &
 				       natural'image(sensor2);
 			when putMakeSectionUsableResponse =>
 				splitPutMakeSectionUsableResponseMsg(msg, sensor1, sensor2, flag);
-				return "doMakeSectionUsable: sensor1/sensor2/flag " & 
+				return "doMakeSectionUsableResponse: sensor1/sensor2/flag " &
 				       natural'image(sensor1) & "/" &
 				       natural'image(sensor2) & "/" &
 				       natural'image(flag);
