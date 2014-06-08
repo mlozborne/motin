@@ -76,7 +76,8 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
-      procedure MakeSectionUsable   (sensor1 : positive; sensor2 : positive);
+      procedure getPath              (preSensor : positive; fromSensor : positive; toSensor : positive);
+      procedure MakeSectionUsable    (sensor1 : positive; sensor2 : positive);
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
       PROCEDURE MoveNextSwitch       (TrainId : TrainIdType;

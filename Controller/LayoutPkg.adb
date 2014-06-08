@@ -630,7 +630,7 @@ PACKAGE BODY LayoutPkg IS
       ---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
       ---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
          procedure putTrainPositionMsg(TrainId : trainIdType) is
-            sensorsPtr : sensorArrayAccess;
+            sensorsPtr   : sensorArrayAccess;
             sList        : naturalListType;
          begin
             sensorsPtr := GetSensors(TrainId);
@@ -983,6 +983,24 @@ PACKAGE BODY LayoutPkg IS
             put_line("    sensor1/sensor2" & integer'image(sensor1) & integer'image(sensor2));
             raise;
       END MakeSectionUsable;      
+      
+      procedure getPath(preSensor : positive; fromSensor : positive; toSensor : positive) is
+         sList        : naturalListType;
+      begin
+         makeEmpty(sList);
+         for i in 1..10 loop
+            addEnd(sList, 100 + i);
+         end loop;
+         sendToOutQueue(makePutPathMsg(sList));
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in getPath: " & Exception_Information(Error));
+            put_line("    pre/from/to sensors" & integer'image(preSensor) & 
+                                                 integer'image(fromSensor) &
+                                                 integer'image(toSensor));
+            raise;
+      END getPath;      
+         
 
       PROCEDURE MoveNextSwitch (
             TrainId : TrainIdType;
