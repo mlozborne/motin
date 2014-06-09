@@ -984,31 +984,108 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END MakeSectionUsable;      
       
+      procedure getPathHelper(preSensor  : in positive;
+                              fromSensor : in positive;
+                              toSensor   : in positive;
+                              sList      : in out naturalListType;
+                              success    : out boolean) is
+         thisSection, ptr         : sectionNodePtr;
+         sectionList              : sectionNodeList;
+         s1, s2, otherSensor      : positive;
+      begin
+         success := false;
+         -- Find section defined by preSensor/fromSensor
+         FindSection(preSensor, fromSensor, thisSection);
+         if thisSection = null then
+            return;
+         end if;
+         
+         -- Figure out which list to use: nextSectionList or prevSectionList
+         s1 := thisSection.section.sensorList.head.sensor.id;
+         s2 := thisSection.section.sensorList.tail.sensor.id;
+         if fromSensor = s1 then
+            sectionList := thisSection.section.nextSectionList;
+         else
+            sectionList := thisSection.section.prevSectionList;
+         end if;
+
+         -- Check each section in section list to see if it contain toSensor
+         ptr := sectionList.head;
+         while ptr /= null loop
+            s1 := ptr.section.SensorList.head.sensor.id;
+            s2 := ptr.section.SensorList.tail.sensor.id;
+            if toSensor = s1 or toSensor = s2 then
+               -- This one contains toSensor: success, add to sensor to list, return
+               success := true;
+               addFront(sList, toSensor);
+               return;
+            else
+               ptr := ptr.next;
+            end if;
+         end loop;
+         
+         -- No section contained toSensor so must recurse
+         ptr := sectionList.head;
+         while ptr /= null loop
+            if ptr.section.marked then
+               ptr := ptr.next;
+            else
+               ptr.section.marked := true;
+               s1 := ptr.section.SensorList.head.sensor.id;
+               s2 := ptr.section.SensorList.tail.sensor.id;
+               if fromSensor = s1 then
+                  getPathHelper(s1, s2, toSensor, sList, success);
+                  otherSensor := s2;
+              else
+                  getPathHelper(s2, s1, toSensor, sList, success);
+                  otherSensor := s1;
+               end if;
+               if success then
+                  addFront(sList, otherSensor);
+                  return;
+               else
+                  ptr := ptr.next;
+               end if;
+            end if;
+         end loop;
+         return;
+      end getPathHelper;
+       
       procedure getPath(preSensor : positive; fromSensor : positive; toSensor : positive) is
          sList        : naturalListType;
+         success      : boolean := false; 
+         ptr          : sectionNodePtr := sectionList.head;
       begin
-         if fromSensor
+         -- Unmark all sections
+         while ptr /= null loop
+            ptr.section.marked := false;
+            ptr := ptr.next;
+         end loop;
          
-         
+         -- Call the helper function
          makeEmpty(sList);
-         addEnd(sList, 8);
-         addEnd(sList, 33);
-         addEnd(sList, 35);
-         addEnd(sList, 62);
-         addEnd(sList, 59);
-         addEnd(sList, 80);
-         addEnd(sList, 76);
-         addEnd(sList, 74);
-         addEnd(sList, 94);
-         addEnd(sList, 91);
-         addEnd(sList, 100);
-         addEnd(sList, 98);
-         addEnd(sList, 82);
-         addEnd(sList, 86);
-         addEnd(sList, 69);
-         addEnd(sList, 70);
-         addEnd(sList, 57);
-         sendToOutQueue(makePutPathMsg(sList));
+         getPathHelper(preSensor, fromSensor, toSensor, sList, success);
+         sendToOutQueue(makePutPathMsg(sList));                
+         
+         -- makeEmpty(sList);
+         -- addEnd(sList, 8);
+         -- addEnd(sList, 33);
+         -- addEnd(sList, 35);
+         -- addEnd(sList, 62);
+         -- addEnd(sList, 59);
+         -- addEnd(sList, 80);
+         -- addEnd(sList, 76);
+         -- addEnd(sList, 74);
+         -- addEnd(sList, 94);
+         -- addEnd(sList, 91);
+         -- addEnd(sList, 100);
+         -- addEnd(sList, 98);
+         -- addEnd(sList, 82);
+         -- addEnd(sList, 86);
+         -- addEnd(sList, 69);
+         -- addEnd(sList, 70);
+         -- addEnd(sList, 57);
+         -- sendToOutQueue(makePutPathMsg(sList));
       EXCEPTION
          WHEN Error : OTHERS =>
             put_line("**************** EXCEPTION Layout pkg in getPath: " & Exception_Information(Error));

@@ -553,6 +553,7 @@ PRIVATE
       BlockingList      : BlockingNodeList;
       BlockCount        : Natural             := 0;
       TrainId           : TrainIdType         := 0;
+      Marked            : boolean := false;
    END RECORD;
       
    TYPE SectionNode IS RECORD
