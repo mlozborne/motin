@@ -140,6 +140,6 @@ ControllerInMsgs = (PutTrainStateMsg, PutTrainPositionMsg, PutSectionStateMsg,
                     PutSwitchStateMsg, PutSensorStateMsg, PutInitOutcomeMsg,
                     PutReadLayoutResponseMsg, PutTrainInformationMsg,
                     PutPowerChangeCompleteMsg, SwRepMsg, InputRepMsg, LongAckMsg, SlRdDataMsg,
-                    PutMakeSectionUsableResponseMsg)
+                    PutMakeSectionUsableResponseMsg, PutPathMsg)
 
 

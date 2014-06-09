@@ -987,10 +987,27 @@ PACKAGE BODY LayoutPkg IS
       procedure getPath(preSensor : positive; fromSensor : positive; toSensor : positive) is
          sList        : naturalListType;
       begin
+         if fromSensor
+         
+         
          makeEmpty(sList);
-         for i in 1..10 loop
-            addEnd(sList, 100 + i);
-         end loop;
+         addEnd(sList, 8);
+         addEnd(sList, 33);
+         addEnd(sList, 35);
+         addEnd(sList, 62);
+         addEnd(sList, 59);
+         addEnd(sList, 80);
+         addEnd(sList, 76);
+         addEnd(sList, 74);
+         addEnd(sList, 94);
+         addEnd(sList, 91);
+         addEnd(sList, 100);
+         addEnd(sList, 98);
+         addEnd(sList, 82);
+         addEnd(sList, 86);
+         addEnd(sList, 69);
+         addEnd(sList, 70);
+         addEnd(sList, 57);
          sendToOutQueue(makePutPathMsg(sList));
       EXCEPTION
          WHEN Error : OTHERS =>
@@ -3473,6 +3490,13 @@ PACKAGE BODY LayoutPkg IS
                               begin
                                  splitDoMakeSectionUsableMsg(cmd, sensor1, sensor2);
                                  LayoutPtr.MakeSectionUsable(sensor1, sensor2);
+                              end;
+                           when getPath =>
+                              declare
+                                 preSensor, fromSensor, toSensor : positive;
+                              begin
+                                 splitGetPathMsg(cmd, preSensor, fromSensor, toSensor);
+                                 LayoutPtr.GetPath(preSensor, fromSensor, toSensor);
                               end;
                            WHEN OTHERS =>
                               NULL;

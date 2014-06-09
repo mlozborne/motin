@@ -86,6 +86,9 @@ def pause(self, secs):
 def makeSectionUsable(self, sensor1, sensor2):
     self.makeSectionUsable(sensor1, sensor2)
 
+def getPath(self, preSensor, fromSensor, toSensor):
+    return self.getPath(preSensor, fromSensor, toSensor)
+
 ####################################################################################################
 class Throttle(object):
     def __init__(self, name = None, comPkg = None):
@@ -226,6 +229,14 @@ class Throttle(object):
             else:
                 self.virtSlot = responseMsg.virtSlot
         return responseMsg
+
+    def getPath(self, preSensor, fromSensor, toSensor):
+        gLog.print("Throttle {0}: sending GetPathMsg".format(self.name))
+        self.msgHandler.put(GetPathMsg(preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor))
+        self.msgHandler.addInterest(PutPathMsg)
+        msg = self.waitFor(PutPathMsg(sensors=[]))
+        self.msgHandler.removeInterest(PutPathMsg)
+        return msg.sensors
 
     def setVirtSlot(self, virtSlot):
         self.virtSlot = virtSlot

@@ -33,15 +33,16 @@ User level object
        -- test with Throttle_Test.py and GuiThrottle_Test.py
 """
 
-from Log import gLog
+from Log                       import gLog
 from MessageTranslationLibrary import InputRepMsg
 from MessageTranslationLibrary import PutInitOutcomeMsg
 from MessageTranslationLibrary import PutReadLayoutResponseMsg
 from MessageTranslationLibrary import PutSensorStateMsg
 from MessageTranslationLibrary import makeMsgStr
 from MessageTranslationLibrary import splitMsgStr
-from MessageTranslationTypes import ControllerInMsgs
-from time import sleep
+from MessageTranslationLibrary import PutPathMsg
+from MessageTranslationTypes   import ControllerInMsgs
+from time                      import sleep
 
 from collections import namedtuple
 import multiprocessing
@@ -165,7 +166,7 @@ class MsgHandler(object):
                 #gLog.print("waitFor: back from qu with message {0}".format(m))
                 if type(m) == type(msg):
                     break
-            if isinstance(m, PutReadLayoutResponseMsg):
+            if isinstance(m, PutReadLayoutResponseMsg) or isinstance(m, PutPathMsg) :
                 break
             if isinstance(m, InputRepMsg) and m.sensor == msg.sensor:
                 break
