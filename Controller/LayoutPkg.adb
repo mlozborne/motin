@@ -1030,10 +1030,10 @@ PACKAGE BODY LayoutPkg IS
          -- No section contained toSensor so must recurse
          ptr := sectionList.head;
          while ptr /= null loop
-            if ptr.section.marked then
+            if ptr.marked then
                ptr := ptr.next;
             else
-               ptr.section.marked := true;
+               ptr.marked := true;
                s1 := ptr.section.SensorList.head.sensor.id;
                s2 := ptr.section.SensorList.tail.sensor.id;
                if fromSensor = s1 then
@@ -1057,13 +1057,25 @@ PACKAGE BODY LayoutPkg IS
       procedure getPath(preSensor : positive; fromSensor : positive; toSensor : positive) is
          sList        : naturalListType;
          success      : boolean := false; 
-         ptr          : sectionNodePtr := sectionList.head;
+         ptr1         : sectionNodePtr := sectionList.head;
+         ptr2         : sectionNodePtr;
          iter         : listIteratorType;
       begin
-         -- Unmark all sections
-         while ptr /= null loop
-            ptr.section.marked := false;
-            ptr := ptr.next;
+         -- Unmark all next and previous section lists
+         while ptr1 /= null loop
+            ptr2 := ptr1.section.nextSectionList.head;
+            while ptr2 /= null loop
+               ptr2.marked := false;
+               ptr2 := ptr2.next;
+            end loop;
+            
+            ptr2 := ptr1.section.prevSectionList.head;
+            while ptr2 /= null loop
+               ptr2.marked := false;
+               ptr2 := ptr2.next;
+            end loop;
+            
+            ptr1 := ptr1.next;
          end loop;
          
          -- Call the helper function

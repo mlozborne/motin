@@ -99,8 +99,8 @@ if __name__ == "__main__":
         # myThrottle.followCommandPath(myCommandPath)
         # myPath = [98,101,104,106,107]
         # myThrottle.followSensorPath(myPath)
-        myThrottle.do(stopTrain())
-        myThrottle.do(blinkLights(4))
+        myThrottle.do(stopTrain)
+        myThrottle.do(blinkLights, 4)
 
     # Option 2: using throttle commands
     """
