@@ -993,6 +993,9 @@ PACKAGE BODY LayoutPkg IS
          sectionList              : sectionNodeList;
          s1, s2, otherSensor      : positive;
       begin
+         myPutLine("      pre/from/to " & integer'image(preSensor)
+                                        & integer'image(fromSensor)
+                                        & integer'image(toSensor));
          success := false;
          -- Find section defined by preSensor/fromSensor
          FindSection(preSensor, fromSensor, thisSection);
@@ -1003,7 +1006,7 @@ PACKAGE BODY LayoutPkg IS
          -- Figure out which list to use: nextSectionList or prevSectionList
          s1 := thisSection.section.sensorList.head.sensor.id;
          s2 := thisSection.section.sensorList.tail.sensor.id;
-         if fromSensor = s1 then
+         if fromSensor = s2 then
             sectionList := thisSection.section.nextSectionList;
          else
             sectionList := thisSection.section.prevSectionList;
@@ -1055,6 +1058,7 @@ PACKAGE BODY LayoutPkg IS
          sList        : naturalListType;
          success      : boolean := false; 
          ptr          : sectionNodePtr := sectionList.head;
+         iter         : listIteratorType;
       begin
          -- Unmark all sections
          while ptr /= null loop
@@ -1065,6 +1069,18 @@ PACKAGE BODY LayoutPkg IS
          -- Call the helper function
          makeEmpty(sList);
          getPathHelper(preSensor, fromSensor, toSensor, sList, success);
+         if success then
+            addFront(sList, fromSensor);
+         end if;
+         
+         if getCount(sList) /= 0 then
+            iter := moveFront(sList);
+            for i in 1..getCount(sList) loop
+               myPutLine("        " & integer'image(getCurrent(iter)));
+               iter := moveNext(iter);
+            end loop;         
+         end if;
+
          sendToOutQueue(makePutPathMsg(sList));                
          
          -- makeEmpty(sList);
