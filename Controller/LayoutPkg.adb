@@ -984,7 +984,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END MakeSectionUsable;      
       
-      procedure getPathHelper(preSensor  : in positive;
+      procedure getPathHelperDF(preSensor  : in positive;
                               fromSensor : in positive;
                               toSensor   : in positive;
                               sList      : in out naturalListType;
@@ -1037,10 +1037,10 @@ PACKAGE BODY LayoutPkg IS
                s1 := ptr.section.SensorList.head.sensor.id;
                s2 := ptr.section.SensorList.tail.sensor.id;
                if fromSensor = s1 then
-                  getPathHelper(s1, s2, toSensor, sList, success);
+                  getPathHelperDF(s1, s2, toSensor, sList, success);
                   otherSensor := s2;
               else
-                  getPathHelper(s2, s1, toSensor, sList, success);
+                  getPathHelperDF(s2, s1, toSensor, sList, success);
                   otherSensor := s1;
                end if;
                if success then
@@ -1052,16 +1052,16 @@ PACKAGE BODY LayoutPkg IS
             end if;
          end loop;
          return;
-      end getPathHelper;
+      end getPathHelperDF;
        
-      procedure getPath(preSensor : positive; fromSensor : positive; toSensor : positive) is
+      procedure getPathDF(preSensor : positive; fromSensor : positive; toSensor : positive) is
          sList        : naturalListType;
          success      : boolean := false; 
          ptr1         : sectionNodePtr := sectionList.head;
          ptr2         : sectionNodePtr;
-         iter         : listIteratorType;
+         iter         : naturalListPkg.listIteratorType;
       begin
-         -- Unmark all next and previous section lists
+         -- For all next and previous section lists unmark all section nodes
          while ptr1 /= null loop
             ptr2 := ptr1.section.nextSectionList.head;
             while ptr2 /= null loop
@@ -1080,11 +1080,12 @@ PACKAGE BODY LayoutPkg IS
          
          -- Call the helper function
          makeEmpty(sList);
-         getPathHelper(preSensor, fromSensor, toSensor, sList, success);
+         getPathHelperDF(preSensor, fromSensor, toSensor, sList, success);
          if success then
             addFront(sList, fromSensor);
          end if;
          
+         -- Display the path
          if getCount(sList) /= 0 then
             iter := moveFront(sList);
             for i in 1..getCount(sList) loop
@@ -1093,7 +1094,11 @@ PACKAGE BODY LayoutPkg IS
             end loop;         
          end if;
 
-         sendToOutQueue(makePutPathMsg(sList));                
+         -- Send the PutPath message
+         sendToOutQueue(makePutPathMsg(sList));
+         
+         -- Recover list memory
+         makeEmpty(sList);
          
          -- makeEmpty(sList);
          -- addEnd(sList, 8);
@@ -1116,14 +1121,154 @@ PACKAGE BODY LayoutPkg IS
          -- sendToOutQueue(makePutPathMsg(sList));
       EXCEPTION
          WHEN Error : OTHERS =>
-            put_line("**************** EXCEPTION Layout pkg in getPath: " & Exception_Information(Error));
+            put_line("**************** EXCEPTION Layout pkg in getPathDF: " & Exception_Information(Error));
             put_line("    pre/from/to sensors" & integer'image(preSensor) & 
                                                  integer'image(fromSensor) &
                                                  integer'image(toSensor));
             raise;
-      END getPath;      
+      END getPathDF;      
          
+      procedure getPathBF(preSensor : positive; fromSensor : positive; toSensor : positive) is
+         sList        : naturalListType;
+         qu           : sectionNodePtrListType;
+         success      : boolean := false; 
+         ptr1         : sectionNodePtr := sectionList.head;
+         ptr2         : sectionNodePtr;
+         ptr          : sectionNodePtr;
+         thisSection  : sectionNodePtr;
+         iter         : naturalListPkg.listIteratorType;
+         s1, s2       : positive;
+      begin
+         -- For all next and previous section lists
+         --    Unmark and set parent to null in all section nodes
+         while ptr1 /= null loop
+            ptr2 := ptr1.section.nextSectionList.head;
+            while ptr2 /= null loop
+               ptr2.marked := false;
+               ptr2.parent := null;
+               ptr2 := ptr2.next;
+            end loop;
+            
+            ptr2 := ptr1.section.prevSectionList.head;
+            while ptr2 /= null loop
+               ptr2.marked := false;
+               ptr2.parent := null;
+               ptr2 := ptr2.next;
+            end loop;
+            
+            ptr1 := ptr1.next;
+         end loop;
+         
+         -- Start breadth first search
+         
+         -- Add first section to the empty qu
+         makeEmpty(qu);
+         FindSection(preSensor, fromSensor, thisSection);
+         thisSection.pathSensor := fromSensor;
+         addEnd(qu, thisSection);
+         
+         while not isEmpty(qu) loop
+            -- dequeue
+            thisSection := getFront(qu);
+            removeFront(qu);
+            
+            -- If this what we are looking for success and exit loop
+            s1 := thisSection.section.sensorList.head.sensor.id;
+            s2 := thisSection.section.sensorList.tail.sensor.id;
+            if (s1 = toSensor and s1 /= preSensor) or
+               (s2 = toSensor and s2 /= preSensor)
+            then
+               success := true;
+               exit;
+            end if;
+            
+            -- Got to keep going
+            -- Consider all sections leaving current section in right direction
+            
+            -- Figure out which list to use: nextSectionList or prevSectionList
+            if thisSection.pathSensor = s2 then
+               sectionList := thisSection.section.nextSectionList;
+            else
+               sectionList := thisSection.section.prevSectionList;
+            end if;
+            
+            -- Loop through all the sections in the list.
+            -- If a section hasn't been used, mark it and add it to the qu after
+            -- determining its parent and pathSensor
+            ptr := sectionList.head;
+            while ptr /= null loop
+               if not ptr.marked then
+                  ptr.marked := true;
+                  ptr.parent := thisSection;
+                  s1 := ptr.section.sensorList.head.sensor.id;
+                  s2 := ptr.section.sensorList.tail.sensor.id;
+                  if thisSection.pathSensor = s1 then
+                     ptr.pathSensor := s2;
+                  else
+                     ptr.pathSensor := s1;
+                  end if;
+                  addEnd(qu, ptr);
+               end if;
+               ptr := ptr.next;
+            end loop;
+         end loop;
+         
+         makeEmpty(sList);
+         if success then
+            -- Build path by traversing parent pointers.
+            addFront(sList, toSensor);
+            ptr := thisSection.parent;
+            while ptr /= null loop
+               addFront(sList,ptr.pathSensor);
+               ptr := ptr.parent;
+            end loop;
+         end if;
+         
+         -- Display the path
+         if getCount(sList) /= 0 then
+            iter := moveFront(sList);
+            for i in 1..getCount(sList) loop
+               myPutLine("        " & integer'image(getCurrent(iter)));
+               iter := moveNext(iter);
+            end loop;         
+         end if;
 
+         -- Send the PutPath message
+         sendToOutQueue(makePutPathMsg(sList)); 
+         
+         -- Recover list memory
+         makeEmpty(sList);
+         makeEmpty(qu);
+         
+         
+         -- makeEmpty(sList);
+         -- addEnd(sList, 8);
+         -- addEnd(sList, 33);
+         -- addEnd(sList, 35);
+         -- addEnd(sList, 62);
+         -- addEnd(sList, 59);
+         -- addEnd(sList, 80);
+         -- addEnd(sList, 76);
+         -- addEnd(sList, 74);
+         -- addEnd(sList, 94);
+         -- addEnd(sList, 91);
+         -- addEnd(sList, 100);
+         -- addEnd(sList, 98);
+         -- addEnd(sList, 82);
+         -- addEnd(sList, 86);
+         -- addEnd(sList, 69);
+         -- addEnd(sList, 70);
+         -- addEnd(sList, 57);
+         -- sendToOutQueue(makePutPathMsg(sList));
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in getPathBF: " & Exception_Information(Error));
+            put_line("    pre/from/to sensors" & integer'image(preSensor) & 
+                                                 integer'image(fromSensor) &
+                                                 integer'image(toSensor));
+            raise;
+      END getPathBF;      
+         
       PROCEDURE MoveNextSwitch (
             TrainId : TrainIdType;
             State   : SwitchStateType) IS
@@ -3601,7 +3746,7 @@ PACKAGE BODY LayoutPkg IS
                                  preSensor, fromSensor, toSensor : positive;
                               begin
                                  splitGetPathMsg(cmd, preSensor, fromSensor, toSensor);
-                                 LayoutPtr.GetPath(preSensor, fromSensor, toSensor);
+                                 LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor);
                               end;
                            WHEN OTHERS =>
                               NULL;
@@ -3619,6 +3764,11 @@ PACKAGE BODY LayoutPkg IS
          END;
       END LOOP;
    END LayoutTaskType;
+   
+	function toString(e : sectionNodePtr) return string is
+   begin
+      return "x";
+   end;
    
 
 -------------------- End LayoutTaskType --------------------------

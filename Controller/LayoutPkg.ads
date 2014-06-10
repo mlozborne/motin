@@ -2,6 +2,7 @@ WITH Ada.Unchecked_Deallocation, Ada.Strings.Unbounded, Ada.Text_IO, ControllerG
 USE Ada.Strings.Unbounded, Ada.Text_IO, ControllerGlobals, CommandQueueManager, Ada.Calendar;
 with MessageTranslationTypes; use messageTranslationTypes;
 with NaturalListTypePkg; use NaturalListTypePkg; use NaturalListTypePkg.naturalListPkg;
+with ListGeneric;
 
 PACKAGE LayoutPkg IS
 
@@ -76,7 +77,8 @@ PACKAGE LayoutPkg IS
       PROCEDURE ChangeDirectionOf    (TrainId : TrainIdType);
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
-      procedure getPath              (preSensor : positive; fromSensor : positive; toSensor : positive);
+      procedure getPathBF            (preSensor : positive; fromSensor : positive; toSensor : positive);
+      procedure getPathDF            (preSensor : positive; fromSensor : positive; toSensor : positive);
       procedure MakeSectionUsable    (sensor1 : positive; sensor2 : positive);
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);
@@ -556,9 +558,11 @@ PRIVATE
    END RECORD;
       
    TYPE SectionNode IS RECORD
-      Section : SectionObjPtr := null;
-      marked  : boolean := false;
-      Next    : SectionNodePtr := null;
+      Section    : SectionObjPtr := null;
+      marked     : boolean := false;
+      parent     : sectionNodePtr := null;
+      pathSensor : positive;
+      Next       : SectionNodePtr := null;
    END RECORD;
       
    PROCEDURE disposeBasicSectionNode IS 
@@ -586,6 +590,15 @@ PRIVATE
    
    PROCEDURE Free_Section IS
       NEW Ada.Unchecked_Deallocation(Object => SectionObj, Name   => SectionObjPtr);   
+      
+-------------------------------------------
+
+   -- List of pointers to section nodes
+	function toString(e : sectionNodePtr) return string;
+   package sectionNodePtrListPkg  is new ListGeneric(ElementType => sectionNodePtr,
+	                                                  toString    => toString);
+   subtype sectionNodePtrListType is sectionNodePtrListPkg.ListType;
+   use sectionNodePtrListPkg;
       
    -------- End definition of types used by LayoutManager -------------  
    --------------------------- 4 --------------------------------------
