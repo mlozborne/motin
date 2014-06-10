@@ -29,7 +29,7 @@ package MessageTranslationTypes is
 										-- reading the XML layout file.
 
    -- Messages
-   KMaxLenMsg       : constant Integer := 128; -- = kMaxLenFileName + 3, from RailroadManager.ads
+   KMaxLenMsg       : constant Integer := 1000; -- = kMaxLenFileName + 3, from RailroadManager.ads
    type byteArrayType is array (1..kMaxLenMsg) of unsigned_8;
    TYPE MessageType IS RECORD
       byteArray : byteArrayType;

@@ -662,7 +662,7 @@ package body MessageTranslationLibrary is
       lowByte, highByte : unsigned_8;
 	   sensorCount       : natural := getCount(sensors);
 	   value             : natural;
-	   iter	         : listIteratorType;
+	   iter	            : listIteratorType;
 	   msg               : messageType := nullMessage;
    begin
       msg.byteArray(1) := 16#00#;
