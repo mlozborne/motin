@@ -52,7 +52,7 @@ PACKAGE BODY SSIPkg IS
       
       -- Remove train from SlotLookupTable protected type in CommandQueueManager
       --                   TrainIdQueueList protected type in CommandQueueManager
-      --                   TrainList in LayoutManager protected type in LayoutPkg      
+      --                   pkgTrainList in LayoutManager protected type in LayoutPkg      
       SlotLookupTable.removeEntryByPhysAddr(PhysAddr); 
       myPutLine("    In SSITask unregisterOneTrainAndClearItsDCS200Slot after removing entry by PhysAddr");
       slotLookupTable.put;

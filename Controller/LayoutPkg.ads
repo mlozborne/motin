@@ -210,31 +210,31 @@ PACKAGE LayoutPkg IS
       ------------------------------- 2b -----------------------------------------
       -------------------- Begin build data structures from XML ------------------
       
-     -- Creates a new section using private variable CurrentSection
+     -- Creates a new section using private variable pkgCurrentSection
       PROCEDURE bldNewSection (
             Id : Positive);
 
-      -- CurrentSection has been populated with Data
-      -- CurrentSection is added to the end of SectionList
+      -- pkgCurrentSection has been populated with Data
+      -- pkgCurrentSection is added to the end of SectionList
       PROCEDURE bldEndSection;
 
       -- SectionList has been read
       -- Figure out the sections surrounding each section
       PROCEDURE bldEndSectionList;
 
-      -- SwitchList has been read
+      -- pkgSwitchList has been read
       -- Figure out what switchs are blocking sections
       --   based on current state
       PROCEDURE bldEndSwitchList;
 
-      -- Adds a new switch to CurrentSection's SwitchList
-      -- If the switch is not already in the Full SwitchList, it is added
+      -- Adds a new switch to pkgCurrentSection's SwitchList
+      -- If the switch is not already in the Full pkgSwitchList, it is added
       PROCEDURE bldAddSwitchToSection (
             Id    : Positive;
             state :  switchStateType);
 
       -- Find the Switch with Id
-      -- private variable CurrentSwitch points to the switch
+      -- private variable pkgCurrentSwitch points to the switch
       -- set the type of the switch
       PROCEDURE bldUpdateSwitch (
             Id           : Positive;
@@ -242,25 +242,25 @@ PACKAGE LayoutPkg IS
             state        : switchStateType);
 
       -- Add a pointer to the sensor with Id = NarrowId to the list of narrow
-      --   sensors in CurrentSwitch
+      --   sensors in pkgCurrentSwitch
       PROCEDURE bldUpdateSwitchNarrow (
             NarrowId : Positive);
 
       -- Add a pointer to the sensor with Id = ClosedId to the list of closed
-      --    sensors in CurrentSwitch
+      --    sensors in pkgCurrentSwitch
       PROCEDURE bldUpdateSwitchClosed (
             ClosedId : Positive);
 
-      -- Add a pointer to the sensor with Id = ThrownId to CurrentSwitch
+      -- Add a pointer to the sensor with Id = ThrownId to pkgCurrentSwitch
       PROCEDURE bldUpdateSwitchThrown (
             ThrownId : Positive);
 
-      -- Adds a new sensor to CurrentSection's SensorList
-      -- If the sensor is not already in the Full SensorList, it is added
+      -- Adds a new sensor to pkgCurrentSection's SensorList
+      -- If the sensor is not already in the Full pkgSensorList, it is added
       PROCEDURE bldAddSensor (
             Id : Positive);
 
-      -- Adds Id to CurrentSection's BlockingList
+      -- Adds Id to pkgCurrentSection's BlockingList
       PROCEDURE bldAddBlocking (
             Id : Positive);
       -------------------- End build data structures from XML --------------------
@@ -284,8 +284,8 @@ PACKAGE LayoutPkg IS
             Output      : File_Type;
             PrintOnlyId : Boolean       := False);
       function getSectionList return sectionNodeList;
-      function getSensorList return sensorNodeList;
-      function getSwitchList return switchNodeList;
+      function getPkgSensorList return sensorNodeList;
+      function getPkgSwitchList return switchNodeList;
       ----------------- End debug print data structures ------------------
       ---------------------------- 2c ------------------------------------
 
@@ -300,13 +300,13 @@ PACKAGE LayoutPkg IS
    PRIVATE
       --------------------------- 2e --------------------------------------
       -------------------- Begin data structures ------------------------- 
-      SectionList    : SectionNodeList;
-      SensorList     : SensorNodeList;
-      SwitchList     : SwitchNodeList;
-      TrainList      : TrainNodePtr;
-      XMLFilename    : Unbounded_String;
-      CurrentSection : SectionObjPtr;
-      CurrentSwitch  : SwitchObjPtr;
+      pkgSectionList    : SectionNodeList;
+      pkgSensorList     : SensorNodeList;
+      pkgSwitchList     : SwitchNodeList;
+      pkgTrainList      : TrainNodePtr;
+      XMLFilename       : Unbounded_String;
+      pkgCurrentSection  : SectionObjPtr;
+      pkgCurrentSwitch  : SwitchObjPtr;
       -------------------- End data structures ------------------------- 
       -------------------------- 2e ------------------------------------
 
