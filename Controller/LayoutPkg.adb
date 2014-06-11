@@ -1138,6 +1138,7 @@ PACKAGE BODY LayoutPkg IS
          thisSection  : sectionNodePtr;
          iter         : naturalListPkg.listIteratorType;
          s1, s2       : positive;
+         firstTime    : boolean;
       begin
          -- For all next and previous section lists
          --    Unmark and set parent to null in all section nodes
@@ -1167,6 +1168,7 @@ PACKAGE BODY LayoutPkg IS
          thisSection.pathSensor := fromSensor;
          addEnd(qu, thisSection);
          
+         firstTime := true;
          while not isEmpty(qu) loop
             -- dequeue
             thisSection := getFront(qu);
@@ -1175,9 +1177,9 @@ PACKAGE BODY LayoutPkg IS
             -- If this what we are looking for success and exit loop
             s1 := thisSection.section.sensorList.head.sensor.id;
             s2 := thisSection.section.sensorList.tail.sensor.id;
-            if (s1 = toSensor and s1 /= preSensor) or
-               (s2 = toSensor and s2 /= preSensor)
-            then
+            if firstTime and preSensor = toSensor then
+               firstTime := false;
+            elsif s1 = toSensor or s2 = toSensor then
                success := true;
                exit;
             end if;
@@ -1237,9 +1239,23 @@ PACKAGE BODY LayoutPkg IS
          sendToOutQueue(makePutPathMsg(sList)); 
          
          -- Recover list memory
-         makeEmpty(sList);
-         makeEmpty(qu);
+         makeEmpty(sList);         
          
+         -- Debug check: print the major data structures
+         declare
+            Output      : File_Type;
+         begin
+            Create (Output, Out_File, "XMLParseTestOutput.txt");
+            Put_Line(Output, "Section List:");
+            Print_Sections(GetSectionList, 0, Output, false);
+            Put_Line(Output, "");
+            Put_Line(Output, "Sensor List:");
+            Print_Sensors(GetSensorList, 0, Output);
+            Put_Line(Output, "");
+            Put_Line(Output, "Switch List:");
+            Print_Switchs(GetSwitchList, 0, Output, false);
+            Close(Output);
+         end;
          
          -- makeEmpty(sList);
          -- addEnd(sList, 8);
@@ -3746,7 +3762,8 @@ PACKAGE BODY LayoutPkg IS
                                  preSensor, fromSensor, toSensor : positive;
                               begin
                                  splitGetPathMsg(cmd, preSensor, fromSensor, toSensor);
-                                 LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor);
+                                 -- LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor);
+                                 LayoutPtr.GetPathBF(preSensor, fromSensor, toSensor);
                               end;
                            WHEN OTHERS =>
                               NULL;
