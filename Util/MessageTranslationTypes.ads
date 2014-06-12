@@ -3,6 +3,13 @@ USE Interfaces;
 
 package MessageTranslationTypes is
 
+   -- Types of paths
+   subtype pathType       is positive range 1..4;
+   kDepthFirst            : constant pathType := 1;
+   kBreadthFirst          : constant pathType := 2;
+   kDepthFirstFreeOnly    : constant pathType := 3;
+   kBreadthFirstFreeOnly  : constant pathType := 4;
+
    KTrainSlots             : CONSTANT Natural := 125;
    SUBTYPE SlotType        IS Natural RANGE 0 .. KTrainSlots;
 
@@ -29,7 +36,7 @@ package MessageTranslationTypes is
 										-- reading the XML layout file.
 
    -- Messages
-   KMaxLenMsg       : constant Integer := 1000; -- = kMaxLenFileName + 3, from RailroadManager.ads
+   KMaxLenMsg       : constant Integer := 1000; -- = 2 + 2 + maximum path length * 2
    type byteArrayType is array (1..kMaxLenMsg) of unsigned_8;
    TYPE MessageType IS RECORD
       byteArray : byteArrayType;

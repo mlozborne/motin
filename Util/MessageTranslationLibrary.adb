@@ -734,8 +734,10 @@ package body MessageTranslationLibrary is
          raise;
    end makeDoMakeSectionUsableMsg;
 
-   function makeGetPathMsg(preSensor: positive; fromSensor: positive; toSensor: positive) return MessageType is
-   -- <00><opcode><preSensor><fromSensor><toSensor>    (where sensor# is 2 bytes)
+   function makeGetPathMsg(trainId : trainIdType; pathKind : out pathType; 
+                           preSensor: positive; fromSensor: positive; toSensor: positive) 
+                           return MessageType is
+   -- <00><opcode><trainId><pathType><preSensor><fromSensor><toSensor>    (where sensor# is 2 bytes)
 		msg : messageType := nullMessage;
    begin
       msg.byteArray(1) := 16#00#;
@@ -1195,7 +1197,9 @@ package body MessageTranslationLibrary is
          raise;
    end splitDoMakeSectionUsableMsg;
 
-   procedure splitGetPathMsg   (msg : in MessageType; preSensor  : out positive;
+   procedure splitGetPathMsg   (msg : in MessageType; trainId    : out trainIdType;
+                                                      pathKind   : out pathType;
+                                                      preSensor  : out positive;
                                                       fromSensor : out positive;
                                                       toSensor   : out positive) is
    -- <00><opcode><preSensor><fromSensor><toSensor>        (sensor# is 2 bytes)
@@ -1418,17 +1422,21 @@ package body MessageTranslationLibrary is
    --***********************************************************************************
 
    function toEnglish(msg : messageType) return string is
-      slotNum, sectionId, switchId, physAdd, locoAdd,
-      physSlot, virtAdd, virtSlot, responseFlag, trainId,
+      slotNum, sectionId, switchId, 
+      physAdd, locoAdd,
+      physSlot, virtAdd, 
+      virtSlot, responseFlag,
       responseCode, speed, sensorId     : natural;
-	sensor1, sensor2, sensor3         : positive;
-	flag					    : natural;
+      sensor1, sensor2, sensor3         : positive;
+      trainId                           : trainIdType;
+      pathKind                          : pathType;
+      flag					                : natural;
       trainState                        : trainStateType;
       sectionState                      : sectionStateType;
       switchState                       : switchStateType;
       sensorState                       : sensorStateType;
       sensors                           : naturalListType;
-	count                             : natural;
+      count                             : natural;
       direction                         : directionType;
       light, bell, horn, mute, F5, F6   : onOffType;
       isHi                              : boolean;
@@ -1544,7 +1552,7 @@ package body MessageTranslationLibrary is
 				makeEmpty(sensors);
             return "putPath: [num sensors] [" & natural'image(count) & "]";
          when getPath =>
-            splitGetPathMsg(msg, sensor1, sensor2, sensor3);
+            splitGetPathMsg(msg, trainId, pathKind, sensor1, sensor2, sensor3);
             return "getPath: [pre, from, to sensors] [" & natural'image(sensor1) &
                                                           natural'image(sensor2) &
                                                           natural'image(sensor3) & "]";
