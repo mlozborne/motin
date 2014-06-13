@@ -3756,10 +3756,15 @@ PACKAGE BODY LayoutPkg IS
                            when getPath =>
                               declare
                                  preSensor, fromSensor, toSensor : positive;
+                                 slotNum                         : slotType;
+                                 pathKind                        : pathType;
                               begin
-                                 splitGetPathMsg(cmd, preSensor, fromSensor, toSensor);
-                                 -- LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor);
-                                 LayoutPtr.GetPathBF(preSensor, fromSensor, toSensor);
+                                 splitGetPathMsg(cmd, slotNum, pathKind, preSensor, fromSensor, toSensor);
+                                 if pathKind = kDepthFirst then
+                                    LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor);
+                                 elsif pathKind = kBreadthFirst then
+                                    LayoutPtr.GetPathBF(preSensor, fromSensor, toSensor);
+                                 end if;
                               end;
                            WHEN OTHERS =>
                               NULL;

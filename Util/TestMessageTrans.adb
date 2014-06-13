@@ -40,14 +40,16 @@ begin
       sensorCount        : natural;
       PreSensor, FromSensor, ToSensor  : Positive;
       value              : positive;
+      slotNum            : SlotType;
+      pathKind           : pathType;
    begin
       -- Testing getPath message
-      msg := makeGetPathMsg(100, 200, 300);
+      msg := makeGetPathMsg(1, kBreadthFirst, 100, 200, 300);
       put_line(toEnglish(msg));
-      splitGetPathMsg(msg, preSensor, fromSensor, toSensor);
+      splitGetPathMsg(msg, slotNum, pathKind, preSensor, fromSensor, toSensor);
       if preSensor /= 100 or fromSensor /= 200 or toSensor /= 300 then
-         put_line("    FAILED sensors = " & integer'image(preSensor) & 
-                                            integer'image(fromSensor) & 
+         put_line("    FAILED sensors = " & integer'image(preSensor) &
+                                            integer'image(fromSensor) &
                                             integer'image(toSensor));
       end if;
 

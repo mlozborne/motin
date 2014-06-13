@@ -42,7 +42,7 @@ package MessageTranslationLibrary is
    procedure splitDoSaveStateMsg            (msg : in MessageType; x : out  integer);
    procedure splitDoMakeSectionUsableMsg    (msg : in MessageType; sensor1 : out positive; sensor2 : out positive);
    PROCEDURE SplitFrontSensorFiredMsg       (msg : IN MessageType; TrainId : OUT TrainIdType);
-   procedure splitGetPathMsg                (msg : in messageType; trainId    : out trainIdType;
+   procedure splitGetPathMsg                (msg : in messageType; slotNum    : out SlotType;
                                                                    pathKind   : out pathType;
                                                                    preSensor  : out positive;
                                                                    fromSensor : out positive;
@@ -97,9 +97,11 @@ package MessageTranslationLibrary is
    function makeDoSaveStateMsg            (x : integer) return MessageType;
    function makeDoMakeSectionUsableMsg    (sensor1 : positive; sensor2 : positive) return MessageType;
    function makeFrontSensorFiredMsg       (trainId : trainIdType) return MessageType;
-   function makeGetPathMsg                (trainId : trainIdType; pathKind : out pathType; 
-                                           preSensor : positive; fromSensor : positive; toSensor : positive) 
-                                           return MessageType;
+   function makeGetPathMsg                (slotNum : SlotType; 
+                                           pathKind : pathType; 
+                                           preSensor : positive; 
+                                           fromSensor : positive; 
+                                           toSensor : positive) return MessageType;
    function makeGetSwitchStatesMsg        return MessageType;
    function makeGetSwitchSuccessorMsg     (x : integer) return MessageType;
    function makeLoseReservationMsg        (trainId : trainIdType) return MessageType;

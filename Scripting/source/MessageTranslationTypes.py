@@ -16,11 +16,19 @@ bitReportThrown      = 0x20
 
 #######################################################################
 # Some message constants
-kOn                   = 1        # For lights, horn, bell, mute, power
+kOn                   = 1        # For lights, horn, bell, mute, power, F5, F6
 kOff                  = 0
+kPowerValues          = (kOn, kOff)
+kLightsValues         = (kOn, kOff)
+kHornValues           = (kOn, kOff)
+kBellValues           = (kOn, kOff)
+kMuteValues           = (kOn, kOff)
+kF5Values             = (kOn, kOff)
+kF6Values             = (kOn, kOff)
 
 kForward              = 0        # For train direction
 kBackward             = 1
+kDirectionValues      = (kForward, kBackward)
 
 kMoving               = 0        # For train states
 kWaiting              = 1
@@ -29,7 +37,7 @@ kError                = 3
 kBeginChangeDirection = 4
 kBeginWaiting         = 5
 kBeginHalted          = 6
-kTrainStateList = ["Moving", "Waiting", "Halted", "Error", "BeginChangeDirection", "BeginWaiting", "BeginHalted"]
+kTrainStateList       = ("Moving", "Waiting", "Halted", "Error", "BeginChangeDirection", "BeginWaiting", "BeginHalted")
 
 kFree                 = 0        # For section states
 kReserved             = 1
@@ -42,9 +50,22 @@ kBeginClosed          = 2
 kBeginThrown          = 3
 kRead                 = 4
 kUnknown              = 5
+kSetRequestValues     = (kThrown, kClosed)
 
 kSensorOpen           = 0        # For sensor states
 kSensorClosed         = 1
+
+kDepthFirst           = 1        # For path types
+kBreadthFirst         = 2
+kDepthFirstFreeOnly   = 3
+kBreadthFirstFreeOnly = 4
+kPathKindValues       = (kBreadthFirst, kDepthFirst, kBreadthFirstFreeOnly, kDepthFirstFreeOnly)
+
+kSlotMin        = 1; kSlotMax        = 127
+kSpeedMin       = 0; kSpeedMax       = 127
+kSwitchMin      = 1; kSwitchMax      = 128
+kLocoAddressMin = 1; kLocoAddressMax = 9999
+kSensorMin      = 1; kSensorMax      = 16383
 
 #######################################################################
 # Opcodes sent to controller/railroad
@@ -84,35 +105,21 @@ putPath                        = 36
 
 #######################################################################
 # Constants used in messages
-kDirectionValues = (kForward, kBackward)
-kSetRequestValues = (kThrown, kClosed)
-kPowerValues = (kOn, kOff)
-kLightsValues = (kOn, kOff)
-kHornValues = (kOn, kOff)
-kBellValues = (kOn, kOff)
-kMuteValues = (kOn, kOff)
-kF5Values = (kOn, kOff)
-kF6Values = (kOn, kOff)
-kSlotMin = 1; kSlotMax = 127
-kSpeedMin = 0; kSpeedMax = 127
-kSwitchMin = 1; kSwitchMax = 128
-kLocoAddressMin = 1; kLocoAddressMax = 9999
-kSensorMin = 1; kSensorMax = 16383
 
 #######################################################################
 # Sent message formats
-PowerMsg                   = namedtuple('PowerMsg', 'setting')
-LocoSpdMsg                 = namedtuple('LocoSpdMsg', 'slot, speed')
-LocoDirfMsg                = namedtuple('LocoDirfMsg', 'slot, direction, lights, horn, bell')
-LocoSndMsg                 = namedtuple('LocoSndMsg', 'slot, mute, F5, F6')
-SwReqMsg                   = namedtuple('SwReqMsg', 'switch, direction')
-MoveSlotsMsg               = namedtuple('MoveSlotsMsg', 'slot1, slot2')
-LocoAdrMsg                 = namedtuple('LocoAdrMsg', 'address')
+PowerMsg                   = namedtuple('PowerMsg'               , 'setting')
+LocoSpdMsg                 = namedtuple('LocoSpdMsg'             , 'slot, speed')
+LocoDirfMsg                = namedtuple('LocoDirfMsg'            , 'slot, direction, lights, horn, bell')
+LocoSndMsg                 = namedtuple('LocoSndMsg'             , 'slot, mute, F5, F6')
+SwReqMsg                   = namedtuple('SwReqMsg'               , 'switch, direction')
+MoveSlotsMsg               = namedtuple('MoveSlotsMsg'           , 'slot1, slot2')
+LocoAdrMsg                 = namedtuple('LocoAdrMsg'             , 'address')
 WriteSlotDataToClearMsg    = namedtuple('WriteSlotDataToClearMsg', 'slot')
-DoLocoInitMsg              = namedtuple('DoLocoInitMsg', 'address, sensors')
-DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg', 'fileName')
-DoMakeSectionUsableMsg     = namedtuple('DoMakeSectionUsableMsg', 'sensor1, sensor2')
-GetPathMsg                 = namedtuple('GetPathMsg', 'preSensor, fromSensor, toSensor')
+DoLocoInitMsg              = namedtuple('DoLocoInitMsg'          , 'address, sensors')
+DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg'        , 'fileName')
+DoMakeSectionUsableMsg     = namedtuple('DoMakeSectionUsableMsg' , 'sensor1, sensor2')
+GetPathMsg                 = namedtuple('GetPathMsg'             , 'slotNum, pathKind, preSensor, fromSensor, toSensor')
 
 #######################################################################
 # Received message formats

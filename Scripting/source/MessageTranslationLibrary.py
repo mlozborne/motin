@@ -276,12 +276,16 @@ def makeDoMakeSectionUsableMsg(msg):
     return utConvertListToByteArray([lowByte, highByte] + st)
 
 def makeGetPathMsg(msg):
-    #<0><35><preSensor><fromSensor><toSensor>   where sensor is 2 bytes
+    #<0><35><slotNum><pathKind><preSensor><fromSensor><toSensor>   where sensor is 2 bytes
+    assert (kSlotMin <= msg.slotNum <= kSlotMax)
+    assert (msg.pathKind in kPathKindValues)
     assert (kSensorMin <= msg.preSensor <= kSensorMax)
     assert (kSensorMin <= msg.fromSensor <= kSensorMax)
     assert (kSensorMin <= msg.toSensor <= kSensorMax)
     st = [0]
     st.append(getPath)
+    st.append(msg.slotNum)
+    st.append(msg.pathKind)
     lowByte, highByte = utConvertNaturalToBytes(msg.preSensor)
     st.append(lowByte)
     st.append(highByte)

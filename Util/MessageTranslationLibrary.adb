@@ -734,18 +734,20 @@ package body MessageTranslationLibrary is
          raise;
    end makeDoMakeSectionUsableMsg;
 
-   function makeGetPathMsg(trainId : trainIdType; pathKind : out pathType; 
-                           preSensor: positive; fromSensor: positive; toSensor: positive) 
+   function makeGetPathMsg(slotNum : SlotType; pathKind : in pathType;
+                           preSensor: positive; fromSensor: positive; toSensor: positive)
                            return MessageType is
-   -- <00><opcode><trainId><pathType><preSensor><fromSensor><toSensor>    (where sensor# is 2 bytes)
+   -- <00><opcode><slotNum><pathType><preSensor><fromSensor><toSensor>    (where sensor# is 2 bytes)
 		msg : messageType := nullMessage;
    begin
-      msg.byteArray(1) := 16#00#;
-	   msg.byteArray(2) := getPath;
-	   convertNaturalToBytes(preSensor, msg.byteArray(3), msg.byteArray(4));
-	   convertNaturalToBytes(fromSensor, msg.byteArray(5), msg.byteArray(6));
-	   convertNaturalToBytes(toSensor, msg.byteArray(7), msg.byteArray(8));
-	   msg.size := 8;
+   msg.byteArray(1) := 16#00#;
+	msg.byteArray(2) := getPath;
+   msg.byteArray(3) := unsigned_8(slotNum);
+   msg.byteArray(4) := unsigned_8(pathKind);
+	convertNaturalToBytes(preSensor, msg.byteArray(5), msg.byteArray(6));
+	convertNaturalToBytes(fromSensor, msg.byteArray(7), msg.byteArray(8));
+	convertNaturalToBytes(toSensor, msg.byteArray(9), msg.byteArray(10));
+	msg.size := 10;
       return msg;
    exception
 	   when error : others =>
@@ -761,7 +763,7 @@ package body MessageTranslationLibrary is
 	   msg.byteArray(2) := putMakeSectionUsableResponse;
 	   convertNaturalToBytes(sensor1, msg.byteArray(3), msg.byteArray(4));
 	   convertNaturalToBytes(sensor2, msg.byteArray(5), msg.byteArray(6));
-		msg.byteArray(7) := unsigned_8(flag);
+	   msg.byteArray(7) := unsigned_8(flag);
 	   msg.size := 7;
       return msg;
    exception
@@ -1197,16 +1199,19 @@ package body MessageTranslationLibrary is
          raise;
    end splitDoMakeSectionUsableMsg;
 
-   procedure splitGetPathMsg   (msg : in MessageType; trainId    : out trainIdType;
+   procedure splitGetPathMsg   (msg : in MessageType; slotNum    : out SlotType;
                                                       pathKind   : out pathType;
                                                       preSensor  : out positive;
                                                       fromSensor : out positive;
                                                       toSensor   : out positive) is
-   -- <00><opcode><preSensor><fromSensor><toSensor>        (sensor# is 2 bytes)
+   -- <00><opcode><slotNum><pathKind><preSensor><fromSensor><toSensor>        (sensor# is 2 bytes)
    begin
-      preSensor  := convertBytesToNatural(msg.byteArray(3), msg.byteArray(4));
-      fromSensor := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
-      toSensor   := convertBytesToNatural(msg.byteArray(7), msg.byteArray(8));
+      put_line("????????????????????? " & natural'image(natural(msg.byteArray(3))));
+      slotNum := natural(msg.byteArray(3));
+      pathKind := natural(msg.byteArray(4));
+      preSensor  := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
+      fromSensor := convertBytesToNatural(msg.byteArray(7), msg.byteArray(8));
+      toSensor   := convertBytesToNatural(msg.byteArray(9), msg.byteArray(10));
    exception
 	   when error : others =>
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitGetPathMsg --" & kLFString & Exception_Information (error));
@@ -1422,13 +1427,13 @@ package body MessageTranslationLibrary is
    --***********************************************************************************
 
    function toEnglish(msg : messageType) return string is
-      slotNum, sectionId, switchId, 
+      slotNum, sectionId, switchId,
       physAdd, locoAdd,
-      physSlot, virtAdd, 
+      physSlot, virtAdd,
       virtSlot, responseFlag,
       responseCode, speed, sensorId     : natural;
       sensor1, sensor2, sensor3         : positive;
-      trainId                           : trainIdType;
+      trainId                           : positive;
       pathKind                          : pathType;
       flag					                : natural;
       trainState                        : trainStateType;
@@ -1552,10 +1557,13 @@ package body MessageTranslationLibrary is
 				makeEmpty(sensors);
             return "putPath: [num sensors] [" & natural'image(count) & "]";
          when getPath =>
-            splitGetPathMsg(msg, trainId, pathKind, sensor1, sensor2, sensor3);
-            return "getPath: [pre, from, to sensors] [" & natural'image(sensor1) &
-                                                          natural'image(sensor2) &
-                                                          natural'image(sensor3) & "]";
+            splitGetPathMsg(msg, slotNum, pathKind, sensor1, sensor2, sensor3);
+            return "getPath: [slotNum, pathKind, pre, from, to sensors] [" &
+                    natural'image(slotNum) &
+                    natural'image(pathKind) &
+                    natural'image(sensor1) &
+                    natural'image(sensor2) &
+                    natural'image(sensor3) & "]";
          when putSectionState =>
             splitPutSectionStateMsg(msg, sectionId, sectionState);
             return "putSectionState: sectionId/state" & natural'image(sectionId) & " " & sectionStateType'image(sectionState);
