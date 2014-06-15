@@ -37,6 +37,8 @@ def makeMsgStr(msg):
         return makeDoMakeSectionUsableMsg(msg)
     elif isinstance(msg, GetPathMsg):
         return makeGetPathMsg(msg)
+    elif isinstance(msg, GetTrainPositionMsg):
+        return makeGetTrainPositionMsg(msg)
     else:
         return msg
 
@@ -298,6 +300,14 @@ def makeGetPathMsg(msg):
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return utConvertListToByteArray([lowByte, highByte] + st)
 
+def makeGetTrainPositionMsg(msg):
+    #<0><31><slotNum>
+    assert (kSlotMin <= msg.slotNum <= kSlotMax)
+    st = [0]
+    st.append(getTrainPosition)
+    st.append(msg.slotNum)
+    lowByte, highByte = utConvertNaturalToBytes(len(st))
+    return utConvertListToByteArray([lowByte, highByte] + st)
 
 #######################################################################
 # Split routines

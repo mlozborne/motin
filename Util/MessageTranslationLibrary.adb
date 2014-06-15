@@ -656,6 +656,22 @@ package body MessageTranslationLibrary is
          raise;
    end makePutTrainPositionMsg;
 
+   function makeGetTrainPositionMsg(slot : slotType) return MessageType is
+   -- <00> <opcode> <slot#>
+
+	   msg               : messageType := nullMessage;
+   begin
+      msg.byteArray(1) := 16#00#;
+	   msg.byteArray(2) := getTrainPosition;
+	   msg.byteArray(3) := unsigned_8(slot);
+	   msg.size := 3;
+		return msg;
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.makeGetTrainPositionMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end makeGetTrainPositionMsg;
+
    function makePutPathMsg(sensors : naturalListType) return  messageType is
    -- <00> <opcode><count><sensor#>...<sensor#>         (where count and sensor# are 2 bytes each)
    -- where sensor# are listed from path start to path end
@@ -1150,6 +1166,16 @@ package body MessageTranslationLibrary is
          raise;
    end splitPutTrainPositionMsg;
 
+   procedure splitGetTrainPositionMsg(msg : in MessageType; slot : out slotType) is
+   -- <00> <opcode> <slot#>
+   begin
+      slot := natural(msg.byteArray(3));
+   exception
+	   when error : others =>
+		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitGetTrainPositionMsg --" & kLFString & Exception_Information (error));
+         raise;
+   end splitGetTrainPositionMsg;
+
    procedure splitPutPathMsg(msg : in MessageType; sensors : in out naturalListType) is
    -- <00> <opcode> <count><sensor#>...<sensor#>      (where count and sensor# are 2 bytes each)
    -- where sensor# are listed from start of path to end of path
@@ -1206,7 +1232,6 @@ package body MessageTranslationLibrary is
                                                       toSensor   : out positive) is
    -- <00><opcode><slotNum><pathKind><preSensor><fromSensor><toSensor>        (sensor# is 2 bytes)
    begin
-      put_line("????????????????????? " & natural'image(natural(msg.byteArray(3))));
       slotNum := natural(msg.byteArray(3));
       pathKind := natural(msg.byteArray(4));
       preSensor  := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
@@ -1551,6 +1576,9 @@ package body MessageTranslationLibrary is
 				count := getCount(sensors);
 				makeEmpty(sensors);
             return "putTrainPosition: [(trainId or slot)/num sensors] [" & natural'image(slotNum) & "/" & natural'image(count) & "]";
+         when getTrainPosition =>
+            splitGetTrainPositionMsg(msg, slotNum);
+            return "getTrainPosition: slot = " & natural'image(slotNum);
          when putPath =>
             splitPutPathMsg(msg, sensors);
 				count := getCount(sensors);

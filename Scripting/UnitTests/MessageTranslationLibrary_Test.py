@@ -89,6 +89,10 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 35, 1, kBreadthFirst, (200 % 128), (200 // 128), (300 % 128), (300 // 128) , (400 % 128), (400 // 128)]
         self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
 
+        msg = GetTrainPositionMsg(slotNum=119)
+        st = [0, 31, 119]
+        self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
+
     # noinspection PyListCreation
     def testSplitMsgStr(self):
         pass

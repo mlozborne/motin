@@ -1251,7 +1251,9 @@ PACKAGE BODY LayoutPkg IS
          sendToOutQueue(makePutPathMsg(sList)); 
          
          -- Recover list memory
-         makeEmpty(sList);         
+         makeEmpty(sList);     
+
+         --x recover qu memory
          
          -- makeEmpty(sList);
          -- addEnd(sList, 8);

@@ -48,6 +48,7 @@ package MessageTranslationLibrary is
                                                                    fromSensor : out positive;
                                                                    toSensor   : out positive);
    procedure splitGetSwitchSuccessorMsg     (msg : in MessageType; x : out  integer);
+   procedure splitGetTrainPositionMsg       (msg : in MessageType; slot : out SlotType);
    PROCEDURE SplitLoseReservationMsg        (msg : IN MessageType; TrainId : OUT TrainIdType);
    procedure splitPutInitOutcomeMsg         (msg : in MessageType; physAdd : out locoAddressType; physSlot : out slotType;
                                                                    virtAdd : out locoAddressType; virtSlot : out slotType);
@@ -104,6 +105,7 @@ package MessageTranslationLibrary is
                                            toSensor : positive) return MessageType;
    function makeGetSwitchStatesMsg        return MessageType;
    function makeGetSwitchSuccessorMsg     (x : integer) return MessageType;
+   function makeGetTrainPositionMsg       (slot : slotType) return MessageType;
    function makeLoseReservationMsg        (trainId : trainIdType) return MessageType;
    function makePutInitOutcomeMsg         (physicallocoAddress : locoAddressType; physicalSlotNum : slotType;
                                            virtuallocoAddress : locoAddressType; virtualSlotNum : slotType) return MessageType;

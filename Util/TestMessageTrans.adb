@@ -43,6 +43,14 @@ begin
       slotNum            : SlotType;
       pathKind           : pathType;
    begin
+      -- Testing getTrainPosition message
+      msg := makeGetTrainPositionMsg(119);
+      put_line(toEnglish(msg));
+      splitGetTrainPositionMsg(msg, slotNum);
+      if slotNum /= 119 then
+         put_line("    FAILED slotNum = " & integer'image(slotNum));
+      end if;
+      
       -- Testing getPath message
       msg := makeGetPathMsg(1, kBreadthFirst, 100, 200, 300);
       put_line(toEnglish(msg));

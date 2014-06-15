@@ -16,15 +16,15 @@ package MessageTranslationTypes is
    kMaxLocoAddress         : constant natural := 9999;
    subtype LocoAddressType is natural range 0..kMaxLocoAddress;
 
-   kMaxSpeed               : natural := 127; 
+   kMaxSpeed               : natural := 127;
    SUBTYPE SpeedType       IS Integer RANGE 0..kMaxSpeed;
 
    KNumTrains              : CONSTANT Natural := 4;
    SUBTYPE TrainIdType     IS natural RANGE 0..KNumTrains;
-	
+
    kMaxNumSwitches         : constant natural := 65000;
    subtype switchIdType    is natural range 1..kMaxNumSwitches;
-	
+
    TYPE  DirectionType    IS (Forward, Backward);
    TYPE  OnOffType        IS (Off, On);
    type  sensorStateType  is (open, closed);
@@ -32,7 +32,7 @@ package MessageTranslationTypes is
    type  trainStateType   is (moving, waiting, halted, error, beginChangeDirection, beginWaiting, beginHalted);
    type  switchStateType  is (Closed, Thrown, BeginClosed, BeginThrown, Read, Unknown);
 										-- "Read" is a tempory state that indicates the controller must
-										-- ask the turnout for its current state. This is used while 
+										-- ask the turnout for its current state. This is used while
 										-- reading the XML layout file.
 
    -- Messages
@@ -41,7 +41,7 @@ package MessageTranslationTypes is
    TYPE MessageType IS RECORD
       byteArray : byteArrayType;
       Size      : Integer range 0..kMaxLenMsg := 0;
-   END RECORD;   
+   END RECORD;
 
 	-- Opcodes for LocoNet messages
    OPC_GPOFF      : constant unsigned_8 := 16#82#; -- power off
@@ -55,12 +55,12 @@ package MessageTranslationTypes is
    OPC_INPUT_REP  : constant unsigned_8 := 16#B2#; -- report sensor fired
    OPC_LONG_ACK   : constant unsigned_8 := 16#B4#; -- if 2nd byte = 3F, then insufficient slots
 	                                                -- if 2nd byte = 3C, then turnout state
-   OPC_MOVE_SLOTS : constant unsigned_8 := 16#BA#; -- set a slot to in-use	
+   OPC_MOVE_SLOTS : constant unsigned_8 := 16#BA#; -- set a slot to in-use
    OPC_LOCO_ADR   : constant unsigned_8 := 16#BF#; -- request for slot data
    OPC_SL_RD_DATA : constant unsigned_8 := 16#E7#; -- slot data response
    OPC_WR_SL_DATA : constant unsigned_8 := 16#EF#; -- write data into a slot
 
-   -- Opcodes for extended messages 
+   -- Opcodes for extended messages
    -- Prefix of "msg" means the message is used only inside the controller
    -- Other messages are between an OThrottle and the controller
    putTrainState                    : constant unsigned_8 := unsigned_8(1);
@@ -89,9 +89,10 @@ package MessageTranslationTypes is
    msgTrainTaskQuit      				: constant unsigned_8 := unsigned_8(24);
    msgReinitializeTrain  				: constant unsigned_8 := unsigned_8(25);
 	putPowerChangeComplete 				: constant unsigned_8 := unsigned_8(26);
+   getTrainPosition                 : constant unsigned_8 := unsigned_8(31);
 	doMakeSectionUsable   				: constant unsigned_8 := unsigned_8(33);
 	putMakeSectionUsableResponse     : constant unsigned_8 := unsigned_8(34);
 	getPath                          : constant unsigned_8 := unsigned_8(35);
 	putPath                          : constant unsigned_8 := unsigned_8(36);
-   
+
 end MessageTranslationTypes;
