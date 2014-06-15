@@ -34,14 +34,15 @@ User level object
 """
 
 from Log                       import gLog
-from MessageTranslationLibrary import InputRepMsg
-from MessageTranslationLibrary import PutInitOutcomeMsg
-from MessageTranslationLibrary import PutReadLayoutResponseMsg
-from MessageTranslationLibrary import PutSensorStateMsg
+from MessageTranslationTypes   import InputRepMsg
+from MessageTranslationTypes   import PutInitOutcomeMsg
+from MessageTranslationTypes   import PutReadLayoutResponseMsg
+from MessageTranslationTypes   import PutSensorStateMsg
 from MessageTranslationLibrary import makeMsgStr
 from MessageTranslationLibrary import splitMsgStr
-from MessageTranslationLibrary import PutPathMsg
+from MessageTranslationTypes   import PutPathMsg
 from MessageTranslationTypes   import ControllerInMsgs
+from MessageTranslationTypes   import PutTrainPositionMsg
 from time                      import sleep
 
 from collections import namedtuple
@@ -166,7 +167,7 @@ class MsgHandler(object):
                 #gLog.print("waitFor: back from qu with message {0}".format(m))
                 if type(m) == type(msg):
                     break
-            if isinstance(m, PutReadLayoutResponseMsg) or isinstance(m, PutPathMsg) :
+            if isinstance(m, PutReadLayoutResponseMsg) or isinstance(m, PutPathMsg) or isinstance(PutTrainPositionMsg):
                 break
             if isinstance(m, InputRepMsg) and m.sensor == msg.sensor:
                 break

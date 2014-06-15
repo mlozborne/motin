@@ -82,6 +82,7 @@ OPC_SW_STATE           = 0xBC # request state of a turnout
 doLocoInit             = 8
 doReadLayout           = 10
 getSwitchStates        = 22
+getTrainPosition       = 31
 doMakeSectionUsable    = 33
 getPath                = 35
 
@@ -120,6 +121,7 @@ DoLocoInitMsg              = namedtuple('DoLocoInitMsg'          , 'address, sen
 DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg'        , 'fileName')
 DoMakeSectionUsableMsg     = namedtuple('DoMakeSectionUsableMsg' , 'sensor1, sensor2')
 GetPathMsg                 = namedtuple('GetPathMsg'             , 'slotNum, pathKind, preSensor, fromSensor, toSensor')
+GetTrainPositionMsg        = namedtuple('GetTrainPositionMsg'    , 'slotNum')
 
 #######################################################################
 # Received message formats
