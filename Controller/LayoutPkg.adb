@@ -1054,6 +1054,21 @@ PACKAGE BODY LayoutPkg IS
          return;
       end getPathHelperDF;
        
+      procedure getTrainPosition(trainId : trainIdType) is
+         trainPtr : trainNodePtr := pkgTrainList;
+      begin
+         while trainPtr /= null loop
+            if trainPtr.trainId = trainId then
+               makePutTrainPositionMsg(trainId, ???????????????
+         end loop;
+      EXCEPTION
+         WHEN Error : OTHERS =>
+            put_line("**************** EXCEPTION Layout pkg in getTrainPosition: " & Exception_Information(Error));
+            put_line("    trainId" & integer'image(trainId));
+            raise;
+      END getTrainPosition;      
+      
+      
       procedure getPathDF(preSensor : positive; fromSensor : positive; toSensor : positive) is
          sList        : naturalListType;
          success      : boolean := false; 
@@ -3754,6 +3769,13 @@ PACKAGE BODY LayoutPkg IS
                               begin
                                  splitDoMakeSectionUsableMsg(cmd, sensor1, sensor2);
                                  LayoutPtr.MakeSectionUsable(sensor1, sensor2);
+                              end;
+                           when getTrainPosition =>
+                              declare
+                                 trainId : trainIdType
+                              begin
+                                 splitGetTrainPositionMsg(cmd, trainId);
+                                 layoutPtr.getTrainPosition(trainId);
                               end;
                            when getPath =>
                               declare

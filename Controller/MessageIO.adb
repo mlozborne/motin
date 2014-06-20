@@ -500,7 +500,17 @@ PACKAGE BODY MessageIO IS
                                  end if;
                               end;
                            WHEN OTHERS =>
-                              CommandQueueManager.put(InternalMessage);
+                              if myArray(1) = 0 and myArray(2) = getTrainPosition then
+                                 SlotLookupTable.VirtSlotNumToTrainId(Integer(MyArray(3)), trainId, found);
+                                 if found then
+                                    internalMessage.ByteArray(3) := Unsigned_8(TrainId);
+                                    CommandQueueManager.put(InternalMessage);
+                                 else  
+                                    myPutLine("       ... message ignored because not using an established virtual slot number ");
+                                 end if;
+                              else
+                                 CommandQueueManager.put(InternalMessage);
+                              end if;
                         END CASE;
                      end if;
                   end if;
