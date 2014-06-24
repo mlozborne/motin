@@ -278,15 +278,15 @@ def makeDoMakeSectionUsableMsg(msg):
     return utConvertListToByteArray([lowByte, highByte] + st)
 
 def makeGetPathMsg(msg):
-    #<0><35><slotNum><pathKind><preSensor><fromSensor><toSensor>   where sensor is 2 bytes
-    assert (kSlotMin <= msg.slotNum <= kSlotMax)
+    #<0><35><slot><pathKind><preSensor><fromSensor><toSensor>   where sensor is 2 bytes
+    assert (kSlotMin <= msg.slot <= kSlotMax)
     assert (msg.pathKind in kPathKindValues)
     assert (kSensorMin <= msg.preSensor <= kSensorMax)
     assert (kSensorMin <= msg.fromSensor <= kSensorMax)
     assert (kSensorMin <= msg.toSensor <= kSensorMax)
     st = [0]
     st.append(getPath)
-    st.append(msg.slotNum)
+    st.append(msg.slot)
     st.append(msg.pathKind)
     lowByte, highByte = utConvertNaturalToBytes(msg.preSensor)
     st.append(lowByte)
@@ -301,11 +301,11 @@ def makeGetPathMsg(msg):
     return utConvertListToByteArray([lowByte, highByte] + st)
 
 def makeGetTrainPositionMsg(msg):
-    #<0><31><slotNum>
-    assert (kSlotMin <= msg.slotNum <= kSlotMax)
+    #<0><31><slot>
+    assert (kSlotMin <= msg.slot <= kSlotMax)
     st = [0]
     st.append(getTrainPosition)
-    st.append(msg.slotNum)
+    st.append(msg.slot)
     lowByte, highByte = utConvertNaturalToBytes(len(st))
     return utConvertListToByteArray([lowByte, highByte] + st)
 

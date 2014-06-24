@@ -167,7 +167,7 @@ class MsgHandler(object):
                 #gLog.print("waitFor: back from qu with message {0}".format(m))
                 if type(m) == type(msg):
                     break
-            if isinstance(m, PutReadLayoutResponseMsg) or isinstance(m, PutPathMsg) or isinstance(PutTrainPositionMsg):
+            if isinstance(m, PutReadLayoutResponseMsg) or isinstance(m, PutPathMsg) or isinstance(m, PutTrainPositionMsg):
                 break
             if isinstance(m, InputRepMsg) and m.sensor == msg.sensor:
                 break

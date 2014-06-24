@@ -144,11 +144,10 @@ class Throttle(object):
 
     def goTo(self, speed, destination):
         self.addInterest(PutTrainPositionMsg)
-        self.put(GetTrainPositionMsg(slot=self.virtSlot, sensors=[]))
+        self.put(GetTrainPositionMsg(slot=self.virtSlot))
         done = False
         while not done:
-            st = self.waitFor(PutTrainPositionMsg(slot=self.virtSlot, sensors=[]))
-            msg = splitPutTrainPositionStr(st)
+            msg = self.waitFor(PutTrainPositionMsg(slot=self.virtSlot, sensors=[]))
             if msg.slot == self.virtSlot:
                 self.removeInterest(PutTrainPositionMsg)
                 done = True
@@ -240,7 +239,7 @@ class Throttle(object):
 
     def getPath(self, pathKind, preSensor, fromSensor, toSensor):
         gLog.print("Throttle {0}: sending GetPathMsg".format(self.name))
-        self.put(GetPathMsg(slotNum=self.virtSlot, pathKind=pathKind, preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor))
+        self.put(GetPathMsg(slot=self.virtSlot, pathKind=pathKind, preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor))
         self.addInterest(PutPathMsg)
         msg = self.waitFor(PutPathMsg(sensors=[]))
         self.removeInterest(PutPathMsg)
