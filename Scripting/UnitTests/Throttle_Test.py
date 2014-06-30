@@ -91,17 +91,20 @@ if __name__ == "__main__":
     elif testing == 4:
         msg = myThrottle.initTrain(4444, [8, 4])
         myThrottle.setLights(kOn)
-        myThrottle.setSpeed(100)
-        # myPath = myThrottle.getPath(kDepthFirst, 4, 8, 4)
-        # myPath = [8,33,35,62,59,80,76,74,94,91,100,98]
+
+        # myThrottle.setSpeed(100)
+        # myPath = myThrottle.getPath(kBreadthFirst, 4, 8, 94)
+        # myPath = [8,33,35,62,59,80,76,74,94]
+
+        myThrottle.atSpeedGoTo(100, 94)
         # myThrottle.followSensorPath(myPath)
+        myThrottle.atSensorDo(94, stopTrain)
         # myCommandPath = [(82, (setDirection, kBackward))]
         # myThrottle.followCommandPath(myCommandPath)
         # myPath = [98,101,104,106,107]
         # myThrottle.followSensorPath(myPath)
-        myThrottle.goTo(100, 57)
-        myThrottle.do(stopTrain)
-        myThrottle.do(blinkLights, 4)
+        # myThrottle.do(stopTrain)
+        # myThrottle.do(blinkLights, 4)
 
     # Option 2: using throttle commands
     """

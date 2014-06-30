@@ -19,8 +19,8 @@ def doCommands(throttle, commands):
         if len(command) == 3:
             throttle.do(command[0], command[1], command[2])
 
-def goTo(self, speed, destination):
-    self.goTo(speed, destination)
+def atSpeedGoTo(self, speed, destination):
+    self.atSpeedGoTo(speed, destination)
 
 def followCommandPath(self, commandPath):
     self.followCommandPath(commandPath)
@@ -33,6 +33,9 @@ def followSensorPath(self, path):
 
 def addInterest(self, interest):
     self.addInterest(interest)
+
+def atSensorDo(self, sensor, command):
+    self.atSensorDo(sensor, command)
 
 def removeInterest(self, interest):
     self.removeInterest(interest)
@@ -142,7 +145,7 @@ class Throttle(object):
     def put(self, msg):
         self.msgHandler.put(msg)
 
-    def goTo(self, speed, destination):
+    def atSpeedGoTo(self, speed, destination):
         self.addInterest(PutTrainPositionMsg)
         self.put(GetTrainPositionMsg(slot=self.virtSlot))
         done = False
@@ -177,6 +180,10 @@ class Throttle(object):
             if len(command) == 3:
                 self.do(command[0], command[1], command[2])
         self.removeInterest(PutSensorStateMsg)
+
+    def atSensorDo(self, sensor, command):
+        commandPath = [(sensor, (command,))]
+        followCommandPath(self, commandPath)
 
     def followSwitchPath(self, path):
         """
@@ -239,8 +246,8 @@ class Throttle(object):
 
     def getPath(self, pathKind, preSensor, fromSensor, toSensor):
         gLog.print("Throttle {0}: sending GetPathMsg".format(self.name))
-        self.put(GetPathMsg(slot=self.virtSlot, pathKind=pathKind, preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor))
         self.addInterest(PutPathMsg)
+        self.put(GetPathMsg(slot=self.virtSlot, pathKind=pathKind, preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor))
         msg = self.waitFor(PutPathMsg(sensors=[]))
         self.removeInterest(PutPathMsg)
         return msg.sensors

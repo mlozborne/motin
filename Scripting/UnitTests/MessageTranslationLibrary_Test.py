@@ -85,11 +85,11 @@ class TestMessageTranslationLibrary(unittest.TestCase):
         st = [0, 33, (200 % 128), (200 // 128), (300 % 128), (300 // 128)]
         self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
 
-        msg = GetPathMsg(slotNum=1, pathKind=kBreadthFirst, preSensor=200, fromSensor=300, toSensor=400)
+        msg = GetPathMsg(slot=1, pathKind=kBreadthFirst, preSensor=200, fromSensor=300, toSensor=400)
         st = [0, 35, 1, kBreadthFirst, (200 % 128), (200 // 128), (300 % 128), (300 // 128) , (400 % 128), (400 // 128)]
         self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
 
-        msg = GetTrainPositionMsg(slotNum=119)
+        msg = GetTrainPositionMsg(slot=119)
         st = [0, 31, 119]
         self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
 
