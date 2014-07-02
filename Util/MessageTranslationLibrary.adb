@@ -750,20 +750,37 @@ package body MessageTranslationLibrary is
          raise;
    end makeDoMakeSectionUsableMsg;
 
-   function makeGetPathMsg(slotNum : SlotType; pathKind : in pathType;
-                           preSensor: positive; fromSensor: positive; toSensor: positive)
+   function makeGetPathMsg(slotNum             : SlotType; 
+                           pathKind            : in pathType;
+                           preSensor           : positive; 
+                           fromSensor          : positive; 
+                           toSensor            : positive;
+                           sensorsToExclude    : naturalListType)
                            return MessageType is
-   -- <00><opcode><slotNum><pathType><preSensor><fromSensor><toSensor>    (where sensor# is 2 bytes)
-		msg : messageType := nullMessage;
+   -- <00><opcode><slotNum><pathType><preSensor><fromSensor><toSensor><count><sensor#>...<sensor#>    (count 1 byte; sensor# 2 bytes)
+		msg   : messageType := nullMessage;
+      count              : natural := getCount(sensorsToExclude);
+      iter               : listIteratorType;
+      value              : natural;
+      lowByte, highByte  : unsigned_8;
    begin
-   msg.byteArray(1) := 16#00#;
-	msg.byteArray(2) := getPath;
-   msg.byteArray(3) := unsigned_8(slotNum);
-   msg.byteArray(4) := unsigned_8(pathKind);
-	convertNaturalToBytes(preSensor, msg.byteArray(5), msg.byteArray(6));
-	convertNaturalToBytes(fromSensor, msg.byteArray(7), msg.byteArray(8));
-	convertNaturalToBytes(toSensor, msg.byteArray(9), msg.byteArray(10));
-	msg.size := 10;
+      msg.byteArray(1) := 16#00#;
+      msg.byteArray(2) := getPath;
+      msg.byteArray(3) := unsigned_8(slotNum);
+      msg.byteArray(4) := unsigned_8(pathKind);
+      convertNaturalToBytes(preSensor, msg.byteArray(5), msg.byteArray(6));
+      convertNaturalToBytes(fromSensor, msg.byteArray(7), msg.byteArray(8));
+      convertNaturalToBytes(toSensor, msg.byteArray(9), msg.byteArray(10));
+      msg.byteArray(11) := unsigned_8(count);
+	   iter := moveFront(sensorsToExclude);
+	   for i in 1..count loop
+	      value := getCurrent(iter);
+	      convertNaturalToBytes(value, lowByte, highByte);
+	      msg.byteArray(11 + 2*i-1) := lowByte;
+	      msg.byteArray(11 + 2*i)   := highByte;
+	      iter := moveNext(iter);
+	   end loop;
+	   msg.size := 11 + 2 * count;
       return msg;
    exception
 	   when error : others =>
@@ -1225,18 +1242,26 @@ package body MessageTranslationLibrary is
          raise;
    end splitDoMakeSectionUsableMsg;
 
-   procedure splitGetPathMsg   (msg : in MessageType; slotNum    : out SlotType;
-                                                      pathKind   : out pathType;
-                                                      preSensor  : out positive;
-                                                      fromSensor : out positive;
-                                                      toSensor   : out positive) is
-   -- <00><opcode><slotNum><pathKind><preSensor><fromSensor><toSensor>        (sensor# is 2 bytes)
+   procedure splitGetPathMsg   (msg : in MessageType; slotNum             : out SlotType;
+                                                      pathKind            : out pathType;
+                                                      preSensor           : out positive;
+                                                      fromSensor          : out positive;
+                                                      toSensor            : out positive;
+                                                      sensorsToExclude    : out naturalListType) is
+      -- <00><opcode><slotNum><pathKind><preSensor><fromSensor><toSensor><count><sensor#>...<sensor#>        (count 1 byte; sensor# 2 bytes)
+      count : natural;
    begin
       slotNum := natural(msg.byteArray(3));
       pathKind := natural(msg.byteArray(4));
       preSensor  := convertBytesToNatural(msg.byteArray(5), msg.byteArray(6));
       fromSensor := convertBytesToNatural(msg.byteArray(7), msg.byteArray(8));
       toSensor   := convertBytesToNatural(msg.byteArray(9), msg.byteArray(10));
+      count := natural(msg.byteArray(11));
+	   makeEmpty(sensorsToExclude);
+	   for i in 1..count loop
+	      addEnd(sensorsToExclude, convertBytesToNatural(msg.byteArray(11 + 2*i-1), msg.byteArray(11 + 2*i)));
+      end loop;
+      
    exception
 	   when error : others =>
 		   put_line("**************** EXCEPTION in MessageTranslationLibrary.splitGetPathMsg --" & kLFString & Exception_Information (error));
@@ -1585,13 +1610,15 @@ package body MessageTranslationLibrary is
 				makeEmpty(sensors);
             return "putPath: [num sensors] [" & natural'image(count) & "]";
          when getPath =>
-            splitGetPathMsg(msg, slotNum, pathKind, sensor1, sensor2, sensor3);
-            return "getPath: [slotNum, pathKind, pre, from, to sensors] [" &
+            splitGetPathMsg(msg, slotNum, pathKind, sensor1, sensor2, sensor3, sensors);
+            count := getCount(sensors);
+            return "getPath: [slotNum, pathKind, pre, from, to sensors, count of excluded sensors] [" &
                     natural'image(slotNum) &
-                    natural'image(pathKind) &
+                    natural'image(pathKind)&
                     natural'image(sensor1) &
                     natural'image(sensor2) &
-                    natural'image(sensor3) & "]";
+                    natural'image(sensor3) & 
+                    natural'image(count)   & "]";
          when putSectionState =>
             splitPutSectionStateMsg(msg, sectionId, sectionState);
             return "putSectionState: sectionId/state" & natural'image(sectionId) & " " & sectionStateType'image(sectionState);

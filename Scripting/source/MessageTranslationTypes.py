@@ -120,7 +120,7 @@ WriteSlotDataToClearMsg    = namedtuple('WriteSlotDataToClearMsg', 'slot')
 DoLocoInitMsg              = namedtuple('DoLocoInitMsg'          , 'address, sensors')
 DoReadLayoutMsg            = namedtuple('DoReadLayoutMsg'        , 'fileName')
 DoMakeSectionUsableMsg     = namedtuple('DoMakeSectionUsableMsg' , 'sensor1, sensor2')
-GetPathMsg                 = namedtuple('GetPathMsg'             , 'slot, pathKind, preSensor, fromSensor, toSensor')
+GetPathMsg                 = namedtuple('GetPathMsg'             , 'slot, pathKind, preSensor, fromSensor, toSensor, sensorsToExclude')
 GetTrainPositionMsg        = namedtuple('GetTrainPositionMsg'    , 'slot')
 
 #######################################################################

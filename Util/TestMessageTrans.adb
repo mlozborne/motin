@@ -52,13 +52,20 @@ begin
       end if;
       
       -- Testing getPath message
-      msg := makeGetPathMsg(1, kBreadthFirst, 100, 200, 300);
+      -- sensors is sensorsToExclude
+      makeEmpty(sensors);
+      for i in 1..4 loop
+         addEnd(sensors, 1000 + i);
+      end loop;
+      msg := makeGetPathMsg(1, kBreadthFirst, 100, 200, 300, sensors);
       put_line(toEnglish(msg));
-      splitGetPathMsg(msg, slotNum, pathKind, preSensor, fromSensor, toSensor);
-      if preSensor /= 100 or fromSensor /= 200 or toSensor /= 300 then
+      splitGetPathMsg(msg, slotNum, pathKind, preSensor, fromSensor, toSensor, sensors);
+      sensorCount := getCount(sensors);
+      if preSensor /= 100 or fromSensor /= 200 or toSensor /= 300 or sensorCount /= 4 then
          put_line("    FAILED sensors = " & integer'image(preSensor) &
                                             integer'image(fromSensor) &
-                                            integer'image(toSensor));
+                                            integer'image(toSensor) & 
+                                            integer'image(sensorCount));
       end if;
 
       -- Testing putPath message

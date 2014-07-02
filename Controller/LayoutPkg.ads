@@ -78,8 +78,8 @@ PACKAGE LayoutPkg IS
       procedure freeAllSectionsOccupiedOrReservedByTrain(trainId : TrainIdType);
       PROCEDURE GetSwitchStates;
       procedure getTrainPosition     (trainId : trainIdType);
-      procedure getPathBF            (preSensor : positive; fromSensor : positive; toSensor : positive);
-      procedure getPathDF            (preSensor : positive; fromSensor : positive; toSensor : positive);
+      procedure getPathBF            (preSensor : positive; fromSensor : positive; toSensor : positive; sensorsToExclude : naturalListType);
+      procedure getPathDF            (preSensor : positive; fromSensor : positive; toSensor : positive; sensorsToExclude : naturalListType);
       procedure MakeSectionUsable    (sensor1 : positive; sensor2 : positive);
       PROCEDURE MakeReservation      (TrainId :        TrainIdType;
                                       Result  :    OUT Boolean);

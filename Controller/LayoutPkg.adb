@@ -984,11 +984,12 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END MakeSectionUsable;      
       
-      procedure getPathHelperDF(preSensor  : in positive;
-                              fromSensor : in positive;
-                              toSensor   : in positive;
-                              sList      : in out naturalListType;
-                              success    : out boolean) is
+      procedure getPathHelperDF(preSensor      : in positive;
+                                fromSensor       : in positive;
+                                toSensor         : in positive;
+                                sList            : in out naturalListType;
+                                sensorsToExclude : in naturalListType;
+                                success          : out boolean) is
          thisSection, ptr         : sectionNodePtr;
          sectionList              : sectionNodeList;
          s1, s2, otherSensor      : positive;
@@ -1037,10 +1038,10 @@ PACKAGE BODY LayoutPkg IS
                s1 := ptr.section.SensorList.head.sensor.id;
                s2 := ptr.section.SensorList.tail.sensor.id;
                if fromSensor = s1 then
-                  getPathHelperDF(s1, s2, toSensor, sList, success);
+                  getPathHelperDF(s1, s2, toSensor, sList, sensorsToExclude, success);
                   otherSensor := s2;
               else
-                  getPathHelperDF(s2, s1, toSensor, sList, success);
+                  getPathHelperDF(s2, s1, toSensor, sList, sensorsToExclude, success);
                   otherSensor := s1;
                end if;
                if success then
@@ -1065,7 +1066,7 @@ PACKAGE BODY LayoutPkg IS
       END getTrainPosition;      
       
       
-      procedure getPathDF(preSensor : positive; fromSensor : positive; toSensor : positive) is
+      procedure getPathDF(preSensor : positive; fromSensor : positive; toSensor : positive; sensorsToExclude : naturalListType) is
          sList        : naturalListType;
          success      : boolean := false; 
          ptr1         : sectionNodePtr := pkgSectionList.head;
@@ -1091,7 +1092,7 @@ PACKAGE BODY LayoutPkg IS
          
          -- Call the helper function
          makeEmpty(sList);
-         getPathHelperDF(preSensor, fromSensor, toSensor, sList, success);
+         getPathHelperDF(preSensor, fromSensor, toSensor, sList, sensorsToExclude, success);
          if success then
             addFront(sList, fromSensor);
          end if;
@@ -1139,7 +1140,7 @@ PACKAGE BODY LayoutPkg IS
             raise;
       END getPathDF;      
          
-      procedure getPathBF(preSensor : positive; fromSensor : positive; toSensor : positive) is
+      procedure getPathBF(preSensor : positive; fromSensor : positive; toSensor : positive; sensorsToExclude : naturalListType) is
          sList        : naturalListType;
          qu           : sectionNodePtrListType;
          success      : boolean := false; 
@@ -3778,12 +3779,13 @@ PACKAGE BODY LayoutPkg IS
                                  preSensor, fromSensor, toSensor : positive;
                                  slotNum                         : slotType;
                                  pathKind                        : pathType;
+                                 sensorsToExclude                : naturalListType;
                               begin
-                                 splitGetPathMsg(cmd, slotNum, pathKind, preSensor, fromSensor, toSensor);
+                                 splitGetPathMsg(cmd, slotNum, pathKind, preSensor, fromSensor, toSensor, sensorsToExclude);
                                  if pathKind = kDepthFirst then
-                                    LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor);
+                                    LayoutPtr.GetPathDF(preSensor, fromSensor, toSensor, sensorsToExclude);
                                  elsif pathKind = kBreadthFirst then
-                                    LayoutPtr.GetPathBF(preSensor, fromSensor, toSensor);
+                                    LayoutPtr.GetPathBF(preSensor, fromSensor, toSensor, sensorsToExclude);
                                  end if;
                               end;
                            WHEN OTHERS =>
