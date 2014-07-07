@@ -92,7 +92,7 @@ class TestMessageTranslationLibrary(unittest.TestCase):
               (1001 % 128), (1001 // 128),
               (1002 % 128), (1002 // 128),
               (1003 % 128), (1003 // 128),
-              (1004 % 128), (1004 // 128), ]
+              (1004 % 128), (1004 // 128)]
         self.assertEquals(bytearray(utEx2(st)), makeMsgStr(msg))
 
         msg = GetTrainPositionMsg(slot=119)

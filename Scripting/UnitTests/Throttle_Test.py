@@ -92,13 +92,13 @@ if __name__ == "__main__":
         msg = myThrottle.initTrain(4444, [8, 4])
         myThrottle.setLights(kOn)
 
-        # myThrottle.setSpeed(100)
-        # myPath = myThrottle.getPath(kBreadthFirst, 4, 8, 94)
-        # myPath = [8,33,35,62,59,80,76,74,94]
-
-        myThrottle.atSpeedGoTo(100, 94)
-        # myThrottle.followSensorPath(myPath)
+        myPath = myThrottle.getPath(kDepthFirst, 4, 8, 94, [81, 52, 75])
+        myThrottle.setSpeed(100)
+        myThrottle.followSensorPath(myPath)
         myThrottle.atSensorDo(94, stopTrain)
+
+        # myPath = [8,33,35,62,59,80,76,74,94]
+        # myThrottle.atSpeedGoTo(100, 94, [74, 73, 113])
         # myCommandPath = [(82, (setDirection, kBackward))]
         # myThrottle.followCommandPath(myCommandPath)
         # myPath = [98,101,104,106,107]

@@ -82,6 +82,10 @@ PACKAGE ListGeneric IS
 	-- Pre:    L is defined.
 	-- Post:   First node containing E is removed from list, if there is one.
 
+   function inList(L : in listType; E : in ElementType) return boolean;
+   -- Pre:    L is defined.
+   -- Post:   Returns true if E is in L else returns false
+
    function MoveFront (L : IN ListType) return listIteratorType;
    -- Pre:    L is defined.
    -- Ret:    If list not empty then returns "pointer" to first node else returns "null".
@@ -132,7 +136,7 @@ PACKAGE ListGeneric IS
    -- Pre:    L is defined.
    -- Post:   Returns value of element next to end.
    -- Raises: ListEmpty and ListContainsOneElement
-
+   
    -- procedure put (file : in out file_type; L : in out listType);
    -- Pre:    L is defined. File is open for writing
    -- Post:   The elements in the list are displayed in File

@@ -265,6 +265,26 @@ PACKAGE BODY ListGeneric IS
          raise;
 	end RemoveElement;
 
+	function inList(L : in ListType; E : in ElementType) return boolean is
+		ptr : nodePtrType;
+	begin
+		if isEmpty(L) then
+			return false;
+		end if;
+		ptr := L.sentinel.next;
+		while ptr /= L.sentinel loop
+			if ptr.E = E then
+				return true;
+			end if;
+			ptr := ptr.next;
+		end loop;
+      return false;
+   exception
+	   when error : others =>
+		   put_line("UNPLANNED EXCEPTION in ListGeneric.inList --" & kLFString & Exception_Information (error));
+         raise;
+	end inList;
+
    function MoveFront (L : IN ListType) return listIteratorType is
 		I  : listIteratorType;
    BEGIN

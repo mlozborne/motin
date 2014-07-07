@@ -19,8 +19,8 @@ def doCommands(throttle, commands):
         if len(command) == 3:
             throttle.do(command[0], command[1], command[2])
 
-def atSpeedGoTo(self, speed, destination):
-    self.atSpeedGoTo(speed, destination)
+def atSpeedGoTo(self, speed, destination, sensorsToExclude):
+    self.atSpeedGoTo(speed, destination, sensorsToExclude)
 
 def followCommandPath(self, commandPath):
     self.followCommandPath(commandPath)
@@ -79,8 +79,8 @@ def pause(self, secs):
 def makeSectionUsable(self, sensor1, sensor2):
     self.makeSectionUsable(sensor1, sensor2)
 
-def getPath(self, pathKind, preSensor, fromSensor, toSensor):
-    return self.getPath(pathKind, preSensor, fromSensor, toSensor)
+def getPath(self, pathKind, preSensor, fromSensor, toSensor, sensorsToExclude):
+    return self.getPath(pathKind, preSensor, fromSensor, toSensor, sensorsToExclude)
 
 ####################################################################################################
 class Throttle(object):
@@ -145,7 +145,7 @@ class Throttle(object):
     def put(self, msg):
         self.msgHandler.put(msg)
 
-    def atSpeedGoTo(self, speed, destination):
+    def atSpeedGoTo(self, speed, destination, sensorsToExclude):
         self.addInterest(PutTrainPositionMsg)
         self.put(GetTrainPositionMsg(slot=self.virtSlot))
         done = False
@@ -156,7 +156,7 @@ class Throttle(object):
                 done = True
         fromSensor = msg.sensors[0]
         preSensor = msg.sensors[1]
-        path = self.getPath(kBreadthFirst, preSensor, fromSensor, destination)
+        path = self.getPath(kBreadthFirst, preSensor, fromSensor, destination, sensorsToExclude)
         self.setSpeed(speed)
         self.followSensorPath(path)
 
@@ -244,10 +244,12 @@ class Throttle(object):
                 self.virtSlot = responseMsg.virtSlot
         return responseMsg
 
-    def getPath(self, pathKind, preSensor, fromSensor, toSensor):
+    def getPath(self, pathKind, preSensor, fromSensor, toSensor, sensorsToExclude):
         gLog.print("Throttle {0}: sending GetPathMsg".format(self.name))
         self.addInterest(PutPathMsg)
-        self.put(GetPathMsg(slot=self.virtSlot, pathKind=pathKind, preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor))
+        self.put(GetPathMsg(slot=self.virtSlot, pathKind=pathKind,
+                 preSensor=preSensor, fromSensor=fromSensor, toSensor=toSensor,
+                 sensorsToExclude = sensorsToExclude))
         msg = self.waitFor(PutPathMsg(sensors=[]))
         self.removeInterest(PutPathMsg)
         return msg.sensors

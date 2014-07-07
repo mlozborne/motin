@@ -1072,12 +1072,19 @@ PACKAGE BODY LayoutPkg IS
          ptr1         : sectionNodePtr := pkgSectionList.head;
          ptr2         : sectionNodePtr;
          iter         : naturalListPkg.listIteratorType;
+         s1, s2       : natural;
       begin
          -- For all next and previous section lists unmark all section nodes
+         -- But remark them if they contain any of the excluded sensors
          while ptr1 /= null loop
             ptr2 := ptr1.section.nextSectionList.head;
             while ptr2 /= null loop
                ptr2.marked := false;
+               s1 := ptr2.section.sensorList.head.sensor.id;
+               s2 := ptr2.section.sensorList.tail.sensor.id;
+               if inList(sensorsToExclude, s1) or inList(sensorsToExclude, s2) then
+                  ptr2.marked := true;
+               end if;
                ptr2 := ptr2.next;
             end loop;
             
@@ -1219,21 +1226,32 @@ PACKAGE BODY LayoutPkg IS
 -- end if;
             
             -- Loop through all the sections in the list.
-            -- If a section hasn't been used, mark it and add it to the qu after
-            -- determining its parent and pathSensor
+            --    If the section is bounded by an exclude sensor then
+            --       mark the section so it won't be used
+            --    End if
+            --    If a section hasn't been used then
+            --       mark it and add it to the qu after
+            --       determining its parent and pathSensor
+            --    End if
             ptr := listToUse.head;
             while ptr /= null loop
                if not ptr.marked then
-                  ptr.marked := true;
-                  ptr.parent := thisSection;
                   s1 := ptr.section.sensorList.head.sensor.id;
                   s2 := ptr.section.sensorList.tail.sensor.id;
+                  ptr.marked := true;
                   if thisSection.pathSensor = s1 then
-                     ptr.pathSensor := s2;
+                     if not inList(sensorsToExclude, s2) then
+                        ptr.pathSensor := s2;
+                        ptr.parent := thisSection;
+                        addEnd(qu, ptr);
+                     end if;
                   else
-                     ptr.pathSensor := s1;
+                     if not inList(sensorsToExclude, s1) then
+                        ptr.pathSensor := s1;
+                        ptr.parent := thisSection;
+                        addEnd(qu, ptr);
+                     end if;
                   end if;
-                  addEnd(qu, ptr);
                end if;
                ptr := ptr.next;
             end loop;
