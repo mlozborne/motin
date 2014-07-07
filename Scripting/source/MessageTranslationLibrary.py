@@ -278,14 +278,15 @@ def makeDoMakeSectionUsableMsg(msg):
     return utConvertListToByteArray([lowByte, highByte] + st)
 
 def makeGetPathMsg(msg):
-    #<0><35><slot><pathKind><preSensor><fromSensor><toSensor><count><sensorsToExclude>
-    #                                      (count 1 byte, sensors 2 bytes)
+    #<0><35><slot><pathKind><preSensor><fromSensor><toSensor><count><sensor#>...<sensor#>
+    #                                      count 1 byte, sensors 2 bytes)
+    #                                      count is followed by a list of the sensor to exclude
     assert (kSlotMin <= msg.slot <= kSlotMax)
     assert (msg.pathKind in kPathKindValues)
     assert (kSensorMin <= msg.preSensor <= kSensorMax)
     assert (kSensorMin <= msg.fromSensor <= kSensorMax)
     assert (kSensorMin <= msg.toSensor <= kSensorMax)
-    assert ( isinstance(msg.sensorsToExlcude, list) or isinstance(msg.sensorsToExclude, tuple))
+    assert ( isinstance(msg.sensorsToExclude, list) or isinstance(msg.sensorsToExclude, tuple))
     st = [0]
     st.append(getPath)
     st.append(msg.slot)
@@ -300,7 +301,7 @@ def makeGetPathMsg(msg):
     st.append(lowByte)
     st.append(highByte)
     count = len(msg.sensorsToExclude)
-    st.append(count)   ?????????????????????????????????
+    st.append(count)
     for s in msg.sensorsToExclude:
         lowByte, highByte = utConvertNaturalToBytes(s)
         st.append(lowByte)
