@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     testing = 2
 
-    if testing == 1:
+    if testing == 1: 
 
         # Initialize train 1111
         gLog.print("Main initializing train")
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         myThrottle.removeInterest(PutSensorStateMsg)
         myThrottle.do(stopTrain)
 
-    elif testing == 3:
+    elif testing == 2:
 
         # Create a list of commands: initialize train 1111, bell on, blink lights, bell off,
         #                            toot horn, speed 100, moves some switches,
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         # Create a list of commands: initialize train 2222, lights on, move some switches, speed 50,
         #                            follow a command path
         commands = [[initTrain, 2222, [6, 2]], [setLights, kOn], [moveSwitch, 2, kThrown], [moveSwitch, 3, kClosed],
-                    [moveSwitch, 4, kClosed], [setSpeed, 50], [followCommandPath, commandPath]]
+                    [moveSwitch, 4, kClosed], [setSpeed, 100], [followCommandPath, commandPath]]
         doCommands(myThrottle, commands)
 
     elif testing == 4:

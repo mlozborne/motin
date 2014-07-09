@@ -6,6 +6,44 @@ import multiprocessing
 from multiprocessing.queues import Queue
 from time import sleep
 
+"""
+In the following lists or tuples are okay.
+
+COMMANDS and PATHS
+-----------------------------
+command
+  [method, arg1, arg2, ...]
+  [initTrain, 1111, [1, 5]]
+  [setSpeed, 100]
+  [closeNextSwitch]
+
+commands
+  [command, command, ...]
+  [[initTrain, 1111, [1, 5]], [setSpeed, 100], [closeNextSwitch]]
+
+commandPath
+  [[sensor#, command], [sensor#, command], ...]
+  ((6, (moveSwitch, 4, kThrown)), (6, (moveSwitch, 12, kThrown)), (94, (setDirection, kBackward)), (2, (stopTrain,)))
+
+switchPath
+  [[sensor#, switch#, direction], [sensor#, switch#, direction], ...]
+  ((77, 18, kThrown), (77, 22, kClosed), (77, 15, kThrown), (80, 17, kClosed))
+
+sensorPath
+  [sensor#, sensor#, ...], where the numbers are topologically consecutive
+
+sensorsToExclude
+  [sensor#, sensor#, ...], where the numbers do NOT need to be topologically consecutive
+
+DOS and FOLLOWS
+---------------
+  throttle.do(method, arg1, arg2, ...)
+  doCommands(throttle, commands)
+  followCommandPath(throttle, commands)
+  followSensorPath(throttle, sensorPath)
+  follosSwitchPath(throttle, switchPath)
+"""
+
 ###################################################################################################
 """
 This section repeats all the Throttle methods in a form that can be used in command lists.
@@ -14,10 +52,12 @@ def doCommands(throttle, commands):
     for command in commands:
         if len(command) == 1:
             throttle.do(command[0])
-        if len(command) == 2:
+        elif len(command) == 2:
             throttle.do(command[0], command[1])
-        if len(command) == 3:
+        elif len(command) == 3:
             throttle.do(command[0], command[1], command[2])
+        elif len(command) == 3:
+            throttle.do(command[0], command[1], command[2], command[3])
 
 def atSpeedGoTo(self, speed, destination, sensorsToExclude):
     self.atSpeedGoTo(speed, destination, sensorsToExclude)
@@ -29,7 +69,7 @@ def followSwitchPath(self, path):
     self.followSwitchPath(path)
 
 def followSensorPath(self, path):
-    self.followSwitchPath(path)
+    self.followSensorPath(path)
 
 def addInterest(self, interest):
     self.addInterest(interest)
