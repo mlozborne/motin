@@ -18,22 +18,13 @@ def blinkLights(self, n):
 
 
 def tootHorn(self):
-    self.setHorn(kOn)
-    sleep(1)
+    for i in range(3):
+        self.setHorn(kOn)
+        sleep(1)
+        self.setHorn(kOff)
+        if i != 2:
+            sleep(.2)
 
-    self.setHorn(kOff)
-    sleep(.2)
-
-    self.setHorn(kOn)
-    sleep(.2)
-
-    self.setHorn(kOff)
-    sleep(.2)
-
-    self.setHorn(kOn)
-    sleep(1)
-
-    self.setHorn(kOff)
 
 if __name__ == "__main__":
     gLog.open()
@@ -55,7 +46,7 @@ if __name__ == "__main__":
 
     testing = 2
 
-    if testing == 1: 
+    if testing == 1:
 
         # Initialize train 1111
         gLog.print("Main initializing train")
@@ -97,6 +88,7 @@ if __name__ == "__main__":
                     [addInterest, PutSensorStateMsg], [waitFor, PutSensorStateMsg(id = 59, state = kSensorOpen)],
                     [removeInterest, PutSensorStateMsg], [stopTrain]]
         doCommands(myThrottle, commands)
+        # myThrottle.doCommands(commands)
 
         # Create a switch path
         path = ((77, 18, kThrown), (77, 22, kClosed), (77, 15, kThrown), (77, 11, kClosed), (77, 9, kClosed),
@@ -105,7 +97,8 @@ if __name__ == "__main__":
 
         # Create a list of commands: lights on, speed 100, follow switch path, stop at sensor 94
         commands = ((pause, 1), (setLights, kOn), (setSpeed, 100), (followSwitchPath, path), (atSensorDo, 94, stopTrain))
-        doCommands(myThrottle, commands)
+        # doCommands(myThrottle, commands)
+        myThrottle.doCommands(commands)
 
     elif testing == 3:
 
