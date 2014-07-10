@@ -107,17 +107,17 @@ def removeInterest(self, interest):
 def waitFor(self, msg):
     return
 
-# def initTrain(self, address, position):
-#     self.initTrain(address, position)
-
 def initTrain(self, address, position):
-    return
+    self.initTrain(address, position)
 
-# def setSpeed(self, speed):
-#     self.setSpeed(speed)
+# def initTrain(self, address, position):
+#     return
 
 def setSpeed(self, speed):
-    return
+    self.setSpeed(speed)
+
+# def setSpeed(self, speed):
+#     return
 
 # def setDirection(self, direction):
 #     self.setDirection(direction)
@@ -149,23 +149,23 @@ def setBell(self, onOff):
 def setMute(self, onOff):
     return
 
-# def closeNextSwitch(self):
-#     self.closeNextSwitch()
-
 def closeNextSwitch(self):
-    return
+    self.closeNextSwitch()
 
-# def throwNextSwitch(self):
-#     self.throwNextSwitch()
+# def closeNextSwitch(self):
+#     return
 
 def throwNextSwitch(self):
-    return
+    self.throwNextSwitch()
 
-# def moveSwitch(self, sId, direction):
-#     self.moveSwitch(sId, direction)
+# def throwNextSwitch(self):
+#     return
 
 def moveSwitch(self, sId, direction):
-    return
+    self.moveSwitch(sId, direction)
+
+# def moveSwitch(self, sId, direction):
+#     return
 
 # def pause(self, secs):
 #     self.pause(secs)

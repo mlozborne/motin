@@ -83,12 +83,12 @@ if __name__ == "__main__":
         #                            toot horn, speed 100, moves some switches,
         #                            wait for sensor 59, stop train
         commands = [[initTrain, 1111, [5, 1]],
-                    [setBell, kOn], [blinkLights, 4], [setBell, kOff], [tootHorn], [setSpeed, 100],
+                    [setBell, kOn], [setLights, kOn], [blinkLights, 4], [setBell, kOff], [tootHorn], [setSpeed, 100],
                     [pause, 3], [throwNextSwitch], [moveSwitch, 12, kClosed], [pause, 4], [moveSwitch, 12, kThrown],
                     [addInterest, PutSensorStateMsg], [waitFor, PutSensorStateMsg(id = 59, state = kSensorOpen)],
                     [removeInterest, PutSensorStateMsg], [stopTrain]]
-        doCommands(myThrottle, commands)
-        # myThrottle.doCommands(commands)
+        # doCommands(myThrottle, commands)
+        myThrottle.doCommands(commands)
 
         # Create a switch path
         path = ((77, 18, kThrown), (77, 22, kClosed), (77, 15, kThrown), (77, 11, kClosed), (77, 9, kClosed),
