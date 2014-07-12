@@ -48,142 +48,71 @@ DOS and FOLLOWS
 """
 This section repeats all the Throttle methods in a form that can be used in command lists.
 """
-def doCommands(throttle, commands):
-    for command in commands:
-        if len(command) == 1:
-            throttle.do(command[0])
-        elif len(command) == 2:
-            throttle.do(command[0], command[1])
-        elif len(command) == 3:
-            throttle.do(command[0], command[1], command[2])
-        elif len(command) == 3:
-            throttle.do(command[0], command[1], command[2], command[3])
-
-# def atSpeedGoTo(self, speed, destination, sensorsToExclude):
-#     self.atSpeedGoTo(speed, destination, sensorsToExclude)
+def doCommands(self, commands):
+    self.doCommands(commands)
 
 def atSpeedGoTo(self, speed, destination, sensorsToExclude):
-    return
-
-# def followCommandPath(self, commandPath):
-#     self.followCommandPath(commandPath)
+    self.atSpeedGoTo(speed, destination, sensorsToExclude)
 
 def followCommandPath(self, commandPath):
-    return
-
-# def followSwitchPath(self, path):
-#     self.followSwitchPath(path)
+    self.followCommandPath(commandPath)
 
 def followSwitchPath(self, path):
-    return
-
-# def followSensorPath(self, path):
-#     self.followSensorPath(path)
+    self.followSwitchPath(path)
 
 def followSensorPath(self, path):
-    return
-
-# def addInterest(self, interest):
-#     self.addInterest(interest)
+    self.followSensorPath(path)
 
 def addInterest(self, interest):
-    return
-
-# def atSensorDo(self, sensor, command):
-#     self.atSensorDo(sensor, command)
+    self.addInterest(interest)
 
 def atSensorDo(self, sensor, command):
-    return
-
-# def removeInterest(self, interest):
-#     self.removeInterest(interest)
+    self.atSensorDo(sensor, command)
 
 def removeInterest(self, interest):
-    return
-
-# def waitFor(self, msg):
-#     self.waitFor(msg)
+    self.removeInterest(interest)
 
 def waitFor(self, msg):
-    return
+    self.waitFor(msg)
 
 def initTrain(self, address, position):
     self.initTrain(address, position)
 
-# def initTrain(self, address, position):
-#     return
-
 def setSpeed(self, speed):
     self.setSpeed(speed)
 
-# def setSpeed(self, speed):
-#     return
-
-# def setDirection(self, direction):
-#     self.setDirection(direction)
-
 def setDirection(self, direction):
-    return
+    self.setDirection(direction)
 
 def setLights(self, onOff):
     self.setLights(onOff)
 
-# def setLights(self, onOff):
-#     return
-
-# def setHorn(self, onOff):
-#     self.setHorn(onOff)
-
 def setHorn(self, onOff):
-    return
-
-# def setBell(self, onOff):
-#     self.setBell(onOff)
+    self.setHorn(onOff)
 
 def setBell(self, onOff):
-    return
-
-# def setMute(self, onOff):
-#     self.setMute(onOff)
+    self.setBell(onOff)
 
 def setMute(self, onOff):
-    return
+    self.setMute(onOff)
 
 def closeNextSwitch(self):
     self.closeNextSwitch()
 
-# def closeNextSwitch(self):
-#     return
-
 def throwNextSwitch(self):
     self.throwNextSwitch()
-
-# def throwNextSwitch(self):
-#     return
 
 def moveSwitch(self, sId, direction):
     self.moveSwitch(sId, direction)
 
-# def moveSwitch(self, sId, direction):
-#     return
-
-# def pause(self, secs):
-#     self.pause(secs)
-
 def pause(self, secs):
-    return
-
-# def makeSectionUsable(self, sensor1, sensor2):
-#     self.makeSectionUsable(sensor1, sensor2)
+    self.pause(secs)
 
 def makeSectionUsable(self, sensor1, sensor2):
-    return
-
-# def getPath(self, pathKind, preSensor, fromSensor, toSensor, sensorsToExclude):
-#     return self.getPath(pathKind, preSensor, fromSensor, toSensor, sensorsToExclude)
+    self.makeSectionUsable(sensor1, sensor2)
 
 def getPath(self, pathKind, preSensor, fromSensor, toSensor, sensorsToExclude):
-    return
+    return self.getPath(pathKind, preSensor, fromSensor, toSensor, sensorsToExclude)
 
 ####################################################################################################
 class Throttle(object):
@@ -365,14 +294,22 @@ class Throttle(object):
 
     def doCommands(self, commands):
         for command in commands:
+            # if len(command) == 1:
+            #     self.do(command[0])
+            # elif len(command) == 2:
+            #     self.do(command[0], command[1])
+            # elif len(command) == 3:
+            #     self.do(command[0], command[1], command[2])
+            # elif len(command) == 3:
+            #     self.do(command[0], command[1], command[2], command[3])
             if len(command) == 1:
-                self.do(command[0])
+                command[0](self)
             elif len(command) == 2:
-                self.do(command[0], command[1])
+                command[0](self, command[1])
             elif len(command) == 3:
-                self.do(command[0], command[1], command[2])
+                command[0](self, command[1], command[2])
             elif len(command) == 3:
-                self.do(command[0], command[1], command[2], command[3])
+                command[0](self, command[1], command[2], command[3])
 
     def sendDirf(self):
         assert(self.virtSlot is not None)
