@@ -48,6 +48,9 @@ DOS and FOLLOWS
 """
 This section repeats all the Throttle methods in a form that can be used in command lists.
 """
+def doCommand(self, command):
+    self.doCommand(command)
+
 def doCommands(self, commands):
     self.doCommands(commands)
 
@@ -205,17 +208,12 @@ class Throttle(object):
             if sensor != previousSensor:
                 previousSensor = sensor
                 self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
-            if len(command) == 1:
-                self.do(command[0])
-            if len(command) == 2:
-                self.do(command[0], command[1])
-            if len(command) == 3:
-                self.do(command[0], command[1], command[2])
+            self.doCommand(command)
         self.removeInterest(PutSensorStateMsg)
 
     def atSensorDo(self, sensor, command):
-        commandPath = [(sensor, (command,))]
-        followCommandPath(self, commandPath)
+        commandPath = [[sensor, command]]
+        self.followCommandPath(commandPath)
 
     def followSwitchPath(self, path):
         """
@@ -289,27 +287,22 @@ class Throttle(object):
     def setVirtSlot(self, virtSlot):
         self.virtSlot = virtSlot
 
-    def do(self, func, * args):
+    def doFunction(self, func, * args):
         func(self, * args)
+
+    def doCommand(self, command):
+        if len(command) == 1:
+            command[0](self)
+        elif len(command) == 2:
+            command[0](self, command[1])
+        elif len(command) == 3:
+            command[0](self, command[1], command[2])
+        elif len(command) == 3:
+            command[0](self, command[1], command[2], command[3])
 
     def doCommands(self, commands):
         for command in commands:
-            # if len(command) == 1:
-            #     self.do(command[0])
-            # elif len(command) == 2:
-            #     self.do(command[0], command[1])
-            # elif len(command) == 3:
-            #     self.do(command[0], command[1], command[2])
-            # elif len(command) == 3:
-            #     self.do(command[0], command[1], command[2], command[3])
-            if len(command) == 1:
-                command[0](self)
-            elif len(command) == 2:
-                command[0](self, command[1])
-            elif len(command) == 3:
-                command[0](self, command[1], command[2])
-            elif len(command) == 3:
-                command[0](self, command[1], command[2], command[3])
+            self.doCommand(command)
 
     def sendDirf(self):
         assert(self.virtSlot is not None)

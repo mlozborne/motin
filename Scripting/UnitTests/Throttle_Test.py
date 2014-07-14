@@ -44,7 +44,7 @@ if __name__ == "__main__":
     msg = myThrottle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
 
-    testing = 2
+    testing = 1  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
 
     if testing == 1:
 
@@ -61,9 +61,9 @@ if __name__ == "__main__":
 
         # Bell on, blink lights 4 times, bell off, toot horn, speed 100, move some switches
         myThrottle.setBell(kOn)
-        myThrottle.do(blinkLights, 4)
+        myThrottle.doFunction(blinkLights, 4)
         myThrottle.setBell(kOff)
-        myThrottle.do(tootHorn)
+        myThrottle.doFunction(tootHorn)
         myThrottle.setSpeed(100)
         sleep(3)
         myThrottle.throwNextSwitch()
@@ -71,11 +71,13 @@ if __name__ == "__main__":
         sleep(4)
         myThrottle.moveSwitch(12, kThrown)
 
-        # Stop at sensor 59
+        # At sensor 59 stop train with a command, tootHorn with a function, and blink lights with a command
         myThrottle.addInterest(PutSensorStateMsg)
         myThrottle.waitFor(PutSensorStateMsg(id = 59, state = kSensorOpen))
         myThrottle.removeInterest(PutSensorStateMsg)
-        myThrottle.do(stopTrain)
+        myThrottle.doCommand([stopTrain])
+        myThrottle.doFunction(tootHorn)
+        myThrottle.doCommand([blinkLights, 4])
 
     elif testing == 2:
 
@@ -87,17 +89,15 @@ if __name__ == "__main__":
                     [pause, 3], [throwNextSwitch], [moveSwitch, 12, kClosed], [pause, 4], [moveSwitch, 12, kThrown],
                     [addInterest, PutSensorStateMsg], [waitFor, PutSensorStateMsg(id = 59, state = kSensorOpen)],
                     [removeInterest, PutSensorStateMsg], [stopTrain]]
-        # doCommands(myThrottle, commands)
-        myThrottle.doCommands(commands)
+        doCommands(myThrottle, commands)
 
         # Create a switch path
         path = ((77, 18, kThrown), (77, 22, kClosed), (77, 15, kThrown), (77, 11, kClosed), (77, 9, kClosed),
                 (47, 5, kClosed), (27, 6, kClosed), (17, 7, kClosed), (12, 8, kClosed), (10, 4, kClosed),
                 (62, 13, kClosed), (80, 17, kClosed))
 
-        # Create a list of commands: lights on, speed 100, follow switch path, stop at sensor 94
+        # Create a list of commands: pause 1 second, lights on, speed 100, follow switch path, stop at sensor 94
         commands = ((pause, 1), (setLights, kOn), (setSpeed, 100), (followSwitchPath, path), (atSensorDo, 94, stopTrain))
-        # doCommands(myThrottle, commands)
         myThrottle.doCommands(commands)
 
     elif testing == 3:
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         # Initialize train 4444, lights on, get a path, speed 100, follow the path, stop at sensor 94
         msg = myThrottle.initTrain(4444, [8, 4])
         myThrottle.setLights(kOn)
-        myPath = myThrottle.getPath(kDepthFirst, 4, 8, 94, [81, 52, 75])
+        myPath = myThrottle.getPath(kBreadthFirst, 4, 8, 94, [81, 52, 76])
         myThrottle.setSpeed(100)
         myThrottle.followSensorPath(myPath)
         myThrottle.atSensorDo(94, stopTrain)
@@ -139,14 +139,14 @@ if __name__ == "__main__":
         myThrottle.setSpeed(100)
         myThrottle.followSensorPath(myPath)
         myThrottle.atSensorDo(94, (setDirection, kBackward))
-        myThrottle.do(blinkLights, 4)
+        myThrottle.doFunction(blinkLights, 4)
 
     elif testing == 7:
 
         # Initialize train 4444, go to sensor 94 at speed 100, stop at sensor 94
         msg = myThrottle.initTrain(4444, [8, 4])
         myThrottle.atSpeedGoTo(100, 94, [74, 73, 113])
-        myThrottle.atSensorDo(94, stopTrain)
+        myThrottle.atSensorDo(94, [stopTrain])
 
     # Shut down when user press ENTER
     gLog.flush()
