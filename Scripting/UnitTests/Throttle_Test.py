@@ -44,7 +44,8 @@ if __name__ == "__main__":
     msg = myThrottle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
 
-    testing = 1  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
+    testing = 7  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
+    print ("Testing option == {0}". format(testing))
 
     if testing == 1:
 
@@ -97,7 +98,7 @@ if __name__ == "__main__":
                 (62, 13, kClosed), (80, 17, kClosed))
 
         # Create a list of commands: pause 1 second, lights on, speed 100, follow switch path, stop at sensor 94
-        commands = ((pause, 1), (setLights, kOn), (setSpeed, 100), (followSwitchPath, path), (atSensorDo, 94, stopTrain))
+        commands = ((pause, 1), (setLights, kOn), (setSpeed, 100), (followSwitchPath, path), (atSensorDo, 94, [stopTrain]))
         myThrottle.doCommands(commands)
 
     elif testing == 3:
@@ -108,7 +109,7 @@ if __name__ == "__main__":
                        (2, (setDirection, kForward)), (2, (stopTrain,)))
 
         # Create a list of commands: initialize train 2222, lights on, move some switches, speed 50,
-        #                            follow a command path
+        #                            follow a command path to sensor 94, reverse, and return to starting point
         commands = [[initTrain, 2222, [6, 2]], [setLights, kOn], [moveSwitch, 2, kThrown], [moveSwitch, 3, kClosed],
                     [moveSwitch, 4, kClosed], [setSpeed, 100], [followCommandPath, commandPath]]
         doCommands(myThrottle, commands)
@@ -128,12 +129,12 @@ if __name__ == "__main__":
         myPath = myThrottle.getPath(kBreadthFirst, 4, 8, 94, [81, 52, 76])
         myThrottle.setSpeed(100)
         myThrottle.followSensorPath(myPath)
-        myThrottle.atSensorDo(94, stopTrain)
+        myThrottle.atSensorDo(94, (stopTrain,))
 
     elif testing == 6:
 
         # Initialize train 4444, create a path, speed 100, follow path,
-        # reverse at sensor 94, blink the lights
+        # reverse at sensor 94, blink the lights, and return to base
         msg = myThrottle.initTrain(4444, [8, 4])
         myPath = [8,33,35,62,59,80,76,74,94]
         myThrottle.setSpeed(100)
