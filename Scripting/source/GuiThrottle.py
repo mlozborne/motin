@@ -51,6 +51,7 @@ class GuiThrottle(EasyFrame):
         outQu.put(AddInterestMsg(inQuNum, PutInitOutcomeMsg))
         outQu.put(AddInterestMsg(inQuNum, PutTrainPositionMsg))
         outQu.put(AddInterestMsg(inQuNum, PutTrainStateMsg))
+        outQu.put(AddInterestMsg(inQuNum, PutSensorStateMsg))
         
         self.readyToReadFromQueue = False
 
@@ -244,6 +245,8 @@ class GuiThrottle(EasyFrame):
             if msg.slot != self.virtSlot:
                 return
             self.positionField.setText(str(msg.sensors)[1:-1])
+        elif isinstance(msg, PutSensorStateMsg):
+            print("Sensor {0} state {1}".format(msg.id, msg.state))
 
     def flipToggle(self, key):
         if key == "direction":
