@@ -55,7 +55,6 @@ class GuiThrottle(EasyFrame):
         
         self.readyToReadFromQueue = False
 
-#        self.throttle = Throttle(name = self.name, inQu = self.inQu, inQuNum = self.inQuNum, outQu = self.outQu)
         self.throttle = Throttle(name = self.name, comPkg = self.comPkg)
         self.throttleReady = False
 
@@ -94,7 +93,7 @@ class GuiThrottle(EasyFrame):
         self.addLabel(text="State", row=2, column=0)
         self.stateField = self.addTextField("Halted", row=2, column=1, sticky=N+W)
 
-        # Button initialize 
+        # Button initialize
         self.btInitialize = self.addButton(text="  Initialize  ", 
                                            row=3, column=0, command=self.initTrain)
 
@@ -107,38 +106,46 @@ class GuiThrottle(EasyFrame):
 
         # Button lights
         self.btLight = self.addButton(text="    Lights    ", 
-                                      row=5, column=0, command=self.changeLights, state = DISABLED)
+                                      row=4, column=0, command=self.changeLights, state = DISABLED)
         self.gifLight = PhotoImage(file = imageFolder + 'Light.gif')
         self.btLight.config(image=self.gifLight, width="60", height="20")
 
         # Button bell
         self.btBell = self.addButton(text="      Bell      ", 
-                                     row=5, column=1, command=self.changeBell, state = DISABLED)
+                                     row=4, column=1, command=self.changeBell, state = DISABLED)
         self.gifBell = PhotoImage(file = imageFolder + 'bell.gif')
         self.btBell.config(image=self.gifBell, width="60", height="20")
 
         # Button horn
         self.btHorn = self.addButton(text="     Horn     ", 
-                                     row=6, column=0, command=self.stopHorn, state = DISABLED)
+                                     row=5, column=0, command=self.stopHorn, state = DISABLED)
         self.btHorn.bind("<ButtonPress-1>", self.startHorn)
         self.gifHorn = PhotoImage(file= imageFolder + 'horn.gif')
         self.btHorn.config(image=self.gifHorn, width="60", height="20")
 
         # Button mute
         self.btMute = self.addButton(text="     Mute     ", 
-                                     row=6, column=1, command=self.changeMute, state = DISABLED)
+                                     row=5, column=1, command=self.changeMute, state = DISABLED)
 
         # Button close next
         self.btCloseNext = self.addButton(text="Close Next", 
-                                          row=7, column=0, command=self.closeNext, state = DISABLED)
+                                          row=6, column=0, command=self.closeNext, state = DISABLED)
 
         # Button throw next
         self.btThrowNext = self.addButton(text="Throw Next", 
-                                          row=7, column=1, command=self.throwNext, state = DISABLED)
+                                          row=6, column=1, command=self.throwNext, state = DISABLED)
+
+        # Button enter command
+        self.btEnterCommand = self.addButton(text="Enter Command",
+                                          row=7, column=0, command=self.enterCommand, state = DISABLED)
+
+        # Button display commands
+        self.btDisplayCommands = self.addButton(text="Display Commands",
+                                          row=7, column=1, command=self.displayCommands, state = DISABLED)
 
         # Slider speed
         self.slSpeed = self.addScale(label = "Speed",
-                                     row = 9, column = 0, columnspan = 2,
+                                     row = 8, column = 0, columnspan = 2,
                                      from_ = 0, to = 127,
                                      resolution = 1,
                                      length = 250,
@@ -148,7 +155,7 @@ class GuiThrottle(EasyFrame):
 
         # Halt button
         self.btHalt = self.addButton(text="     Halt     ", 
-                                     row=10, column=0, command=self.haltTrain,
+                                     row=9, column=0, command=self.haltTrain,
                                      columnspan = 2, state = DISABLED)
 
     def initTrain(self):
@@ -173,6 +180,8 @@ class GuiThrottle(EasyFrame):
         self.btLight.config(state = DISABLED)
         self.btHorn.config(state = DISABLED)
         self.btMute.config(state = DISABLED)
+        self.btEnterCommand.config(state = DISABLED)
+        self.btDisplayCommands.config(state = DISABLED)
         self.btHalt.config(state = DISABLED)
         self.slSpeed.config(command = None)
         self.slSpeed.set(0)
@@ -218,6 +227,8 @@ class GuiThrottle(EasyFrame):
         self.btLight.config(state = NORMAL)
         self.btHorn.config(state = NORMAL)
         self.btMute.config(state = NORMAL)
+        self.btEnterCommand.config(state = NORMAL)
+        self.btDisplayCommands.config(state = NORMAL)
         self.btHalt.config(state = NORMAL)
         self.slSpeed.config(command = self.changeSpeed)
 
@@ -298,4 +309,10 @@ class GuiThrottle(EasyFrame):
     def haltTrain(self):
         self.throttle.setSpeed(1)
         self.slSpeed.set(0)
+
+    def enterCommand(self):
+        return
+
+    def displayCommands(self):
+        return
 
