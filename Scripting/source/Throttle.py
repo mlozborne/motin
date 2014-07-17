@@ -93,6 +93,9 @@ def setLights(self, onOff):
 def setHorn(self, onOff):
     self.setHorn(onOff)
 
+def tootHorn(self):
+    self.tootHorn()
+
 def setBell(self, onOff):
     self.setBell(onOff)
 
@@ -332,6 +335,14 @@ class Throttle(object):
         assert (onOff == kOn or onOff == kOff)
         self.horn = onOff
         self.sendDirf()
+
+    def tootHorn(self):
+        for i in range(3):
+            self.setHorn(kOn)
+            sleep(1)
+            self.setHorn(kOff)
+            if i != 2:
+                sleep(.2)
 
     def setBell(self, onOff):
         assert (onOff == kOn or onOff == kOff)

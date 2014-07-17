@@ -16,16 +16,6 @@ def blinkLights(self, n):
         self.setLights(kOff)
         sleep(0.2)
 
-
-def tootHorn(self):
-    for i in range(3):
-        self.setHorn(kOn)
-        sleep(1)
-        self.setHorn(kOff)
-        if i != 2:
-            sleep(.2)
-
-
 if __name__ == "__main__":
     gLog.open()
 

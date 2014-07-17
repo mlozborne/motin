@@ -1,9 +1,9 @@
 import multiprocessing.queues
 from MessageTranslationTypes import *
-from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W
+from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W, EasyDialog, END
 from tkinter import PhotoImage
 from multiprocessing import Process
-from Throttle import Throttle
+from Throttle import *
 from Log import gLog
 from MsgHandler import AddInterestMsg, CommunicationsPackage
 
@@ -33,18 +33,100 @@ class GuiThrottleProcess(Process):
         gLog.print("GuiThrottleProcess {0}: finished running".format(self.name))
         
 
+class EditCommandsDialog(EasyDialog):
+    """Opens a dialog on a song object."""
+    def __init__(self, parent, atSensorCommands):
+        """Sets up the window and its attributes."""
+        self.atSensorCommands = atSensorCommands
+        EasyDialog.__init__(self, parent, "Enter Command")
+
+    def body(self, master):
+        """Sets up the widgets."""
+        self.addLabel(master, text = "At Sensor #", row = 0, column = 0)
+        self.addLabel(master, text = "Do command", row = 1, column = 0)
+        self.addLabel(master, text = "Using parameter 1", row = 13, column = 0)
+        self.addLabel(master, text = "Using parameter 2", row = 14, column = 0)
+        self.addLabel(master, text = "Using parameter 3", row = 15, column = 0)
+
+        self.sensorFld = self.addIntegerField(master, value = 0, row = 0, column = 1)
+
+        self.listBox = self.addListbox(master, row = 1, column = 1, rowspan = 12,
+                                       width = 46, height = 12,
+                                       listItemSelected = self.listItemSelected)
+        self.listBox.insert(END, "forward")
+        self.listBox.insert(END, "reverse")
+        self.listBox.insert(END, "pause <n>")
+        self.listBox.insert(END, "set speed <n>")
+        self.listBox.insert(END, "throw switch <n>")
+        self.listBox.insert(END, "close switch <n>")
+        self.listBox.insert(END, "lights on")
+        self.listBox.insert(END, "lights off")
+        self.listBox.insert(END, "bell on")
+        self.listBox.insert(END, "bell off")
+        self.listBox.insert(END, "toot horn")
+        self.listBox.insert(END, "at speed go to <speed><destination><excluding>")
+        self.listBox.setSelectedIndex(0)
+
+        self.parameter1Fld = self.addIntegerField(master, value = 0, row = 13, column = 1)
+        self.parameter2Fld = self.addIntegerField(master, value = 0, row = 14, column = 1)
+        self.parameter3Fld = self.addTextField(master, text = "[1,2]", row = 15, column = 1)
+
+    def listItemSelected(self, index):
+        return
+
+    def apply(self):
+        """When the OK button is clicked, transfers data from the
+        fields, build the corresponding command, and append to the list of commands."""
+        sensor = self.sensorFld.getNumber()
+        commandName = self.listBox.getSelectedItem()
+        parameter1 = self.parameter1Fld.getNumber()
+        parameter2 = self.parameter2Fld.getNumber()
+        parameter3 = self.parameter3Fld.getText()
+        if commandName == "forward":
+            command = [setDirection, kForward]
+        elif commandName == "reverse":
+            command = [setDirection, kBackward]
+        elif commandName == "pause <n>":
+            command = [pause, parameter1]
+        elif commandName == "set speed <n>":
+            command = [setSpeed, parameter1]
+        elif commandName == "throw switch <n>":
+            command = [moveSwitch, parameter1, kThrown]
+        elif commandName == "close switch <n>":
+            command = [moveSwitch, parameter1, kClosed]
+        elif commandName == "lights on":
+            command = [setLights, kOn]
+        elif commandName == "lights off":
+            command = [setLights, kOff]
+        elif commandName == "bell on":
+            command = [setBell, kOn]
+        elif commandName == "bell off":
+            command = [setBell, kOff]
+        elif commandName == "toot horn":
+            command = [tootHorn]
+        elif commandName == "at speed go to <speed><destination><excluding>":
+            command = [atSpeedGoTo, parameter1, parameter2, parameter3]
+        else:
+            command = None
+
+        if command != None:
+            self.atSensorCommands.append([sensor, command])
+            self.setModified()
+
+
 class GuiThrottle(EasyFrame):
 
     def __init__(self, name = None, comPkg = None):
-        EasyFrame.__init__(self, title="Throttle")
+        EasyFrame.__init__(self, title="Throttle " + name)
         gLog.print("GuiThrottle {0}: initializing".format(name))
 
-        self.name = name
+        self.name = "Throttle " + name
         self.comPkg = comPkg
         inQu = comPkg.inQu
         inQuNum = comPkg.inQuNum
         outQu = comPkg.outQu
 
+        self.atSensorCommands = []
         self.inQu = inQu
         self.virtSlot = None
         
@@ -311,7 +393,10 @@ class GuiThrottle(EasyFrame):
         self.slSpeed.set(0)
 
     def enterCommand(self):
-        return
+        """Pops up a dialog to edit the model.
+        Updates the app window if the song was modified."""
+        dialog = EditCommandsDialog(self, self.atSensorCommands)
+        print("Commands: {0}".format(self.atSensorCommands))
 
     def displayCommands(self):
         return
