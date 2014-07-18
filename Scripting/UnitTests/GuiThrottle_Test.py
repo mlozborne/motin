@@ -49,7 +49,7 @@ if __name__ == "__main__":
     sleep(1)          ##### WEIRD If sleep is omitted, then the input statement
                       ##### blocks the gui from being displayed.
 
-    raw_input("press enter to quit")
+    raw_input("press enter to quit\n")
 
     sak.kill("controller")
     sak.kill("simulator")

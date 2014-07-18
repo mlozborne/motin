@@ -339,7 +339,14 @@ class GuiThrottle(EasyFrame):
                 return
             self.positionField.setText(str(msg.sensors)[1:-1])
         elif isinstance(msg, PutSensorStateMsg):
-            print("Sensor {0} state {1}".format(msg.id, msg.state))
+            # print("Sensor {0} state {1}".format(msg.id, msg.state))
+            if msg.state == 0:                                # if sensor closed --> open
+                for item in self.atSensorCommands:
+                    if item[0] == msg.id:
+                        self.throttle.doCommand(item[1])
+                        if (item[1])[0] == setSpeed:           # if setSpeed command:
+                            self.slSpeed.set((item[1])[1])     #    reset speed slider
+                        self.atSensorCommands.remove(item)
 
     def flipToggle(self, key):
         if key == "direction":
