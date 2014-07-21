@@ -69,8 +69,11 @@ def followSensorPath(self, path):
 def addInterest(self, interest):
     self.addInterest(interest)
 
-def atSensorDo(self, sensor, command):
-    self.atSensorDo(sensor, command)
+def atSensorDoCommand(self, sensor, command):
+    self.atSensorDoCommand(sensor, command)
+
+def atSensorDoCommands(self, sensor, commands):
+    self.atSensorDoCommands(sensor, commands)
 
 def removeInterest(self, interest):
     self.removeInterest(interest)
@@ -147,8 +150,6 @@ class Throttle(object):
         self.F6 = 0              # Flip this ot throw next turnout
         self.msgHandler = MsgHandler(name = self.name, comPkg = comPkg)
         self.addInterest(PutSensorStateMsg)
-        self.lastSensorOpened = None
-        self.lastSensorClosed = None
 
     def addInterest(self, interest):
         gLog.print("Throttle {0}: adding interest {1}".format(self.name, interest))
@@ -217,8 +218,14 @@ class Throttle(object):
             self.doCommand(command)
         # self.removeInterest(PutSensorStateMsg)
 
-    def atSensorDo(self, sensor, command):
+    def atSensorDoCommand(self, sensor, command):
         commandPath = [[sensor, command]]
+        self.followCommandPath(commandPath)
+
+    def atSensorDoCommands(self, sensor, commands):
+        commandPath = []
+        for command in commands:
+            commandPath.append([sensor, command])
         self.followCommandPath(commandPath)
 
     def followSwitchPath(self, path):

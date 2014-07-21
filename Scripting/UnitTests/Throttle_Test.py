@@ -34,7 +34,7 @@ if __name__ == "__main__":
     msg = myThrottle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
 
-    testing = 8  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
+    testing = 9  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
     print ("Testing option == {0}". format(testing))
 
     if testing == 1:
@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 (62, 13, kClosed), (80, 17, kClosed))
 
         # Create a list of commands: pause 1 second, lights on, speed 100, follow switch path, stop at sensor 94
-        commands = ((pause, 1), (setLights, kOn), (setSpeed, 100), (followSwitchPath, path), (atSensorDo, 94, [stopTrain]))
+        commands = ((pause, 1), (setLights, kOn), (setSpeed, 100), (followSwitchPath, path), (atSensorDoCommand, 94, [stopTrain]))
         myThrottle.doCommands(commands)
 
     elif testing == 3:
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         myPath = myThrottle.getPath(kBreadthFirst, 4, 8, 94, [81, 52, 76])
         myThrottle.setSpeed(100)
         myThrottle.followSensorPath(myPath)
-        myThrottle.atSensorDo(94, (stopTrain,))
+        myThrottle.atSensorDoCommand(94, [stopTrain])
 
     elif testing == 6:
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         myPath = [8,33,35,62,59,80,76,74,94]
         myThrottle.setSpeed(100)
         myThrottle.followSensorPath(myPath)
-        myThrottle.atSensorDo(94, (setDirection, kBackward))
+        myThrottle.atSensorDoCommand(94, [setDirection, kBackward])
         myThrottle.doFunction(blinkLights, 4)
 
     elif testing == 7:
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         msg = myThrottle.initTrain(4444, [8, 4])
         myThrottle.setLights(kOn)
         myThrottle.atSpeedGoTo(100, 94, [74, 73, 113])
-        myThrottle.atSensorDo(94, [stopTrain])
+        myThrottle.atSensorDoCommand(94, [stopTrain])
 
     elif testing == 8:
 
@@ -147,18 +147,17 @@ if __name__ == "__main__":
         myThrottle.doCommand([setLights, kOn])
         myThrottle.doCommand([setSpeed, 100])
         myThrottle.doCommand([atSpeedGoTo, 100, 35, []])
-        myThrottle.doCommand([atSensorDo, 35, [stopTrain]])
-        myThrottle.doCommand([atSensorDo, 35, [setLights, kOff]])
+        myThrottle.doCommand([atSensorDoCommands, 35, [[stopTrain], [setLights, kOff]]])
 
     elif testing == 9:
 
-        # Test atSendorDo atSpeedGoTo
+        # Test atSensorDoCommand using atSpeedGoTo
+        # Test atSensorDoCommands using stopTrain and setLights
         msg = myThrottle.initTrain(1111, [5, 1])
         myThrottle.setLights(kOn)
-        myThrottle.setSpeed(10)
-        # myThrottle.atSpeedGoTo(100, 35, [])
-        myThrottle.atSensorDo(5, [atSpeedGoTo, 100, 35, []])
-        # myThrottle.atSensorDo(35, [stopTrain])
+        myThrottle.setSpeed(100)
+        myThrottle.atSensorDoCommand(5, [atSpeedGoTo, 100, 35, []])
+        myThrottle.atSensorDoCommands(35, [[stopTrain], [setLights, kOff]])
 
     # Shut down when user press ENTER
     gLog.flush()
