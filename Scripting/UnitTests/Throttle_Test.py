@@ -34,7 +34,7 @@ if __name__ == "__main__":
     msg = myThrottle.readLayout("../../runSoftware/Layout.xml")
     sleep(2)
 
-    testing = 7  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
+    testing = 8  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< set test case
     print ("Testing option == {0}". format(testing))
 
     if testing == 1:
@@ -136,12 +136,33 @@ if __name__ == "__main__":
 
         # Initialize train 4444, go to sensor 94 at speed 100, stop at sensor 94
         msg = myThrottle.initTrain(4444, [8, 4])
+        myThrottle.setLights(kOn)
         myThrottle.atSpeedGoTo(100, 94, [74, 73, 113])
         myThrottle.atSensorDo(94, [stopTrain])
 
+    elif testing == 8:
+
+        # Test atSpeedGoTo while train is moving
+        msg = myThrottle.initTrain(1111, [5, 1])
+        myThrottle.doCommand([setLights, kOn])
+        myThrottle.doCommand([setSpeed, 100])
+        myThrottle.doCommand([atSpeedGoTo, 100, 35, []])
+        myThrottle.doCommand([atSensorDo, 35, [stopTrain]])
+        myThrottle.doCommand([atSensorDo, 35, [setLights, kOff]])
+
+    elif testing == 9:
+
+        # Test atSendorDo atSpeedGoTo
+        msg = myThrottle.initTrain(1111, [5, 1])
+        myThrottle.setLights(kOn)
+        myThrottle.setSpeed(10)
+        # myThrottle.atSpeedGoTo(100, 35, [])
+        myThrottle.atSensorDo(5, [atSpeedGoTo, 100, 35, []])
+        # myThrottle.atSensorDo(35, [stopTrain])
+
     # Shut down when user press ENTER
     gLog.flush()
-    raw_input("press ENTER to quit")
+    raw_input("press ENTER to quit\n")
     myThrottle.close()
     sak.kill("controller")
     sak.kill("simulator")

@@ -300,8 +300,10 @@ class Throttle(object):
             command[0](self, command[1])
         elif len(command) == 3:
             command[0](self, command[1], command[2])
-        elif len(command) == 3:
+        elif len(command) == 4:
             command[0](self, command[1], command[2], command[3])
+        else:
+            print("Command too long: {0}".format(command))
 
     def doCommands(self, commands):
         for command in commands:
