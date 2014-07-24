@@ -1,2 +1,2 @@
-..\CountLines\countlines *.py --by-file
+..\..\CountLines\countlines *.py --by-file
 pause
