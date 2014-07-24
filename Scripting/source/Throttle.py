@@ -149,7 +149,6 @@ class Throttle(object):
         self.F5 = 0              # Flip this to close next turnout
         self.F6 = 0              # Flip this ot throw next turnout
         self.msgHandler = MsgHandler(name = self.name, comPkg = comPkg)
-        self.addInterest(PutSensorStateMsg)
 
     def addInterest(self, interest):
         gLog.print("Throttle {0}: adding interest {1}".format(self.name, interest))
@@ -202,21 +201,38 @@ class Throttle(object):
         self.setSpeed(speed)
         self.followSensorPath(path)
 
+    def waitForTrainToReach(self, sensor):
+        # Pre  train is moving
+        # Post returns when train reaches the indicated sensor
+        method = 1
+        if method == 1:
+            # Use train position to know when train has reached sensor
+            self.addInterest(PutTrainPositionMsg)
+            while True:
+                msg = self.waitFor(PutTrainPositionMsg(slot=self.virtSlot, sensors=[]))
+                if msg.sensors[1] == sensor:
+                    break
+            self.removeInterest(PutTrainPositionMsg)
+        else:
+            # Use sensor firing, which has the following defect:
+            #   One doesn't know which train fired the sensor
+            self.addInterest(PutSensorStateMsg)
+            self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
+            self.removeInterest(PutSensorStateMsg)
+
     def followCommandPath(self, path):
         """
         A command path is a list of tuples (sensor#, command)
         When the train reaches the sensor, the throttle executes the command.
         """
-        # self.addInterest(PutSensorStateMsg)
         previousSensor = 0
         for point in path:
             sensor = point[0]
             command = point[1]
             if sensor != previousSensor:
                 previousSensor = sensor
-                self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
+                self.waitForTrainToReach(sensor)
             self.doCommand(command)
-        # self.removeInterest(PutSensorStateMsg)
 
     def atSensorDoCommand(self, sensor, command):
         commandPath = [[sensor, command]]
@@ -233,7 +249,6 @@ class Throttle(object):
         A switch path is a list of triples (sensor#, switch#, direction)
         When the train reaches the sensor, the throttle moves the switch.
         """
-        # self.addInterest(PutSensorStateMsg)
         previousSensor = 0
         for point in path:
             sensor = point[0]
@@ -241,9 +256,8 @@ class Throttle(object):
             direction = point[2]
             if sensor != previousSensor:
                 previousSensor = sensor
-                self.waitFor(PutSensorStateMsg(id = sensor, state = kSensorOpen))
+                self.waitForTrainToReach(sensor)
             self.moveSwitch(switch, direction)
-        # self.removeInterest(PutSensorStateMsg)
 
     def followSensorPath(self, path):
         """
@@ -252,12 +266,10 @@ class Throttle(object):
         usable. To get things started, the throttle makes the section (0, 1) usable,
         where i indicates sensor i.
         """
-        # self.addInterest(PutSensorStateMsg)
         self.makeSectionUsable(path[0], path[1])
         for i in range(0,len(path)-2):
-            self.waitFor(PutSensorStateMsg(id = path[i], state = kSensorOpen))
+            self.waitForTrainToReach(path[i])
             self.makeSectionUsable(path[i+1], path[i+2])
-        # self.removeInterest(PutSensorStateMsg)
 
 ################################################################################
 
