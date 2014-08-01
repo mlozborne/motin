@@ -33,15 +33,12 @@ class GuiThrottleProcess(Process):
         gLog.print("GuiThrottleProcess {0}: finished running".format(self.name))
         
 
-class EditCommandsDialog(EasyDialog):
-    """Opens a dialog on a song object."""
+class EnterCommandDialog(EasyDialog):
     def __init__(self, parent, atSensorCommands):
-        """Sets up the window and its attributes."""
         self.atSensorCommands = atSensorCommands
         EasyDialog.__init__(self, parent, "Enter Command")
 
     def body(self, master):
-        """Sets up the widgets."""
         self.addLabel(master, text = "At Sensor #", row = 0, column = 0)
         self.addLabel(master, text = "Do command", row = 1, column = 0)
         self.addLabel(master, text = "Using parameter 1", row = 13, column = 0)
@@ -112,6 +109,31 @@ class EditCommandsDialog(EasyDialog):
         if command != None:
             self.atSensorCommands.append([sensor, command])
             self.setModified()
+
+
+class EditCommandsDialog(EasyDialog):
+    def __init__(self, parent, atSensorCommands):
+        self.atSensorCommands = atSensorCommands
+        EasyDialog.__init__(self, parent, "Enter and Edit Commands")
+
+    def body(self, master):
+        self.textArea = self.addTextArea(master, text = "abc", row = 0, column = 0, columnspan = 1,
+                                                 width = 50, height = 15)
+        text = ''
+        for command in self.atSensorCommands:
+            text += command + '\n'
+        self.textArea.setText(text)
+
+    def apply(self):
+        """When the OK button is clicked, transfers data from the
+        text area and create the list of commands."""
+        self.atSensorCommands = self.textArea.getText().splitlines()
+
+        # command = "at 5 lights on"
+        # self.atSensorCommands.append(command)
+        # command = "at 10 throw switch 15"
+        # self.atSensorCommands.append(command)
+        # self.setModified()
 
 
 class GuiThrottle(EasyFrame):
@@ -221,9 +243,9 @@ class GuiThrottle(EasyFrame):
         self.btEnterCommand = self.addButton(text="Enter Command",
                                           row=7, column=0, command=self.enterCommand, state = DISABLED)
 
-        # Button display commands
-        self.btDisplayCommands = self.addButton(text="Display Commands",
-                                          row=7, column=1, command=self.displayCommands, state = DISABLED)
+        # Button edit commands
+        self.btDisplayCommands = self.addButton(text="Edit Commands",
+                                          row=7, column=1, command=self.editCommands, state = DISABLED)
 
         # Slider speed
         self.slSpeed = self.addScale(label = "Speed",
@@ -331,22 +353,46 @@ class GuiThrottle(EasyFrame):
 
     def processMsg(self, msg):
         if isinstance(msg, PutTrainStateMsg):
+
             if msg.slot != self.virtSlot:
                 return
             self.stateField.setText(kTrainStateList[msg.state])
+
         elif isinstance(msg, PutTrainPositionMsg):
+
             if msg.slot != self.virtSlot:
                 return
             self.positionField.setText(str(msg.sensors)[1:-1])
-        elif isinstance(msg, PutSensorStateMsg):
-            # print("Sensor {0} state {1}".format(msg.id, msg.state))
-            if msg.state == 0:                                # if sensor closed --> open
-                for item in self.atSensorCommands:
-                    if item[0] == msg.id:
-                        self.throttle.doCommand(item[1])
-                        if (item[1])[0] == setSpeed:           # if setSpeed command:
-                            self.slSpeed.set((item[1])[1])     #    reset speed slider
-                        self.atSensorCommands.remove(item)
+
+            # Do all initial atSensorCommands that have sensor number of 0
+            # for item in self.atSensorCommands:
+            #     if item[0] != 0:
+            #         break
+            #     self.throttle.doCommand(item[1])
+            #     if (item[1])[0] == setSpeed:           # if setSpeed command:
+            #         self.slSpeed.set((item[1])[1])     #    reset speed slider
+            #     self.atSensorCommands.remove(item)
+
+
+            # Do all initial atSensorCommands that have sensor number corresponding to train's new position
+            for item in self.atSensorCommands:
+                if item[0] != msg.sensors[1]:
+                    return
+                self.throttle.doCommand(item[1])
+                if (item[1])[0] == setSpeed:           # if setSpeed command:
+                    self.slSpeed.set((item[1])[1])     #    reset speed slider
+                self.atSensorCommands.remove(item)
+
+
+        # elif isinstance(msg, PutSensorStateMsg):
+        #     # print("Sensor {0} state {1}".format(msg.id, msg.state))
+        #     if msg.state == 0:                                # if sensor closed --> open
+        #         for item in self.atSensorCommands:
+        #             if item[0] == msg.id:
+        #                 self.throttle.doCommand(item[1])
+        #                 if (item[1])[0] == setSpeed:           # if setSpeed command:
+        #                     self.slSpeed.set((item[1])[1])     #    reset speed slider
+        #                 self.atSensorCommands.remove(item)
 
     def flipToggle(self, key):
         if key == "direction":
@@ -400,11 +446,12 @@ class GuiThrottle(EasyFrame):
         self.slSpeed.set(0)
 
     def enterCommand(self):
+        dialog = EnterCommandDialog(self, self.atSensorCommands)
+        print("Commands: {0}".format(self.atSensorCommands))
+
+    def editCommands(self):
         """Pops up a dialog to edit the model.
         Updates the app window if the song was modified."""
         dialog = EditCommandsDialog(self, self.atSensorCommands)
         print("Commands: {0}".format(self.atSensorCommands))
-
-    def displayCommands(self):
-        return
 
