@@ -6,6 +6,8 @@ from multiprocessing import Process
 from Throttle import *
 from Log import gLog
 from MsgHandler import AddInterestMsg, CommunicationsPackage
+from tkinter import *
+from tkinter import messagebox
 
 
 class GuiThrottleProcess(Process):
@@ -123,6 +125,7 @@ class EditCommandsDialog(EasyDialog):
         for command in self.atSensorCommands:
             text += command + '\n'
         self.textArea.setText(text)
+        # self.saveButton = self.addButton(master, text = "Save", row = 1, column = 0)
 
     def apply(self):
         """When the OK button is clicked, transfers data from the

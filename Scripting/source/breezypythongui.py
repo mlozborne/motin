@@ -724,7 +724,20 @@ class EasyDialog(tkinter.simpledialog.Dialog):
     def __init__(self, parent, title = ""):
         """Set up the window and widgets."""
         self._modified = False
+        self.parent = parent
         tkinter.simpledialog.Dialog.__init__(self, parent, title)
+
+    def buttonbox(self):
+        '''add standard button box.
+        override if you do not want the standard buttons
+        '''
+        box = Frame(self)
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+        w.pack(side=LEFT, padx=5, pady=5)
+        w = Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=LEFT, padx=5, pady=5)
+        # self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
 
     def modified(self):
         """Returns the modified status of the dialog."""
