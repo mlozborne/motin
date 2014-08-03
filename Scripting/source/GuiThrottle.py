@@ -243,8 +243,8 @@ class GuiThrottle(EasyFrame):
                                           row=6, column=1, command=self.throwNext, state = DISABLED)
 
         # Button enter command
-        self.btEnterCommand = self.addButton(text="Enter Command",
-                                          row=7, column=0, command=self.enterCommand, state = DISABLED)
+        # self.btEnterCommand = self.addButton(text="Enter Command",
+        #                                   row=7, column=0, command=self.enterCommand, state = DISABLED)
 
         # Button edit commands
         self.btDisplayCommands = self.addButton(text="Edit Commands",
@@ -381,8 +381,8 @@ class GuiThrottle(EasyFrame):
 
                 # Compare the command's sensor number to the train's new position
                 if sensor != msg.sensors[1]:
-                    # Doesn't match so return
-                    return
+                    # Doesn't match so break out of loop
+                    break
 
                 # Command's sensor number matches train's new position
                 # Process it.
@@ -413,16 +413,7 @@ class GuiThrottle(EasyFrame):
                     print("Command not understood: ".format(s))
 
             # Remove all executed commands
-            # self.atSensorCommands = self.atSensorCommands[commandCounter : -1]
-            self.atSensorCommands = []
-
-            # for item in self.atSensorCommands:
-            #     if item[0] != msg.sensors[1]:
-            #         return
-            #     self.throttle.doCommand(item[1])
-            #     if (item[1])[0] == setSpeed:           # if setSpeed command:
-            #         self.slSpeed.set((item[1])[1])     #    reset speed slider
-            #     self.atSensorCommands.remove(item)
+            self.atSensorCommands = self.atSensorCommands[commandCounter : ]
 
     def flipToggle(self, key):
         if key == "direction":
@@ -475,9 +466,9 @@ class GuiThrottle(EasyFrame):
         self.throttle.setSpeed(1)
         self.slSpeed.set(0)
 
-    def enterCommand(self):
-        dialog = EnterCommandDialog(self, self.atSensorCommands)
-        print("Commands: {0}".format(self.atSensorCommands))
+    # def enterCommand(self):
+    #     dialog = EnterCommandDialog(self, self.atSensorCommands)
+    #     print("Commands: {0}".format(self.atSensorCommands))
 
     def editCommands(self):
         """Pops up a dialog to edit the model.
