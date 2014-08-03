@@ -321,6 +321,7 @@ class Throttle(object):
         elif len(command) == 2:
             command[0](self, command[1])
         elif len(command) == 3:
+
             command[0](self, command[1], command[2])
         elif len(command) == 4:
             command[0](self, command[1], command[2], command[3])
