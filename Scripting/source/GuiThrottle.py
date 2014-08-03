@@ -368,11 +368,11 @@ class GuiThrottle(EasyFrame):
             self.positionField.setText(str(msg.sensors)[1:-1])
 
             # Do all initial atSensorCommands that have sensor number corresponding to train's new position
-
+            commandCounter = 0
             for item in self.atSensorCommands:
                 # If the command is empty then remove it and continue to next command
                 if item == []:
-                    self.atSensorCommands.remove(item)
+                    commandCounter += 1
                     continue
 
                 # Split the command into its parts and retrieve the sensor number
@@ -385,7 +385,8 @@ class GuiThrottle(EasyFrame):
                     return
 
                 # Command's sensor number matches train's new position
-                # Remove the command and process it.
+                # Process it.
+                commandCounter += 1
                 if   s[1] == "lightson":
                     self.throttle.doCommand([setLights, kOn])
                 elif s[1] == "lightsoff":
@@ -410,7 +411,10 @@ class GuiThrottle(EasyFrame):
                     self.throttle.doCommand([moveSwitch, switchId, kClosed])
                 else:
                     print("Command not understood: ".format(s))
-                self.atSensorCommands.remove(item)
+
+            # Remove all executed commands
+            # self.atSensorCommands = self.atSensorCommands[commandCounter : -1]
+            self.atSensorCommands = []
 
             # for item in self.atSensorCommands:
             #     if item[0] != msg.sensors[1]:
