@@ -1,5 +1,5 @@
 import multiprocessing.queues
-from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W, EasyDialog, END
+from breezypythongui import DISABLED, EasyFrame, N, NORMAL, W, EasyDialog
 from tkinter import PhotoImage
 from multiprocessing import Process
 from Throttle import *
@@ -31,94 +31,16 @@ class GuiThrottleProcess(Process):
         gLog.print("GuiThrottleProcess {0}: finished running".format(self.name))
         
 
-class EnterCommandDialog(EasyDialog):
-    def __init__(self, parent, atSensorCommands):
-        self.atSensorCommands = atSensorCommands
-        EasyDialog.__init__(self, parent, "Enter Command")
-
-    def body(self, master):
-        self.addLabel(master, text = "At Sensor #", row = 0, column = 0)
-        self.addLabel(master, text = "Do command", row = 1, column = 0)
-        self.addLabel(master, text = "Using parameter 1", row = 13, column = 0)
-        self.addLabel(master, text = "Using parameter 2", row = 14, column = 0)
-        self.addLabel(master, text = "Using parameter 3", row = 15, column = 0)
-
-        self.sensorFld = self.addIntegerField(master, value = 0, row = 0, column = 1)
-
-        self.listBox = self.addListbox(master, row = 1, column = 1, rowspan = 12,
-                                       width = 46, height = 12,
-                                       listItemSelected = self.listItemSelected)
-        self.listBox.insert(END, "forward")
-        self.listBox.insert(END, "reverse")
-        self.listBox.insert(END, "pause <n>")
-        self.listBox.insert(END, "set speed <n>")
-        self.listBox.insert(END, "throw switch <n>")
-        self.listBox.insert(END, "close switch <n>")
-        self.listBox.insert(END, "lights on")
-        self.listBox.insert(END, "lights off")
-        self.listBox.insert(END, "bell on")
-        self.listBox.insert(END, "bell off")
-        self.listBox.insert(END, "toot horn")
-        self.listBox.insert(END, "at speed go to <speed><destination><excluding>")
-        self.listBox.setSelectedIndex(0)
-
-        self.parameter1Fld = self.addIntegerField(master, value = 0, row = 13, column = 1)
-        self.parameter2Fld = self.addIntegerField(master, value = 0, row = 14, column = 1)
-        self.parameter3Fld = self.addTextField(master, text = "[1,2]", row = 15, column = 1)
-
-    def listItemSelected(self, index):
-        return
-
-    def apply(self):
-        """When the OK button is clicked, transfers data from the
-        fields, build the corresponding command, and append to the list of commands."""
-        sensor = self.sensorFld.getNumber()
-        commandName = self.listBox.getSelectedItem()
-        parameter1 = self.parameter1Fld.getNumber()
-        parameter2 = self.parameter2Fld.getNumber()
-        parameter3 = self.parameter3Fld.getText()
-        if commandName == "forward":
-            command = [setDirection, kForward]
-        elif commandName == "reverse":
-            command = [setDirection, kBackward]
-        elif commandName == "pause <n>":
-            command = [pause, parameter1]
-        elif commandName == "set speed <n>":
-            command = [setSpeed, parameter1]
-        elif commandName == "throw switch <n>":
-            command = [moveSwitch, parameter1, kThrown]
-        elif commandName == "close switch <n>":
-            command = [moveSwitch, parameter1, kClosed]
-        elif commandName == "lights on":
-            command = [setLights, kOn]
-        elif commandName == "lights off":
-            command = [setLights, kOff]
-        elif commandName == "bell on":
-            command = [setBell, kOn]
-        elif commandName == "bell off":
-            command = [setBell, kOff]
-        elif commandName == "toot horn":
-            command = [tootHorn]
-        elif commandName == "at speed go to <speed><destination><excluding>":
-            command = [atSpeedGoTo, parameter1, parameter2, parameter3]
-        else:
-            command = None
-
-        if command != None:
-            self.atSensorCommands.append([sensor, command])
-            self.setModified()
-
-
 class EditCommandsDialog(EasyDialog):
-    def __init__(self, parent, atSensorCommands):
+    def __init__(self, parent):
         self.parent = parent
         EasyDialog.__init__(self, parent, "Enter and Edit Commands")
 
     def buttonbox(self):
-        '''add standard button box.
+        """add standard button box.
         override if you do not want the standard buttons
         from tkinter simpledialog
-        '''
+        """
         pass
 
     def body(self, master):
@@ -140,6 +62,7 @@ class EditCommandsDialog(EasyDialog):
         self.parent.atSensorCommands = self.textArea.getText().splitlines()
         self.cancel()
 
+
 class GuiThrottle(EasyFrame):
 
     def __init__(self, name = None, comPkg = None):
@@ -147,19 +70,34 @@ class GuiThrottle(EasyFrame):
         gLog.print("GuiThrottle {0}: initializing".format(name))
 
         self.name = "Throttle " + name
+
         self.comPkg = comPkg
-        inQu = comPkg.inQu
-        inQuNum = comPkg.inQuNum
-        outQu = comPkg.outQu
+        self.inQu = comPkg.inQu
+        self.inQuNum = comPkg.inQuNum
+        self.outQu = comPkg.outQu
 
         self.atSensorCommands = []
-        self.inQu = inQu
         self.virtSlot = None
         
+        inQuNum = comPkg.inQuNum
+        outQu = comPkg.outQu
         outQu.put(AddInterestMsg(inQuNum, PutInitOutcomeMsg))
         outQu.put(AddInterestMsg(inQuNum, PutTrainPositionMsg))
         outQu.put(AddInterestMsg(inQuNum, PutTrainStateMsg))
-        outQu.put(AddInterestMsg(inQuNum, PutSensorStateMsg))
+        # outQu.put(AddInterestMsg(inQuNum, PutSensorStateMsg))
+
+        self.pathToFollow = []        # List of sensors from beginning to end of path.
+                                      # Loaded when atspeed-goto is processed.
+                                      # s0 = sensor number that triggered atspeed-goto.
+        self.followingPath = False    # Set to true when atspeed-goto message is processed
+                                      # This will be become false when
+                                      #   * end of path is reached
+                                      #   * user changes direction of train
+        self.pathIndex = -1           # Index of next sensor in path.
+                                      # When the train reaches si, then section (si+1,si+2) is
+                                      # made usable.
+                                      # Initially, section (s1,s2) is made usable and
+                                      # pathIndex = 1
         
         self.readyToReadFromQueue = False
 
@@ -242,13 +180,9 @@ class GuiThrottle(EasyFrame):
         self.btThrowNext = self.addButton(text="Throw Next", 
                                           row=6, column=1, command=self.throwNext, state = DISABLED)
 
-        # Button enter command
-        # self.btEnterCommand = self.addButton(text="Enter Command",
-        #                                   row=7, column=0, command=self.enterCommand, state = DISABLED)
-
         # Button edit commands
-        self.btDisplayCommands = self.addButton(text="Edit Commands",
-                                          row=7, column=1, command=self.editCommands, state = DISABLED)
+        self.btEditCommands = self.addButton(text="Enter/Edit Commands",
+                                             row=7, column=0, columnspan = 2, command=self.editCommands, state = DISABLED)
 
         # Slider speed
         self.slSpeed = self.addScale(label = "Speed",
@@ -287,8 +221,7 @@ class GuiThrottle(EasyFrame):
         self.btLight.config(state = DISABLED)
         self.btHorn.config(state = DISABLED)
         self.btMute.config(state = DISABLED)
-        self.btEnterCommand.config(state = DISABLED)
-        self.btDisplayCommands.config(state = DISABLED)
+        self.btEditCommands.config(state = DISABLED)
         self.btHalt.config(state = DISABLED)
         self.slSpeed.config(command = None)
         self.slSpeed.set(0)
@@ -334,8 +267,7 @@ class GuiThrottle(EasyFrame):
         self.btLight.config(state = NORMAL)
         self.btHorn.config(state = NORMAL)
         self.btMute.config(state = NORMAL)
-        self.btEnterCommand.config(state = NORMAL)
-        self.btDisplayCommands.config(state = NORMAL)
+        self.btEditCommands.config(state = NORMAL)
         self.btHalt.config(state = NORMAL)
         self.slSpeed.config(command = self.changeSpeed)
 
@@ -371,7 +303,7 @@ class GuiThrottle(EasyFrame):
             commandCounter = 0
             for item in self.atSensorCommands:
                 # If the command is empty then remove it and continue to next command
-                if item == []:
+                if not item:
                     commandCounter += 1
                     continue
 
@@ -387,28 +319,37 @@ class GuiThrottle(EasyFrame):
                 # Command's sensor number matches train's new position
                 # Process it.
                 commandCounter += 1
-                if   s[1] == "lightson":
+                if   s[1] == "lightson":                                 # <> lightson
                     self.throttle.doCommand([setLights, kOn])
-                elif s[1] == "lightsoff":
+                elif s[1] == "lightsoff":                                # <> lightsoff
                     self.throttle.doCommand([setLights, kOff])
-                elif s[1] == "bellon":
+                elif s[1] == "bellon":                                   # <> bellon
                     self.throttle.doCommand([setBell, kOn])
-                elif s[1] == "bellof":
+                elif s[1] == "belloff":                                  # <> belloff
                     self.throttle.doCommand([setBell, kOff])
-                elif s[1] == "speed":
+                elif s[1] == "speed":                                    # <> speed <>
                     speed = int(s[2])
                     self.throttle.doCommand([setSpeed, speed])
-                    self.slSpeed.set(speed)            #    reset speed slider
-                elif s[1] == "reverse":
+                    # reset speed slider
+                    self.slSpeed.set(speed)
+                elif s[1] == "reverse":                                  # <> reverse
                     self.throttle.doCommand([setDirection, kBackward])
-                elif s[1] == "forward":
+                elif s[1] == "forward":                                  # <> forward
                     self.throttle.doCommand([setDirection, kForward])
-                elif s[1] == "throw":
+                elif s[1] == "throw":                                    # <> throw <>
                     switchId = int(s[2])
                     self.throttle.doCommand([moveSwitch, switchId, kThrown])
-                elif s[1] == "close":
+                elif s[1] == "close":                                    # <> close <>
                     switchId = int(s[2])
                     self.throttle.doCommand([moveSwitch, switchId, kClosed])
+                elif s[1] == "atspeed" and s[3] == "goto":               # <> atspeed <> goto <>
+                    speed = int(s[2])
+                    destination = int(s[4])
+                    excludeSensors = []
+                    self.throttle.doCommand([atSpeedGoTo, speed, destination, excludeSensors])
+                    # Restore interest in PutTrainPositionMsg that was removed by the underlying throttle
+                    # during execution of atSpeedGoTo
+                    self.outQu.put(AddInterestMsg(self.inQuNum, PutTrainPositionMsg))
                 else:
                     print("Command not understood: ".format(s))
 
@@ -443,7 +384,7 @@ class GuiThrottle(EasyFrame):
         self.flipToggle("bell")
         self.throttle.setBell(self.toggles['bell'])
 
-    def startHorn(self, dummy):
+    def startHorn(self):
         self.throttle.setHorn(kOn)
 
     def stopHorn(self):
@@ -466,15 +407,11 @@ class GuiThrottle(EasyFrame):
         self.throttle.setSpeed(1)
         self.slSpeed.set(0)
 
-    # def enterCommand(self):
-    #     dialog = EnterCommandDialog(self, self.atSensorCommands)
-    #     print("Commands: {0}".format(self.atSensorCommands))
-
     def editCommands(self):
         """Pops up a dialog to edit the model.
         Updates the app window if the song was modified."""
-        dialog = EditCommandsDialog(self, self.atSensorCommands)
-        for command in self.atSensorCommands:
-            s = command.split()
-            print("Command: {0}".format(s))
+        EditCommandsDialog(self)
+        # for command in self.atSensorCommands:
+        #     s = command.split()
+        #     print("Command: {0}".format(s))
 
