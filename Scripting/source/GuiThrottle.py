@@ -86,13 +86,13 @@ class GuiThrottle(EasyFrame):
         outQu.put(AddInterestMsg(inQuNum, PutTrainStateMsg))
         # outQu.put(AddInterestMsg(inQuNum, PutSensorStateMsg))
 
-        self.pathToFollow = []        # List of sensors from beginning to end of path.
+        self.pathSensors = []         # List of sensors from beginning to end of path.
                                       # Loaded when atspeed-goto is processed.
                                       # s0 = sensor number that triggered atspeed-goto.
-        self.followingPath = False    # Set to true when atspeed-goto message is processed
+        self.pathFlag = False         # Set to true when atspeed-goto message is processed
                                       # This will be become false when
                                       #   * end of path is reached
-                                      #   * user changes direction of train
+                                      #   * to be decided ....
         self.pathIndex = -1           # Index of next sensor in path.
                                       # When the train reaches si, then section (si+1,si+2) is
                                       # made usable.
@@ -343,13 +343,27 @@ class GuiThrottle(EasyFrame):
                     switchId = int(s[2])
                     self.throttle.doCommand([moveSwitch, switchId, kClosed])
                 elif s[1] == "atspeed" and s[3] == "goto":               # <> atspeed <> goto <>
-                    speed = int(s[2])
-                    destination = int(s[4])
-                    excludeSensors = []
-                    self.throttle.doCommand([atSpeedGoTo, speed, destination, excludeSensors])
-                    # Restore interest in PutTrainPositionMsg that was removed by the underlying throttle
-                    # during execution of atSpeedGoTo
-                    self.outQu.put(AddInterestMsg(self.inQuNum, PutTrainPositionMsg))
+                    version = 1
+
+                    if version == 1:
+                        # Version 1: control passed to throttle as briefly as possible thus allowing the user
+                        #            to interact with the GuiThrottle throughout
+                        self.pathSensors = self.throttle.getPath(
+                                                pathKind=kBreadthFirst,
+                                                preSensor=msg.sensors[2],
+                                                fromSensor=msg.sensors[1],
+                                                toSensor=int(s[4]),
+                                                sensorsToExclude = [])
+
+                    if version == 2:
+                        # Version 2: control passed to throttle where it remains until end of path reached
+                        speed = int(s[2])
+                        destination = int(s[4])
+                        excludeSensors = []
+                        self.throttle.doCommand([atSpeedGoTo, speed, destination, excludeSensors])
+                        # Restore interest in PutTrainPositionMsg that was removed by the underlying throttle
+                        # during execution of atSpeedGoTo
+                        self.outQu.put(AddInterestMsg(self.inQuNum, PutTrainPositionMsg))
                 else:
                     print("Command not understood: ".format(s))
 
