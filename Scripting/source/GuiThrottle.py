@@ -367,6 +367,7 @@ class GuiThrottle(EasyFrame):
                                                 fromSensor=msg.sensors[1], # sensorThatFired
                                                 toSensor=int(cmd[4]),
                                                 sensorsToExclude = [])
+                        self.pathIndex = 0
                         self.throttle.setSpeed(int(cmd[2]))
 
                     if version == 2:
@@ -381,19 +382,26 @@ class GuiThrottle(EasyFrame):
                 else:
                     print("Command not understood: ".format(cmd))
 
-                # Now see if the train is following a path and train is at next sensor in path
-                if self.pathIndex != -1 and self.pathSensors[self.pathIndex] == sensorThatFired:
-                    lastIndex = len(self.pathSensors) - 1
-                    if self.pathIndex + 2 <= lastIndex:
-                        self.throttle.makeSectionUsable(path[i+1], path[i+2])
-
-                    if self.pathIndex xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-                    if self.pathIndex == lastIndex:
-                        self.throttle.setSpeed(1)
-                        self.pathIndex = 0
-
             # Remove all executed commands
             self.atSensorCommands = self.atSensorCommands[commandCounter : ]
+
+            # Now see if the train is following a path and train is at next sensor in path
+            if self.pathIndex != -1 and self.pathSensors[self.pathIndex] == sensorThatFired:
+                i = self.pathIndex
+                lastIndex = len(self.pathSensors) - 1
+                if i + 2 <= lastIndex:
+                    self.throttle.makeSectionUsable(self.pathSensors[i+1], self.pathSensors[i+2])
+                    self.pathIndex += 1
+                elif i == lastIndex - 1:
+                    if self.pathSensors[0] == self.pathSensors[lastIndex]:
+                        self.throttle.makeSectionUsable(self.pathSensors[0], self.pathSensors[1])
+                        self.pathIndex = 0
+                    else:
+                        self.pathIndex += 1
+                elif i == lastIndex:
+                    self.throttle.setSpeed(1)
+                    self.pathIndex = 0
+
 
     def flipToggle(self, key):
         if key == "direction":
