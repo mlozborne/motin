@@ -86,19 +86,29 @@ class GuiThrottle(EasyFrame):
         outQu.put(AddInterestMsg(inQuNum, PutTrainStateMsg))
         # outQu.put(AddInterestMsg(inQuNum, PutSensorStateMsg))
 
-        self.pathSensors = []         # List of sensors from beginning to end of path.
-                                      # Loaded when atspeed-goto is processed.
-                                      # s0 = sensor number that triggered atspeed-goto.
-        self.pathFlag = False         # Set to true when atspeed-goto message is processed
-                                      # This will be become false when
-                                      #   * end of path is reached
-                                      #   * to be decided ....
-        self.pathIndex = -1           # Index of next sensor in path.
-                                      # When the train reaches si, then section (si+1,si+2) is
-                                      # made usable.
-                                      # Initially, section (s1,s2) is made usable and
-                                      # pathIndex = 1
-        
+        self.pathSensors = []
+        # List of sensors consisting of the prepath sensor and then the sensors from the beginning
+        # to end of the path.
+        # Loaded when atspeed-goto is processed.
+        # s0 = sensor that triggered atspeed-goto.
+        # The list retains its current values until
+        #  next atspeed-goto is processed
+        #  Set back to [] by pressing "Clear Path" button
+
+        self.pathIndex = -1
+        # Index of next sensor in path.
+        # When the train reaches si, then section (si+1,si+2) is made usable
+        # Initially, pathIndex set to 0.
+        # When next to last sensor is reached
+        #   if last sensor == first sensor then
+        #      make section (s0, s1) usable and set pathIndex = 0
+        #   else
+        #      increment pathIndex
+        #   end if
+        # When last sensor is reached
+        #   stop
+        #   set pathIndex = 0
+
         self.readyToReadFromQueue = False
 
         self.throttle = Throttle(name = self.name, comPkg = self.comPkg)
@@ -299,6 +309,8 @@ class GuiThrottle(EasyFrame):
                 return
             self.positionField.setText(str(msg.sensors)[1:-1])
 
+            sensorThatFired = msg.sensors[1]
+
             # Do all initial atSensorCommands that have sensor number corresponding to train's new position
             commandCounter = 0
             for item in self.atSensorCommands:
@@ -308,41 +320,42 @@ class GuiThrottle(EasyFrame):
                     continue
 
                 # Split the command into its parts and retrieve the sensor number
-                s = item.split()
-                sensor = int(s[0])
+                cmd = item.split()
+                commandSensor = int(cmd[0])
+                commandName = cmd[1]
 
                 # Compare the command's sensor number to the train's new position
-                if sensor != msg.sensors[1]:
+                if commandSensor != sensorThatFired:
                     # Doesn't match so break out of loop
                     break
 
                 # Command's sensor number matches train's new position
                 # Process it.
                 commandCounter += 1
-                if   s[1] == "lightson":                                 # <> lightson
+                if   commandName == "lightson":                                 # <> lightson
                     self.throttle.doCommand([setLights, kOn])
-                elif s[1] == "lightsoff":                                # <> lightsoff
+                elif commandName == "lightsoff":                                # <> lightsoff
                     self.throttle.doCommand([setLights, kOff])
-                elif s[1] == "bellon":                                   # <> bellon
+                elif commandName == "bellon":                                   # <> bellon
                     self.throttle.doCommand([setBell, kOn])
-                elif s[1] == "belloff":                                  # <> belloff
+                elif commandName == "belloff":                                  # <> belloff
                     self.throttle.doCommand([setBell, kOff])
-                elif s[1] == "speed":                                    # <> speed <>
-                    speed = int(s[2])
+                elif commandName == "speed":                                    # <> speed <>
+                    speed = int(cmd[2])
                     self.throttle.doCommand([setSpeed, speed])
                     # reset speed slider
                     self.slSpeed.set(speed)
-                elif s[1] == "reverse":                                  # <> reverse
+                elif commandName == "reverse":                                  # <> reverse
                     self.throttle.doCommand([setDirection, kBackward])
-                elif s[1] == "forward":                                  # <> forward
+                elif commandName == "forward":                                  # <> forward
                     self.throttle.doCommand([setDirection, kForward])
-                elif s[1] == "throw":                                    # <> throw <>
-                    switchId = int(s[2])
+                elif commandName == "throw":                                    # <> throw <>
+                    switchId = int(cmd[2])
                     self.throttle.doCommand([moveSwitch, switchId, kThrown])
-                elif s[1] == "close":                                    # <> close <>
-                    switchId = int(s[2])
+                elif commandName == "close":                                    # <> close <>
+                    switchId = int(cmd[2])
                     self.throttle.doCommand([moveSwitch, switchId, kClosed])
-                elif s[1] == "atspeed" and s[3] == "goto":               # <> atspeed <> goto <>
+                elif commandName == "atspeed" and cmd[3] == "goto":             # <> atspeed <> goto <>
                     version = 1
 
                     if version == 1:
@@ -351,21 +364,33 @@ class GuiThrottle(EasyFrame):
                         self.pathSensors = self.throttle.getPath(
                                                 pathKind=kBreadthFirst,
                                                 preSensor=msg.sensors[2],
-                                                fromSensor=msg.sensors[1],
-                                                toSensor=int(s[4]),
+                                                fromSensor=msg.sensors[1], # sensorThatFired
+                                                toSensor=int(cmd[4]),
                                                 sensorsToExclude = [])
+                        self.throttle.setSpeed(int(cmd[2]))
 
                     if version == 2:
                         # Version 2: control passed to throttle where it remains until end of path reached
-                        speed = int(s[2])
-                        destination = int(s[4])
+                        speed = int(cmd[2])
+                        destination = int(cmd[4])
                         excludeSensors = []
                         self.throttle.doCommand([atSpeedGoTo, speed, destination, excludeSensors])
                         # Restore interest in PutTrainPositionMsg that was removed by the underlying throttle
                         # during execution of atSpeedGoTo
                         self.outQu.put(AddInterestMsg(self.inQuNum, PutTrainPositionMsg))
                 else:
-                    print("Command not understood: ".format(s))
+                    print("Command not understood: ".format(cmd))
+
+                # Now see if the train is following a path and train is at next sensor in path
+                if self.pathIndex != -1 and self.pathSensors[self.pathIndex] == sensorThatFired:
+                    lastIndex = len(self.pathSensors) - 1
+                    if self.pathIndex + 2 <= lastIndex:
+                        self.throttle.makeSectionUsable(path[i+1], path[i+2])
+
+                    if self.pathIndex xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                    if self.pathIndex == lastIndex:
+                        self.throttle.setSpeed(1)
+                        self.pathIndex = 0
 
             # Remove all executed commands
             self.atSensorCommands = self.atSensorCommands[commandCounter : ]
