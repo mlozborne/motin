@@ -446,8 +446,8 @@
 			<blocking id="83" />
 		</section>
 		<section id="83">
-			<sensor id="106" />
 			<sensor id="107" />
+			<sensor id="106" />
 			<switch id="21" state="closed"/>
 			<blocking is="82" />
 		</section>
